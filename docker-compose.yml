@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: ./next
+      dockerfile: ../docker/Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./next:/app                    # ソースコードはホストからマウント
+      - node_modules:/app/node_modules # node_modules はコンテナ内の named volume に隔離
+    env_file:
+      - .env.local
+    environment:
+      - WATCHPACK_POLLING=true         # Mac でのホットリロード対応
+
+volumes:
+  node_modules:
