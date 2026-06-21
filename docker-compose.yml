@@ -6,12 +6,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./next:/app                    # ソースコードはホストからマウント
-      - node_modules:/app/node_modules # node_modules はコンテナ内の named volume に隔離
+      - ./next:/app                    # ソースコード・node_modules ともホストからバインドマウント
     env_file:
       - .env.local
     environment:
       - WATCHPACK_POLLING=true         # Mac でのホットリロード対応
-
-volumes:
-  node_modules:
