@@ -27,22 +27,25 @@ export function Field({
   );
 }
 
-export function TextInput(
-  props: React.InputHTMLAttributes<HTMLInputElement>
-) {
-  return <input {...props} className={inputClass} />;
+export function TextInput({
+  className = "",
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={`${inputClass} ${className}`} />;
 }
 
-export function Textarea(
-  props: React.TextareaHTMLAttributes<HTMLTextAreaElement>
-) {
-  return <textarea {...props} className={inputClass} />;
+export function Textarea({
+  className = "",
+  ...props
+}: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea {...props} className={`${inputClass} ${className}`} />;
 }
 
-export function Select(
-  props: React.SelectHTMLAttributes<HTMLSelectElement>
-) {
-  return <select {...props} className={inputClass} />;
+export function Select({
+  className = "",
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select {...props} className={`${inputClass} ${className}`} />;
 }
 
 export function PageHeader({
