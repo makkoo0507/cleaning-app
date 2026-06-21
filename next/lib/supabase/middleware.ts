@@ -42,18 +42,32 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isAuthRoute = path === "/login" || path.endsWith("/login");
+  // 会社別ログイン: /{slug}/login
+  const loginMatch = path.match(/^\/([^/]+)\/login\/?$/);
   const isProtected = PROTECTED_PREFIXES.some((p) => path.startsWith(p));
 
-  if (!user && isProtected) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+  // ログインページを訪れたら、その会社 slug を cookie に記録しておく
+  // （未認証で保護ページに来たときの戻り先に使う）
+  if (loginMatch) {
+    const slug = loginMatch[1];
+    if (user) {
+      // ログイン済みならダッシュボードへ
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+    supabaseResponse.cookies.set("company_slug", slug, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 90,
+      sameSite: "lax",
+    });
+    return supabaseResponse;
   }
 
-  if (user && isAuthRoute) {
+  if (!user && isProtected) {
+    const slug = request.cookies.get("company_slug")?.value;
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = slug ? `/${slug}/login` : "/";
     return NextResponse.redirect(url);
   }
 

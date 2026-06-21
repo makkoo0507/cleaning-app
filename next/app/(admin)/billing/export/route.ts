@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   const month = request.nextUrl.searchParams.get("month") ?? undefined;

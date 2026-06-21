@@ -18,7 +18,7 @@ export async function requireUser(): Promise<CurrentUser> {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect("/");
 
   const meta = (user.app_metadata ?? {}) as AppMetadata;
 
@@ -28,7 +28,7 @@ export async function requireUser(): Promise<CurrentUser> {
     .eq("id", user.id)
     .single<User>();
 
-  if (!profile) redirect("/login");
+  if (!profile) redirect("/");
 
   return {
     id: user.id,
@@ -43,7 +43,7 @@ export async function requireUser(): Promise<CurrentUser> {
 export async function requireContractor(): Promise<CurrentUser> {
   const user = await requireUser();
   if (user.role !== "contractor_admin" && user.role !== "contractor_staff") {
-    redirect("/login");
+    redirect("/");
   }
   return user;
 }

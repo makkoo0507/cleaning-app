@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireContractor, isAdmin } from "@/lib/auth";
-import { logout } from "@/app/login/actions";
+import { logout } from "./actions";
 
 const NAV = [
   { href: "/dashboard", label: "ダッシュボード" },
