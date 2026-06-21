@@ -28,12 +28,19 @@ export default function LoginForm({
         </div>
 
         <form action={formAction} className="space-y-4">
-          <Field label="メールアドレス" required>
-            <TextInput name="email" type="email" autoComplete="email" required />
+          <Field label="メールアドレス" required htmlFor="email">
+            <TextInput
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="username"
+              required
+            />
           </Field>
 
-          <Field label="パスワード" required>
+          <Field label="パスワード" required htmlFor="password">
             <TextInput
+              id="password"
               name="password"
               type="password"
               autoComplete="current-password"

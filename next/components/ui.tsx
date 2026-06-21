@@ -8,16 +8,21 @@ export function Field({
   label,
   required,
   hint,
+  htmlFor,
   children,
 }: {
   label: string;
   required?: boolean;
   hint?: string;
+  htmlFor?: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <label
+        htmlFor={htmlFor}
+        className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+      >
         {label}
         {required && <span className="ml-0.5 text-red-500">*</span>}
       </label>
