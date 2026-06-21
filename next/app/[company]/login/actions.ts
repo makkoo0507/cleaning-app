@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCompanyBySlug } from "@/lib/company";
-import type { AppMetadata } from "@/lib/database.types";
+import type { User } from "@/lib/database.types";
 
 export interface LoginState {
   error?: string;
@@ -38,8 +38,15 @@ export async function loginToCompany(
   }
 
   // 所属テナントが URL の会社と一致するか検証
-  const meta = (data.user.app_metadata ?? {}) as AppMetadata;
-  if (meta.company_id !== company.id) {
+  // 注: auth hook が JWT に注入する company_id は user.app_metadata には載らないため、
+  //     public.users から実際の所属会社を取得して比較する。
+  const { data: profile } = await supabase
+    .from("users")
+    .select("company_id")
+    .eq("id", data.user.id)
+    .maybeSingle<Pick<User, "company_id">>();
+
+  if (!profile || profile.company_id !== company.id) {
     await supabase.auth.signOut();
     return {
       error: "このアカウントはこの会社のログインページでは使用できません。",
