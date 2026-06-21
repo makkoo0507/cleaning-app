@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireContractor } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { notifyScheduleCreated } from "@/lib/line";
 import type { JobStatus } from "@/lib/database.types";
 
 export interface JobFormState {
@@ -46,20 +47,28 @@ export async function createJob(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("jobs").insert({
-    company_id: user.companyId,
-    property_id: f.propertyId,
-    cleaner_id: f.cleanerId,
-    scheduled_date: f.scheduledDate,
-    scheduled_start_time: f.startTime,
-    status: f.status,
-    billing_amount: f.billingAmount,
-    payment_amount: f.paymentAmount,
-  });
+  const { data, error } = await supabase
+    .from("jobs")
+    .insert({
+      company_id: user.companyId,
+      property_id: f.propertyId,
+      cleaner_id: f.cleanerId,
+      scheduled_date: f.scheduledDate,
+      scheduled_start_time: f.startTime,
+      status: f.status,
+      billing_amount: f.billingAmount,
+      payment_amount: f.paymentAmount,
+    })
+    .select("id")
+    .single();
 
   if (error) return { error: "作成に失敗しました。" };
 
-  // TODO(Phase4): 清掃者・通知有効な関係者へ LINE 通知を送信
+  // スケジュール作成通知（LINE 未設定・エラーは無視）
+  if (data?.id) {
+    notifyScheduleCreated(data.id).catch(() => {});
+  }
+
   revalidatePath("/schedules");
   redirect("/schedules");
 }

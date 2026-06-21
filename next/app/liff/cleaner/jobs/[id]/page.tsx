@@ -49,6 +49,8 @@ export default function CleanerJobDetailPage() {
   }, [id, user.id]);
 
   useEffect(() => {
+    // setState は await（データ取得）後に行うため同期的な連鎖描画は起きない
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 
