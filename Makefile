@@ -15,7 +15,7 @@
 #   パスワード: password123
 # ============================================================
 
-.PHONY: init setup start stop reset logs logs-app tunnel
+.PHONY: init setup start stop reset logs logs-app tunnel tunnel-logs
 
 # LIFF 実機テスト用 ngrok 固定ドメイン
 NGROK_DOMAIN = monotype-bungee-province.ngrok-free.dev
@@ -44,24 +44,29 @@ setup:
 	@echo "   デモログイン: admin@example.com / password123"
 
 ## 毎日の起動（Supabase + Next.js + ngrok トンネル）
-## Next.js はバックグラウンド(-d)で起動し、ngrok をフォアグラウンドで実行してトンネルを維持する。
-## Next.js のログは別ターミナルで `make logs-app`、停止は Ctrl+C 後に `make stop`。
+## すべてバックグラウンドで起動し、ターミナルは占有しない。
+## ngrok のログは `make tunnel-logs`、状況は http://localhost:4040、停止は `make stop`。
 start:
 	npx supabase start
 	docker-compose up -d
+	-@pkill -f "ngrok http 3000" 2>/dev/null || true
+	@nohup ngrok http 3000 --url=https://$(NGROK_DOMAIN) --log=stdout > /tmp/ngrok-cleaning.log 2>&1 &
+	@sleep 2
 	@echo ""
-	@echo "✅ 起動しました"
+	@echo "✅ 起動しました（すべてバックグラウンド）"
 	@echo "   Next.js:         http://localhost:3000"
 	@echo "   Supabase Studio: http://localhost:54323"
 	@echo "   公開URL(ngrok):  https://$(NGROK_DOMAIN)"
+	@echo "   ngrok 状況:      http://localhost:4040 / make tunnel-logs"
 	@echo "   デモログイン:    admin@example.com / password123"
-	@echo ""
-	@echo "ngrok トンネルを起動します（Ctrl+C で停止。Next.js/Supabase は動き続けます）"
-	ngrok http 3000 --url=https://$(NGROK_DOMAIN)
 
-## ngrok トンネルのみ起動
+## ngrok トンネルのみ起動（フォアグラウンド表示）
 tunnel:
 	ngrok http 3000 --url=https://$(NGROK_DOMAIN)
+
+## ngrok のログ確認
+tunnel-logs:
+	tail -f /tmp/ngrok-cleaning.log
 
 ## 停止
 stop:
