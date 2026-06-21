@@ -10,22 +10,21 @@ export interface OwnerFormState {
   error?: string;
 }
 
-// フォームから物件紐付けを抽出: property_<id>=on, role_<id>=owner, notify_<id>=on
+// フォームから物件紐付けを抽出
+// 各行は property_id_<rowKey> / role_<rowKey> / notify_<rowKey> で送られる。
+// 同一物件が重複した場合は後勝ちで1件にまとめる（property_members の複合PK衝突を防ぐ）。
 function parseMemberships(formData: FormData) {
-  const memberships: {
-    propertyId: string;
-    role: string;
-    notify: boolean;
-  }[] = [];
+  const map = new Map<string, { propertyId: string; role: string; notify: boolean }>();
   for (const key of formData.keys()) {
-    if (key.startsWith("property_")) {
-      const propertyId = key.slice("property_".length);
-      const role = String(formData.get(`role_${propertyId}`) ?? "owner");
-      const notify = formData.get(`notify_${propertyId}`) != null;
-      memberships.push({ propertyId, role, notify });
-    }
+    if (!key.startsWith("property_id_")) continue;
+    const rowKey = key.slice("property_id_".length);
+    const propertyId = String(formData.get(key) ?? "").trim();
+    if (!propertyId) continue;
+    const role = String(formData.get(`role_${rowKey}`) ?? "owner");
+    const notify = formData.get(`notify_${rowKey}`) != null;
+    map.set(propertyId, { propertyId, role, notify });
   }
-  return memberships;
+  return [...map.values()];
 }
 
 export async function createOwner(

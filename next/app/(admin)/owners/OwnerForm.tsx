@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { OwnerFormState } from "./actions";
 import type { Property } from "@/lib/database.types";
 import { Field, TextInput, Select } from "@/components/ui";
@@ -19,6 +19,13 @@ export interface OwnerDefaults {
   memberships?: { property_id: string; role: string; notify: boolean }[];
 }
 
+interface Row {
+  key: string;
+  propertyId: string;
+  role: string;
+  notify: boolean;
+}
+
 export default function OwnerForm({
   action,
   properties,
@@ -29,9 +36,27 @@ export default function OwnerForm({
   defaultValues?: OwnerDefaults;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
-  const memberMap = new Map(
-    (defaultValues?.memberships ?? []).map((m) => [m.property_id, m])
+
+  const [rows, setRows] = useState<Row[]>(
+    (defaultValues?.memberships ?? []).map((m, i) => ({
+      key: `init-${i}`,
+      propertyId: m.property_id,
+      role: m.role,
+      notify: m.notify,
+    }))
   );
+
+  const addRow = () =>
+    setRows((r) => [
+      ...r,
+      { key: crypto.randomUUID(), propertyId: "", role: "owner", notify: true },
+    ]);
+
+  const removeRow = (key: string) =>
+    setRows((r) => r.filter((row) => row.key !== key));
+
+  const update = (key: string, patch: Partial<Row>) =>
+    setRows((r) => r.map((row) => (row.key === key ? { ...row, ...patch } : row)));
 
   return (
     <form action={formAction} className="max-w-2xl space-y-6">
@@ -54,50 +79,77 @@ export default function OwnerForm({
         <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
           担当物件・役割・通知設定
         </p>
+
         {properties.length === 0 ? (
-          <p className="text-sm text-zinc-500">
-            先に物件を登録してください。
-          </p>
+          <p className="text-sm text-zinc-500">先に物件を登録してください。</p>
         ) : (
-          <div className="space-y-2 rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
-            {properties.map((p) => {
-              const m = memberMap.get(p.id);
-              const checked = !!m;
-              return (
-                <div
-                  key={p.id}
-                  className="flex flex-wrap items-center gap-3 text-sm"
+          <div className="space-y-3">
+            {rows.length === 0 && (
+              <p className="text-sm text-zinc-500">
+                「+ 物件を追加」で担当物件を追加してください。
+              </p>
+            )}
+
+            {rows.map((row) => (
+              <div
+                key={row.key}
+                className="flex flex-wrap items-center gap-3 rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+              >
+                <Select
+                  name={`property_id_${row.key}`}
+                  value={row.propertyId}
+                  onChange={(e) => update(row.key, { propertyId: e.target.value })}
+                  required
+                  className="w-56"
                 >
-                  <label className="flex min-w-48 items-center gap-2">
-                    <input
-                      type="checkbox"
-                      name={`property_${p.id}`}
-                      defaultChecked={checked}
-                    />
-                    <span className="text-zinc-900 dark:text-zinc-50">
+                  <option value="" disabled>
+                    物件を選択
+                  </option>
+                  {properties.map((p) => (
+                    <option key={p.id} value={p.id}>
                       {p.name}
-                    </span>
-                  </label>
-                  <Select
-                    name={`role_${p.id}`}
-                    defaultValue={m?.role ?? "owner"}
-                    className="w-32"
-                  >
-                    <option value="owner">オーナー</option>
-                    <option value="operations">運用担当</option>
-                    <option value="sales">営業</option>
-                  </Select>
-                  <label className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
-                    <input
-                      type="checkbox"
-                      name={`notify_${p.id}`}
-                      defaultChecked={m?.notify ?? true}
-                    />
-                    LINE通知
-                  </label>
-                </div>
-              );
-            })}
+                    </option>
+                  ))}
+                </Select>
+
+                <Select
+                  name={`role_${row.key}`}
+                  value={row.role}
+                  onChange={(e) => update(row.key, { role: e.target.value })}
+                  className="w-32"
+                >
+                  <option value="owner">オーナー</option>
+                  <option value="operations">運用担当</option>
+                  <option value="sales">営業</option>
+                </Select>
+
+                <label className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
+                  <input
+                    type="checkbox"
+                    name={`notify_${row.key}`}
+                    checked={row.notify}
+                    onChange={(e) => update(row.key, { notify: e.target.checked })}
+                  />
+                  LINE通知
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => removeRow(row.key)}
+                  className="ml-auto text-red-600 underline hover:text-red-800"
+                >
+                  削除
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={addRow}
+              className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            >
+              + 物件を追加
+            </button>
           </div>
         )}
       </div>
