@@ -1,15 +1,15 @@
 -- テーブル定義
 
-create extension if not exists "uuid-ossp";
-
 -- 清掃業者テナント
 create table contractor_companies (
-  id            uuid        primary key default uuid_generate_v4(),
-  name          text        not null,
-  plan          text        not null default 'free',
-  max_properties int,
-  max_cleaners  int,
-  created_at    timestamptz not null default now()
+  id                         uuid        primary key default gen_random_uuid(),
+  name                       text        not null,
+  plan                       text        not null default 'free',
+  max_properties             int,
+  max_cleaners               int,
+  line_channel_access_token  text,
+  line_channel_secret        text,
+  created_at                 timestamptz not null default now()
 );
 
 -- 全ユーザー共通（認証・通知・ロール）
@@ -51,7 +51,7 @@ create table property_member_profiles (
 
 -- 民泊物件
 create table properties (
-  id         uuid        primary key default uuid_generate_v4(),
+  id         uuid        primary key default gen_random_uuid(),
   company_id uuid        not null references contractor_companies(id),
   name       text        not null,
   address    text        not null,
@@ -71,7 +71,7 @@ create table property_members (
 
 -- 清掃案件
 create table jobs (
-  id                   uuid        primary key default uuid_generate_v4(),
+  id                   uuid        primary key default gen_random_uuid(),
   company_id           uuid        not null references contractor_companies(id),
   property_id          uuid        not null references properties(id),
   cleaner_id           uuid        references users(id),
@@ -85,7 +85,7 @@ create table jobs (
 
 -- 清掃記録
 create table cleaning_records (
-  id               uuid        primary key default uuid_generate_v4(),
+  id               uuid        primary key default gen_random_uuid(),
   job_id           uuid        not null references jobs(id),
   started_at       timestamptz not null,
   completed_at     timestamptz,

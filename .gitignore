@@ -1,0 +1,7 @@
+# 環境変数（シークレット）
+.env.local
+.env*.local
+
+# Supabase ローカル開発の一時ファイル
+supabase/.branches/
+supabase/.temp/
