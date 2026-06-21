@@ -6,13 +6,15 @@
 --   パスワード: password123
 
 -- テスト会社（有料プラン: 上限なし）
-insert into public.contractor_companies (id, name, plan, max_properties, max_cleaners)
+-- 会社別ログインURL: /acme/login
+insert into public.contractor_companies (id, name, plan, max_properties, max_cleaners, slug)
 values (
   '11111111-1111-1111-1111-111111111111',
   'テスト清掃株式会社',
   'paid',
   null,
-  null
+  null,
+  'acme'
 )
 on conflict (id) do nothing;
 

@@ -4,13 +4,15 @@
 #   2. Node.js v20+（supabase コマンドの実行に使用）
 #
 # 初回の手順:
-#   1. make init        → Next.js 雛形を作成
-#   2. make setup       → Docker ビルド + Supabase 起動
-#   3. .env.local を編集（表示された anon key などを貼り付け）
-#   4. docker-compose up → http://localhost:3000 で確認
+#   1. make init        → Next.js 雛形を作成（リポジトリ作成者のみ）
+#   2. make setup       → Docker ビルド + Supabase 起動 + DB 初期化
 #
 # 毎日の手順:
 #   make start
+#
+# デモログイン:
+#   メール:     admin@example.com
+#   パスワード: password123
 # ============================================================
 
 .PHONY: init setup start stop reset logs
@@ -28,15 +30,15 @@ init:
 	@echo ""
 	@echo "✅ scaffold 完了。続けて make setup を実行してください。"
 
-## Step 2: Docker ビルド + Supabase 起動（初回のみ）
+## Step 2: Docker ビルド + Supabase 起動 + DB 初期化（初回のみ）
 setup:
 	cp -n .env.local.example .env.local || true
 	docker-compose build
 	npx supabase start
+	npx supabase db reset
 	@echo ""
-	@echo "✅ Supabase が起動しました。"
-	@echo "   上記の anon key と service_role_key を .env.local に貼り付けてください。"
-	@echo "   完了後: docker-compose up"
+	@echo "✅ セットアップ完了。make start で起動できます。"
+	@echo "   デモログイン: admin@example.com / password123"
 
 ## 毎日の起動
 start:

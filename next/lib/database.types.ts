@@ -18,6 +18,7 @@ export interface ContractorCompany {
   max_cleaners: number | null;
   line_channel_access_token: string | null;
   line_channel_secret: string | null;
+  slug: string | null;
   created_at: string;
 }
 

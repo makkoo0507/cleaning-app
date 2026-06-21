@@ -11,3 +11,4 @@ services:
       - .env.local
     environment:
       - WATCHPACK_POLLING=true         # Mac でのホットリロード対応
+      - SUPABASE_URL=http://host.docker.internal:54321  # コンテナ→ホストの Supabase
