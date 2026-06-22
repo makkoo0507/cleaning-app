@@ -24,7 +24,7 @@ export default async function OwnerJobDetailPage({
 }) {
   const user = await getLiffUser();
   if (!user || user.role !== "contact") {
-    return <LiffBootstrap liffId={LIFF_ID} />;
+    return <LiffBootstrap liffId={LIFF_ID} expectedRole="contact" />;
   }
 
   const { id } = await params;

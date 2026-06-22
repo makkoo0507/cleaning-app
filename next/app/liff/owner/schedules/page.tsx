@@ -13,7 +13,7 @@ type JobRow = Job & { properties: Pick<Property, "name" | "address"> };
 export default async function OwnerSchedulesPage() {
   const user = await getLiffUser();
   if (!user || user.role !== "contact") {
-    return <LiffBootstrap liffId={LIFF_ID} />;
+    return <LiffBootstrap liffId={LIFF_ID} expectedRole="contact" />;
   }
 
   const admin = createAdminClient();

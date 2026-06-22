@@ -7,7 +7,13 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import liff from "@line/liff";
 
-export default function LiffBootstrap({ liffId }: { liffId: string }) {
+export default function LiffBootstrap({
+  liffId,
+  expectedRole,
+}: {
+  liffId: string;
+  expectedRole?: "cleaner" | "contact";
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const ran = useRef(false);
@@ -33,7 +39,7 @@ export default function LiffBootstrap({ liffId }: { liffId: string }) {
       const res = await fetch("/api/liff/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lineUserId: profile.userId }),
+        body: JSON.stringify({ lineUserId: profile.userId, role: expectedRole }),
       });
 
       if (!res.ok) {
@@ -51,7 +57,7 @@ export default function LiffBootstrap({ liffId }: { liffId: string }) {
     }
 
     run().catch(() => setError("初期化中にエラーが発生しました。"));
-  }, [liffId, router]);
+  }, [liffId, router, expectedRole]);
 
   return (
     <div className="flex min-h-screen items-center justify-center px-6">

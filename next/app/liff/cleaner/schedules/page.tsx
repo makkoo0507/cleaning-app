@@ -13,7 +13,7 @@ type JobRow = Job & { properties: Pick<Property, "name" | "address"> };
 export default async function CleanerSchedulesPage() {
   const user = await getLiffUser();
   if (!user || user.role !== "cleaner") {
-    return <LiffBootstrap liffId={LIFF_ID} />;
+    return <LiffBootstrap liffId={LIFF_ID} expectedRole="cleaner" />;
   }
 
   // 本人がアサインされた案件のみ（cleaner_id で明示スコープ）

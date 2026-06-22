@@ -24,7 +24,7 @@ export default async function CleanerJobDetailPage({
 }) {
   const user = await getLiffUser();
   if (!user || user.role !== "cleaner") {
-    return <LiffBootstrap liffId={LIFF_ID} />;
+    return <LiffBootstrap liffId={LIFF_ID} expectedRole="cleaner" />;
   }
 
   const { id } = await params;

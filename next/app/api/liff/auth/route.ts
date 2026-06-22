@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
-  const { lineUserId } = await req.json();
+  const { lineUserId, role } = await req.json();
 
   if (!lineUserId) {
     return NextResponse.json({ error: "lineUserId required" }, { status: 400 });
@@ -13,11 +13,17 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
-  const { data: user } = await admin
+  // role 指定があればそのロールのユーザーを選ぶ。
+  // （開発時に同一 LINE アカウントを清掃者/オーナー両方に紐付けても、
+  //   今いる画面の role でログイン対象を一意に決められる）
+  let query = admin
     .from("users")
     .select("id, role")
-    .eq("line_user_id", lineUserId)
-    .single<{ id: string; role: string }>();
+    .eq("line_user_id", lineUserId);
+  if (role) query = query.eq("role", role);
+
+  const { data: rows } = await query.limit(1);
+  const user = rows?.[0] as { id: string; role: string } | undefined;
 
   if (!user) {
     return NextResponse.json({ error: "user_not_found" }, { status: 404 });
