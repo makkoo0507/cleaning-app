@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import type { ContractorCompany, User } from "@/lib/database.types";
 import { PageHeader } from "@/components/ui";
 import SettingsForm from "./SettingsForm";
-import TokenCheck from "./TokenCheck";
 import TestSend from "./TestSend";
 
 export const dynamic = "force-dynamic";
@@ -52,17 +51,6 @@ export default async function SettingsPage() {
         tokenSet={!!company?.line_channel_access_token}
         secretSet={!!company?.line_channel_secret}
       />
-
-      <section className="space-y-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          接続テスト（トークン確認）
-        </h2>
-        <p className="max-w-lg text-sm text-zinc-500">
-          メッセージは送らず、登録したチャネルアクセストークンで公式アカウントに
-          接続できるか（設定自体に問題がないか）だけを確認します。
-        </p>
-        <TokenCheck />
-      </section>
 
       <section className="space-y-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
         <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">

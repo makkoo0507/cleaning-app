@@ -1,8 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
-import { updateLineSettings, type SettingsFormState } from "./actions";
+import { useActionState, useState, useTransition } from "react";
+import {
+  updateLineSettings,
+  verifyToken,
+  type SettingsFormState,
+  type VerifyTokenState,
+} from "./actions";
 import { Field, TextInput } from "@/components/ui";
+
+const TEST_DESCRIPTION =
+  "チャネルアクセストークン（長期）とチャネルシークレットの設定に問題ないかテストします。";
 
 export default function SettingsForm({
   tokenSet,
@@ -15,6 +23,13 @@ export default function SettingsForm({
     SettingsFormState,
     FormData
   >(updateLineSettings, {});
+
+  const [verify, setVerify] = useState<VerifyTokenState>({});
+  const [verifying, startVerify] = useTransition();
+
+  function runVerify() {
+    startVerify(async () => setVerify(await verifyToken()));
+  }
 
   return (
     <form action={formAction} className="max-w-lg space-y-4">
@@ -55,17 +70,60 @@ export default function SettingsForm({
           {state.error}
         </p>
       )}
-      {state.success && (
-        <p className="text-sm text-green-600">保存しました。</p>
-      )}
+      {state.success && <p className="text-sm text-green-600">保存しました。</p>}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900"
-      >
-        {pending ? "保存中…" : "保存"}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900"
+        >
+          {pending ? "保存中…" : "保存"}
+        </button>
+
+        <button
+          type="button"
+          onClick={runVerify}
+          disabled={verifying}
+          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+        >
+          {verifying ? "確認中…" : "接続テスト"}
+        </button>
+
+        {/* インフォメーションアイコン: ホバーで説明 */}
+        <span className="group relative inline-flex">
+          <span
+            className="flex h-5 w-5 cursor-help items-center justify-center rounded-full border border-zinc-400 text-xs text-zinc-500"
+            aria-label={TEST_DESCRIPTION}
+          >
+            i
+          </span>
+          <span className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-64 -translate-x-1/2 rounded-md bg-zinc-900 px-3 py-2 text-xs leading-5 text-white group-hover:block dark:bg-zinc-700">
+            {TEST_DESCRIPTION}
+          </span>
+        </span>
+      </div>
+
+      {verify.error && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+          <p>{verify.error}</p>
+          {verify.secretSet === false && (
+            <p className="mt-1 text-xs">※ チャネルシークレットも未登録です。</p>
+          )}
+        </div>
+      )}
+      {verify.success && (
+        <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
+          <p>
+            トークンは有効です
+            {verify.accountName ? `（公式アカウント: ${verify.accountName}）` : ""}
+            。
+          </p>
+          <p className="mt-1 text-xs">
+            チャネルシークレット: {verify.secretSet ? "設定済み" : "未設定"}
+          </p>
+        </div>
+      )}
     </form>
   );
 }
