@@ -62,11 +62,12 @@ export async function notifyScheduleCreated(jobId: string): Promise<void> {
 
   const date = formatDateShort(job.scheduled_date);
   const propertyName = job.properties?.name ?? "";
+  // LIFF エンドポイントは共通ベース /liff。役割別画面へはパスを付与して開く。
   const cleanerUrl = process.env.NEXT_PUBLIC_LIFF_ID_CLEANER
-    ? `\nhttps://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID_CLEANER}`
+    ? `\nhttps://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID_CLEANER}/cleaner/schedules`
     : "";
   const ownerUrl = process.env.NEXT_PUBLIC_LIFF_ID_OWNER
-    ? `\nhttps://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID_OWNER}`
+    ? `\nhttps://liff.line.me/${process.env.NEXT_PUBLIC_LIFF_ID_OWNER}/owner/schedules`
     : "";
 
   // 清掃者への通知
