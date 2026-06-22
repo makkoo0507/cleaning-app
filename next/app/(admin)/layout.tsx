@@ -40,6 +40,14 @@ export default async function AdminLayout({
               {item.label}
             </Link>
           ))}
+          <a
+            href="/manual"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-md px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          >
+            マニュアル ↗
+          </a>
         </nav>
         <div className="border-t border-zinc-200 px-5 py-4 dark:border-zinc-800">
           <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
