@@ -141,7 +141,11 @@ export default function LineSetupManualPage() {
             </li>
             <li>
               「チャネルアクセストークン（長期）」の<strong>「発行」</strong>
-              ボタンを押し、表示された文字列をコピー
+              ボタンを押し、表示された文字列をコピーする
+            </li>
+            <li>
+              <strong>コピーした文字列はメモ帳などに控えておく</strong>
+              （手順6で本システムに貼り付けます。画面を閉じると再表示できない場合があります）
             </li>
           </ul>
         </Step>
