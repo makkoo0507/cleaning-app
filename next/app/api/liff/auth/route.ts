@@ -1,7 +1,8 @@
-// LINE ユーザーID → Supabase マジックリンク token_hash を返す
-// 清掃者・物件関係者がLIFFでセッションを取得する際に使用
+// LINE ユーザーID → Supabase セッションを Cookie に発行する
+// 清掃者・物件関係者が LIFF でログインする際に使用。
+// verifyOtp までサーバー側で行い、ブラウザは Supabase に直接アクセスしない。
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   const { lineUserId } = await req.json();
@@ -14,9 +15,9 @@ export async function POST(req: NextRequest) {
 
   const { data: user } = await admin
     .from("users")
-    .select("id")
+    .select("id, role")
     .eq("line_user_id", lineUserId)
-    .single();
+    .single<{ id: string; role: string }>();
 
   if (!user) {
     return NextResponse.json({ error: "user_not_found" }, { status: 404 });
@@ -28,14 +29,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "auth_user_not_found" }, { status: 404 });
   }
 
-  const { data, error } = await admin.auth.admin.generateLink({
-    type: "magiclink",
-    email,
-  });
+  // マジックリンクの token_hash を生成
+  const { data: linkData, error: linkError } =
+    await admin.auth.admin.generateLink({ type: "magiclink", email });
 
-  if (error || !data.properties?.hashed_token) {
-    return NextResponse.json({ error: "failed_to_generate_link" }, { status: 500 });
+  const tokenHash = linkData?.properties?.hashed_token;
+  if (linkError || !tokenHash) {
+    return NextResponse.json(
+      { error: "failed_to_generate_link" },
+      { status: 500 }
+    );
   }
 
-  return NextResponse.json({ tokenHash: data.properties.hashed_token });
+  // サーバー側で検証してセッション Cookie を発行（SSR クライアント）
+  const supabase = await createClient();
+  const { error: otpError } = await supabase.auth.verifyOtp({
+    token_hash: tokenHash,
+    type: "magiclink",
+  });
+
+  if (otpError) {
+    return NextResponse.json({ error: "verify_failed" }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true, role: user.role });
 }

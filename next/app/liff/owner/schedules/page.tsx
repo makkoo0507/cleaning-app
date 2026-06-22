@@ -1,43 +1,39 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { useLiffUser } from "@/app/liff/_components/LiffAuthGuard";
+import { createAdminClient } from "@/lib/supabase/server";
+import { getLiffUser, LIFF_IDS } from "@/lib/liff-auth";
+import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
+import StatusBadge from "@/app/liff/_components/StatusBadge";
 import { formatDateShort, formatTime } from "@/lib/format";
 import type { Job, Property } from "@/lib/database.types";
 
+export const dynamic = "force-dynamic";
+
 type JobRow = Job & { properties: Pick<Property, "name" | "address"> };
 
-export default function OwnerSchedulesPage() {
-  const user = useLiffUser();
-  const [jobs, setJobs] = useState<JobRow[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function OwnerSchedulesPage() {
+  const user = await getLiffUser();
+  if (!user || user.role !== "contact") {
+    return <LiffBootstrap liffId={LIFF_IDS.contact} />;
+  }
 
-  useEffect(() => {
-    const supabase = createClient();
+  const admin = createAdminClient();
 
-    // 自分が関係者として登録されている物件の案件を取得
-    supabase
-      .from("property_members")
-      .select("property_id")
-      .eq("user_id", user.id)
-      .then(async ({ data: members }) => {
-        if (!members || members.length === 0) {
-          setLoading(false);
-          return;
-        }
-        const propertyIds = members.map((m) => m.property_id);
-        const { data } = await supabase
-          .from("jobs")
-          .select("*, properties(name, address)")
-          .in("property_id", propertyIds)
-          .order("scheduled_date", { ascending: false });
+  // 本人が関係者登録されている物件のみに明示スコープ
+  const { data: members } = await admin
+    .from("property_members")
+    .select("property_id")
+    .eq("user_id", user.id);
+  const propertyIds = (members ?? []).map((m) => m.property_id);
 
-        setJobs((data as JobRow[]) ?? []);
-        setLoading(false);
-      });
-  }, [user.id]);
+  let jobs: JobRow[] = [];
+  if (propertyIds.length > 0) {
+    const { data } = await admin
+      .from("jobs")
+      .select("*, properties(name, address)")
+      .in("property_id", propertyIds)
+      .order("scheduled_date", { ascending: false });
+    jobs = (data as JobRow[]) ?? [];
+  }
 
   return (
     <div className="px-4 py-6">
@@ -48,9 +44,7 @@ export default function OwnerSchedulesPage() {
         <span className="text-sm text-zinc-500">{user.name}</span>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-zinc-500">読み込み中...</p>
-      ) : jobs.length === 0 ? (
+      {jobs.length === 0 ? (
         <p className="text-sm text-zinc-500">案件はありません。</p>
       ) : (
         <ul className="space-y-3">
@@ -79,25 +73,5 @@ export default function OwnerSchedulesPage() {
         </ul>
       )}
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    scheduled: "bg-blue-100 text-blue-700",
-    in_progress: "bg-yellow-100 text-yellow-700",
-    completed: "bg-green-100 text-green-700",
-  };
-  const labels: Record<string, string> = {
-    scheduled: "予定",
-    in_progress: "作業中",
-    completed: "完了",
-  };
-  return (
-    <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${styles[status] ?? styles.scheduled}`}
-    >
-      {labels[status] ?? "予定"}
-    </span>
   );
 }

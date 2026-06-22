@@ -1,31 +1,29 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { useLiffUser } from "@/app/liff/_components/LiffAuthGuard";
+import { createAdminClient } from "@/lib/supabase/server";
+import { getLiffUser, LIFF_IDS } from "@/lib/liff-auth";
+import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
+import StatusBadge from "@/app/liff/_components/StatusBadge";
 import { formatDateShort, formatTime } from "@/lib/format";
 import type { Job, Property } from "@/lib/database.types";
 
+export const dynamic = "force-dynamic";
+
 type JobRow = Job & { properties: Pick<Property, "name" | "address"> };
 
-export default function CleanerSchedulesPage() {
-  const user = useLiffUser();
-  const [jobs, setJobs] = useState<JobRow[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function CleanerSchedulesPage() {
+  const user = await getLiffUser();
+  if (!user || user.role !== "cleaner") {
+    return <LiffBootstrap liffId={LIFF_IDS.cleaner} />;
+  }
 
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("jobs")
-      .select("*, properties(name, address)")
-      .eq("cleaner_id", user.id)
-      .order("scheduled_date", { ascending: false })
-      .then(({ data }) => {
-        setJobs((data as JobRow[]) ?? []);
-        setLoading(false);
-      });
-  }, [user.id]);
+  // 本人がアサインされた案件のみ（cleaner_id で明示スコープ）
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("jobs")
+    .select("*, properties(name, address)")
+    .eq("cleaner_id", user.id)
+    .order("scheduled_date", { ascending: false });
+  const jobs = (data as JobRow[]) ?? [];
 
   return (
     <div className="px-4 py-6">
@@ -36,9 +34,7 @@ export default function CleanerSchedulesPage() {
         <span className="text-sm text-zinc-500">{user.name}</span>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-zinc-500">読み込み中...</p>
-      ) : jobs.length === 0 ? (
+      {jobs.length === 0 ? (
         <p className="text-sm text-zinc-500">担当案件はありません。</p>
       ) : (
         <ul className="space-y-3">
@@ -67,25 +63,5 @@ export default function CleanerSchedulesPage() {
         </ul>
       )}
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    scheduled: "bg-blue-100 text-blue-700",
-    in_progress: "bg-yellow-100 text-yellow-700",
-    completed: "bg-green-100 text-green-700",
-  };
-  const labels: Record<string, string> = {
-    scheduled: "予定",
-    in_progress: "作業中",
-    completed: "完了",
-  };
-  return (
-    <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${styles[status] ?? styles.scheduled}`}
-    >
-      {labels[status] ?? "予定"}
-    </span>
   );
 }

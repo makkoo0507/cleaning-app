@@ -1,10 +1,8 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { useLiffUser } from "@/app/liff/_components/LiffAuthGuard";
+import { createAdminClient } from "@/lib/supabase/server";
+import { getLiffUser, LIFF_IDS } from "@/lib/liff-auth";
+import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
+import StatusBadge from "@/app/liff/_components/StatusBadge";
 import {
   formatDateShort,
   formatTime,
@@ -13,72 +11,44 @@ import {
 } from "@/lib/format";
 import type { CleaningRecord, Job, Property } from "@/lib/database.types";
 
+export const dynamic = "force-dynamic";
+
 type JobDetail = Job & {
   properties: Pick<Property, "name" | "address" | "notes">;
 };
 
-export default function OwnerJobDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const user = useLiffUser();
-  const [job, setJob] = useState<JobDetail | null>(null);
-  const [record, setRecord] = useState<CleaningRecord | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    async function fetchData() {
-      // アクセス権確認: 自分が関係者として登録されている物件の案件か
-      const { data: jobData } = await supabase
-        .from("jobs")
-        .select("*, properties(name, address, notes)")
-        .eq("id", id)
-        .single();
-
-      if (!jobData) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      // property_members で自分が関係者か確認
-      const { data: member } = await supabase
-        .from("property_members")
-        .select("user_id")
-        .eq("property_id", jobData.property_id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!member) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      const { data: recordData } = await supabase
-        .from("cleaning_records")
-        .select("*")
-        .eq("job_id", id)
-        .maybeSingle();
-
-      setJob(jobData as JobDetail);
-      setRecord((recordData as CleaningRecord) ?? null);
-      setLoading(false);
-    }
-
-    fetchData();
-  }, [id, user.id]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-zinc-500">読み込み中...</p>
-      </div>
-    );
+export default async function OwnerJobDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const user = await getLiffUser();
+  if (!user || user.role !== "contact") {
+    return <LiffBootstrap liffId={LIFF_IDS.contact} />;
   }
 
-  if (notFound || !job) {
+  const { id } = await params;
+  const admin = createAdminClient();
+
+  const { data: job } = await admin
+    .from("jobs")
+    .select("*, properties(name, address, notes)")
+    .eq("id", id)
+    .maybeSingle<JobDetail>();
+
+  // アクセス権: 本人がその物件の関係者か明示確認
+  let allowed = false;
+  if (job) {
+    const { data: member } = await admin
+      .from("property_members")
+      .select("user_id")
+      .eq("property_id", job.property_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    allowed = !!member;
+  }
+
+  if (!job || !allowed) {
     return (
       <div className="px-4 py-6">
         <p className="text-sm text-red-600">案件が見つかりません。</p>
@@ -92,6 +62,12 @@ export default function OwnerJobDetailPage() {
     );
   }
 
+  const { data: record } = await admin
+    .from("cleaning_records")
+    .select("*")
+    .eq("job_id", id)
+    .maybeSingle<CleaningRecord>();
+
   return (
     <div className="px-4 py-6">
       <Link
@@ -101,7 +77,6 @@ export default function OwnerJobDetailPage() {
         ← 一覧に戻る
       </Link>
 
-      {/* 物件情報 */}
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <h1 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
           {job.properties.name}
@@ -116,7 +91,6 @@ export default function OwnerJobDetailPage() {
         )}
       </div>
 
-      {/* スケジュール */}
       <div className="mt-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center justify-between">
           <div>
@@ -130,7 +104,6 @@ export default function OwnerJobDetailPage() {
         </div>
       </div>
 
-      {/* 清掃記録（完了後のみ） */}
       {record?.completed_at ? (
         <div className="mt-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -171,25 +144,5 @@ export default function OwnerJobDetailPage() {
         </div>
       ) : null}
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    scheduled: "bg-blue-100 text-blue-700",
-    in_progress: "bg-yellow-100 text-yellow-700",
-    completed: "bg-green-100 text-green-700",
-  };
-  const labels: Record<string, string> = {
-    scheduled: "予定",
-    in_progress: "作業中",
-    completed: "完了",
-  };
-  return (
-    <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${styles[status] ?? styles.scheduled}`}
-    >
-      {labels[status] ?? "予定"}
-    </span>
   );
 }

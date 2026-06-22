@@ -1,10 +1,8 @@
-"use client";
-
-import { useCallback, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { useLiffUser } from "@/app/liff/_components/LiffAuthGuard";
+import { createAdminClient } from "@/lib/supabase/server";
+import { getLiffUser, LIFF_IDS } from "@/lib/liff-auth";
+import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
+import CleanerJobActions from "./CleanerJobActions";
 import {
   formatDateShort,
   formatTime,
@@ -13,80 +11,32 @@ import {
 } from "@/lib/format";
 import type { CleaningRecord, Job, Property } from "@/lib/database.types";
 
+export const dynamic = "force-dynamic";
+
 type JobDetail = Job & {
   properties: Pick<Property, "name" | "address" | "notes">;
 };
 
-export default function CleanerJobDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const user = useLiffUser();
-  const [job, setJob] = useState<JobDetail | null>(null);
-  const [record, setRecord] = useState<CleaningRecord | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [memo, setMemo] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchData = useCallback(async () => {
-    const supabase = createClient();
-    const [jobRes, recordRes] = await Promise.all([
-      supabase
-        .from("jobs")
-        .select("*, properties(name, address, notes)")
-        .eq("id", id)
-        .eq("cleaner_id", user.id)
-        .single(),
-      supabase
-        .from("cleaning_records")
-        .select("*")
-        .eq("job_id", id)
-        .maybeSingle(),
-    ]);
-
-    setJob((jobRes.data as JobDetail) ?? null);
-    setRecord((recordRes.data as CleaningRecord) ?? null);
-    setLoading(false);
-  }, [id, user.id]);
-
-  useEffect(() => {
-    // setState は await（データ取得）後に行うため同期的な連鎖描画は起きない
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchData();
-  }, [fetchData]);
-
-  async function handleAction(action: "start" | "complete") {
-    setSubmitting(true);
-    setError(null);
-
-    const res = await fetch("/api/liff/record", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, jobId: id, memo }),
-    });
-
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      const messages: Record<string, string> = {
-        already_started: "既に開始されています。",
-        not_in_progress: "清掃が開始されていません。",
-        forbidden: "この案件へのアクセス権限がありません。",
-      };
-      setError(messages[json.error] ?? "操作に失敗しました。");
-    } else {
-      await fetchData();
-      setMemo("");
-    }
-
-    setSubmitting(false);
+export default async function CleanerJobDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const user = await getLiffUser();
+  if (!user || user.role !== "cleaner") {
+    return <LiffBootstrap liffId={LIFF_IDS.cleaner} />;
   }
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-zinc-500">読み込み中...</p>
-      </div>
-    );
-  }
+  const { id } = await params;
+  const admin = createAdminClient();
+
+  // 本人がアサインされた案件のみ（cleaner_id で明示スコープ）
+  const { data: job } = await admin
+    .from("jobs")
+    .select("*, properties(name, address, notes)")
+    .eq("id", id)
+    .eq("cleaner_id", user.id)
+    .maybeSingle<JobDetail>();
 
   if (!job) {
     return (
@@ -102,9 +52,11 @@ export default function CleanerJobDetailPage() {
     );
   }
 
-  const isScheduled = job.status === "scheduled";
-  const isInProgress = job.status === "in_progress";
-  const isCompleted = job.status === "completed";
+  const { data: record } = await admin
+    .from("cleaning_records")
+    .select("*")
+    .eq("job_id", id)
+    .maybeSingle<CleaningRecord>();
 
   return (
     <div className="px-4 py-6">
@@ -115,7 +67,6 @@ export default function CleanerJobDetailPage() {
         ← 一覧に戻る
       </Link>
 
-      {/* 物件情報 */}
       <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <h1 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
           {job.properties.name}
@@ -130,7 +81,6 @@ export default function CleanerJobDetailPage() {
         )}
       </div>
 
-      {/* スケジュール */}
       <div className="mt-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <p className="text-sm text-zinc-500">清掃予定日時</p>
         <p className="mt-1 text-base font-medium text-zinc-900 dark:text-zinc-50">
@@ -139,7 +89,6 @@ export default function CleanerJobDetailPage() {
         </p>
       </div>
 
-      {/* 清掃記録 */}
       {record && (
         <div className="mt-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -180,45 +129,7 @@ export default function CleanerJobDetailPage() {
         </div>
       )}
 
-      {/* アクション */}
-      {error && (
-        <p className="mt-3 text-sm text-red-600">{error}</p>
-      )}
-
-      {isScheduled && (
-        <button
-          onClick={() => handleAction("start")}
-          disabled={submitting}
-          className="mt-4 w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white disabled:opacity-50"
-        >
-          {submitting ? "処理中..." : "清掃開始"}
-        </button>
-      )}
-
-      {isInProgress && (
-        <div className="mt-4 space-y-3">
-          <textarea
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            placeholder="メモ（任意）"
-            rows={3}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-          />
-          <button
-            onClick={() => handleAction("complete")}
-            disabled={submitting}
-            className="w-full rounded-lg bg-green-600 py-3 text-sm font-semibold text-white disabled:opacity-50"
-          >
-            {submitting ? "処理中..." : "清掃完了"}
-          </button>
-        </div>
-      )}
-
-      {isCompleted && (
-        <div className="mt-4 rounded-lg bg-green-50 p-3 text-center text-sm font-medium text-green-700 dark:bg-green-950 dark:text-green-300">
-          清掃完了済み
-        </div>
-      )}
+      <CleanerJobActions jobId={job.id} status={job.status} />
     </div>
   );
 }
