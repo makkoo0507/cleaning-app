@@ -42,24 +42,6 @@ export default function LineSetupManualPage() {
         </p>
       </header>
 
-      <section className="mb-6 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
-        <p className="font-medium text-zinc-900 dark:text-zinc-50">前提：LINE Developers アカウント</p>
-        <p className="mt-1 leading-7">
-          Messaging API の有効化（手順2）では「プロバイダー」の指定が必要で、これは
-          LINE Developers のアカウント配下に作られます。初回のみ
-          <a
-            href="https://developers.line.biz/console/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 underline"
-          >
-            LINE Developers Console
-          </a>
-          に LINE Business ID（公式アカウントと同じログイン）でサインインし、
-          開発者名・メールの登録と契約同意を済ませてください（新しい ID 作成は通常不要）。
-        </p>
-      </section>
-
       <div className="space-y-6">
         <Step no={1} title="LINE公式アカウントを作成する">
           <p>
@@ -76,7 +58,24 @@ export default function LineSetupManualPage() {
           </p>
         </Step>
 
-        <Step no={2} title="その公式アカウントで Messaging API を有効化する">
+        <Step no={2} title="LINE Developersアカウントを作成する">
+          <p>
+            <a
+              href="https://developers.line.biz/console/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              LINE Developers Console
+            </a>
+            に <strong>LINE Business ID（公式アカウントと同じログイン）</strong>でサインインし、
+            初回のみ開発者名・メールアドレスの登録と開発者契約への同意を行います
+            （新しい ID の作成は通常不要）。次の手順で指定する「プロバイダー」は、この
+            開発者アカウント配下に作成されます。
+          </p>
+        </Step>
+
+        <Step no={3} title="LINE公式アカウントで Messaging API を有効化する">
           <p>
             Messaging API は公式アカウントに対して有効化して使います。
             LINE Official Account Manager で対象アカウントを開き、
@@ -101,7 +100,7 @@ export default function LineSetupManualPage() {
           </p>
         </Step>
 
-        <Step no={3} title="チャネルアクセストークン（長期）を発行する">
+        <Step no={4} title="チャネルアクセストークン（長期）を発行する">
           <ul className="list-disc space-y-1 pl-5">
             <li>作成した Messaging API チャネルを開く</li>
             <li>
@@ -114,7 +113,7 @@ export default function LineSetupManualPage() {
           </ul>
         </Step>
 
-        <Step no={4} title="チャネルシークレットを確認する">
+        <Step no={5} title="チャネルシークレットを確認する">
           <ul className="list-disc space-y-1 pl-5">
             <li>
               同じチャネルの<strong>「チャネル基本設定」</strong>タブを開く
@@ -123,7 +122,7 @@ export default function LineSetupManualPage() {
           </ul>
         </Step>
 
-        <Step no={5} title="本システムに登録する">
+        <Step no={6} title="本システムに登録する">
           <p>
             管理画面の<strong>「設定（LINE連携）」</strong>を開き、上でコピーした
             <strong>チャネルアクセストークン</strong>と
@@ -134,7 +133,7 @@ export default function LineSetupManualPage() {
           </p>
         </Step>
 
-        <Step no={6} title="清掃者・オーナーに友だち追加してもらう">
+        <Step no={7} title="清掃者・オーナーに友だち追加してもらう">
           <p>
             通知（プッシュメッセージ）は、<strong>公式アカウントを友だち追加した相手にのみ</strong>
             届きます。清掃者・オーナーには、招待 URL の案内とあわせて、自社公式アカウントの
