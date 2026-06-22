@@ -33,19 +33,32 @@ export default async function AdminLayout({
           </p>
         </div>
         <nav className="flex-1 space-y-1 px-3">
-          {NAV.filter(
-            (item) =>
-              (!item.adminOnly || admin) &&
-              (!item.billingOnly || billingEnabled)
-          ).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="block rounded-md px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {NAV.filter((item) => !item.adminOnly || admin).map((item) => {
+            // 請求・支払いが無効のときは「オプション」として鍵つき・グレー表示
+            const locked = item.billingOnly && !billingEnabled;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={
+                  locked
+                    ? "flex items-center justify-between rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
+                    : "block rounded-md px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                }
+              >
+                {locked ? (
+                  <>
+                    <span>🔒 {item.label}</span>
+                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] text-zinc-500 dark:bg-zinc-800">
+                      オプション
+                    </span>
+                  </>
+                ) : (
+                  item.label
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="px-3 pb-2">
