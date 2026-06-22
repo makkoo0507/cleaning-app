@@ -67,43 +67,52 @@ export default function ReminderManualPage() {
           </p>
         </Step>
 
-        <Step no={2} title="拡張機能を有効化する（初回のみ・本番）">
+        <Step no={2} title="Edge Function をデプロイする（初回のみ・本番）">
           <p>
-            Supabase ダッシュボードの <strong>Database → Extensions</strong> で
-            <strong>pg_cron</strong> と <strong>pg_net</strong> を有効化します。
+            リマインド送信を行う Edge Function をデプロイします。
           </p>
+          <pre className="overflow-x-auto rounded bg-zinc-100 p-3 text-xs dark:bg-zinc-800">{`supabase functions deploy daily-reminder`}</pre>
         </Step>
 
-        <Step no={3} title="接続情報を設定する（初回のみ・本番）">
-          <p>SQL Editor で以下を実行します（値はプロジェクトのものに置換）。</p>
-          <pre className="overflow-x-auto rounded bg-zinc-100 p-3 text-xs dark:bg-zinc-800">{`ALTER DATABASE postgres
-  SET app.supabase_functions_url TO 'https://<project-ref>.supabase.co/functions/v1';
-ALTER DATABASE postgres
-  SET app.service_role_key TO '<service_role_key>';`}</pre>
-        </Step>
-
-        <Step no={4} title="スケジュールを登録する（初回のみ・本番）">
+        <Step no={3} title="Cron ジョブを2本登録する（初回のみ・本番／ダッシュボード）">
           <p>
-            前日（20:00 JST）と当日（8:00 JST）の2本を登録します。SQL Editor で実行:
+            Supabase ダッシュボードの <strong>Integrations → Cron</strong>
+            （または <strong>Database → Cron Jobs</strong>）を開き、
+            <strong>「Create job」</strong>から登録します。pg_cron 等の拡張は
+            初回に画面の案内で有効化できます。
           </p>
-          <pre className="overflow-x-auto rounded bg-zinc-100 p-3 text-xs dark:bg-zinc-800">{`SELECT cron.schedule('reminder-prev-day', '0 11 * * *', $$
-  SELECT net.http_post(
-    url     := current_setting('app.supabase_functions_url') || '/daily-reminder',
-    headers := jsonb_build_object(
-                 'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
-                 'Content-Type',  'application/json'),
-    body    := '{"kind":"prev_day"}'::jsonb); $$);
-
-SELECT cron.schedule('reminder-same-day', '0 23 * * *', $$
-  SELECT net.http_post(
-    url     := current_setting('app.supabase_functions_url') || '/daily-reminder',
-    headers := jsonb_build_object(
-                 'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
-                 'Content-Type',  'application/json'),
-    body    := '{"kind":"same_day"}'::jsonb); $$);`}</pre>
+          <p className="font-medium text-zinc-900 dark:text-zinc-50">
+            ① 前日リマインド
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>Name: <code>reminder-prev-day</code></li>
+            <li>
+              Schedule: <code>0 11 * * *</code>（= 20:00 JST。UTC で指定）
+            </li>
+            <li>
+              Type: <strong>Supabase Edge Function</strong> → <code>daily-reminder</code> を選択
+            </li>
+            <li>Method: <code>POST</code></li>
+            <li>
+              Body: <code>{`{"kind":"prev_day"}`}</code>
+            </li>
+          </ul>
+          <p className="mt-2 font-medium text-zinc-900 dark:text-zinc-50">
+            ② 当日リマインド
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>Name: <code>reminder-same-day</code></li>
+            <li>
+              Schedule: <code>0 23 * * *</code>（= 翌 8:00 JST。UTC で指定）
+            </li>
+            <li>
+              Type: <strong>Supabase Edge Function</strong> → <code>daily-reminder</code>
+            </li>
+            <li>Method: <code>POST</code> / Body: <code>{`{"kind":"same_day"}`}</code></li>
+          </ul>
           <p className="text-zinc-500">
-            ※ Edge Function `daily-reminder` を事前にデプロイしておく必要があります
-            （`supabase functions deploy daily-reminder`）。
+            ※ Edge Function 呼び出しタイプを選ぶと、認証ヘッダーはダッシュボードが自動で付与します。
+            SQL を手書きする必要はありません。
           </p>
         </Step>
       </div>

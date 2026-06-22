@@ -1,4 +1,7 @@
 -- 前日リマインド cron ジョブの登録
+-- 【推奨】本番では Supabase ダッシュボードの Integrations → Cron（Cron UI）から
+--   Edge Function 呼び出しタイプで2本登録するのが簡単（手順は /manual/reminder 参照）。
+--   下記の SQL 方式は同等の代替手段。
 --
 -- 【事前準備】本番 Supabase Cloud で以下を実行してから db push すること。
 --   pg_net 拡張と pg_cron 拡張が有効になっている必要がある。
