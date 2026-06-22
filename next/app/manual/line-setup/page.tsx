@@ -203,13 +203,18 @@ export default function LineSetupManualPage() {
             </li>
             <li>
               その QR コード／URL を、清掃者・オーナーに共有して友だち追加してもらう
-              （招待 URL を送るときに一緒に案内すると親切です）
+              （
+              <a
+                href="/manual/invite"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                招待 URL を送る
+              </a>
+              ときに一緒に案内すると親切です）
             </li>
           </ul>
-          <p className="text-zinc-500">
-            ※「招待 URL（本システムへの登録）」と「公式アカウントの友だち追加（通知の受信）」は
-            別の作業です。両方そろって初めて通知が届きます。
-          </p>
         </Step>
       </div>
 
