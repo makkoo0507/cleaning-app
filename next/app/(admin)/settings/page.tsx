@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import type { ContractorCompany } from "@/lib/database.types";
 import { PageHeader } from "@/components/ui";
 import SettingsForm from "./SettingsForm";
@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const admin = await requireAdmin();
-  const supabase = await createClient();
+  // 機密列（トークン/シークレット）は service_role でのみ参照可。存在有無だけ取得する。
+  const supabase = createAdminClient();
 
   const { data: company } = await supabase
     .from("contractor_companies")
