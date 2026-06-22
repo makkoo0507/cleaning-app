@@ -46,19 +46,26 @@ export default function LineSetupManualPage() {
         <Step no={1} title="LINE公式アカウントを作成する">
           <p>
             <a
-              href="https://www.linebiz.com/jp/entry/"
+              href="https://manager.line.biz/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 underline"
             >
-              LINE公式アカウント
+              LINE Official Account Manager
             </a>
-            を開設します（既にお持ちの場合は不要）。これが清掃者・オーナーへ通知を送る「送信元」になります。
+            （manager.line.biz）で LINE 公式アカウントを開設します（既にお持ちの場合は不要）。
+            これが清掃者・オーナーへ通知を送る「送信元」になります。
           </p>
         </Step>
 
-        <Step no={2} title="Messaging API チャネルを作成する">
+        <Step no={2} title="その公式アカウントで Messaging API を有効化する">
           <p>
+            Messaging API は公式アカウントに対して有効化して使います。
+            LINE Official Account Manager で対象アカウントを開き、
+            <strong>
+              「設定」→「Messaging API」→「Messaging API を利用する」
+            </strong>
+            を選択。プロバイダーを指定すると、
             <a
               href="https://developers.line.biz/console/"
               target="_blank"
@@ -67,12 +74,12 @@ export default function LineSetupManualPage() {
             >
               LINE Developers Console
             </a>
-            を開き、プロバイダーを選択 →「新規チャネル作成」→
-            <strong>「Messaging API」</strong>を選択して作成します。
+            側に対応する <strong>Messaging API チャネル</strong>が作成されます。
           </p>
           <p className="text-zinc-500">
-            ※ ログイン用の「LINE Login」チャネルとは別物です。通知には Messaging API
-            チャネルを使います。
+            ※ 以降のトークン／シークレットの取得は、この Messaging API チャネルを
+            LINE Developers Console で開いて行います。ログイン用の「LINE Login」
+            チャネルとは別物です。
           </p>
         </Step>
 
