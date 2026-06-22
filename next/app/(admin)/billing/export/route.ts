@@ -20,6 +20,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  // 請求・支払い機能が無効なら CSV 出力不可
+  const { data: profile } = await supabase
+    .from("users")
+    .select("company_id")
+    .eq("id", user.id)
+    .maybeSingle<{ company_id: string }>();
+  if (profile) {
+    const { data: company } = await supabase
+      .from("contractor_companies")
+      .select("billing_enabled")
+      .eq("id", profile.company_id)
+      .maybeSingle<{ billing_enabled: boolean }>();
+    if (company && company.billing_enabled === false) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
   const month = request.nextUrl.searchParams.get("month") ?? undefined;
   const { start, end, value } = jstMonthRange(month);
 

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getCompanyFlags } from "@/lib/company";
 import type { Job, Property, User } from "@/lib/database.types";
 import { updateJob } from "../../actions";
 import JobForm from "../../JobForm";
@@ -11,7 +12,8 @@ export default async function EditSchedulePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const { billingEnabled } = await getCompanyFlags(admin.companyId);
   const { id } = await params;
   const supabase = await createClient();
 
@@ -37,6 +39,7 @@ export default async function EditSchedulePage({
         job={job}
         properties={(propsData as Pick<Property, "id" | "name">[]) ?? []}
         cleaners={(cleanersData as Pick<User, "id" | "name">[]) ?? []}
+        billingEnabled={billingEnabled}
       />
     </div>
   );

@@ -16,11 +16,13 @@ export default function JobForm({
   properties,
   cleaners,
   job,
+  billingEnabled = true,
 }: {
   action: Action;
   properties: Pick<Property, "id" | "name">[];
   cleaners: Pick<User, "id" | "name">[];
   job?: Job;
+  billingEnabled?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
 
@@ -76,7 +78,11 @@ export default function JobForm({
         </Select>
       </Field>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div
+        className="grid gap-4 sm:grid-cols-2"
+        hidden={!billingEnabled}
+        aria-hidden={!billingEnabled}
+      >
         <Field label="請求額（オーナー向け）">
           <TextInput
             name="billing_amount"

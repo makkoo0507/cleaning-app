@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getCompanyFlags } from "@/lib/company";
 import type {
   CleaningRecord,
   Job,
@@ -35,7 +36,9 @@ export default async function JobDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const admin = isAdmin(await requireContractor());
+  const user = await requireContractor();
+  const admin = isAdmin(user);
+  const { billingEnabled } = await getCompanyFlags(user.companyId);
   const { id } = await params;
   const supabase = await createClient();
 
@@ -107,8 +110,12 @@ export default async function JobDetailPage({
           value={cleaner?.name ?? "未アサイン"}
         />
         <Row label="状態" value={<Badge>{JOB_STATUS_LABEL[job.status]}</Badge>} />
-        <Row label="請求額" value={formatYen(job.billing_amount)} />
-        <Row label="支払い額" value={formatYen(job.payment_amount)} />
+        {billingEnabled && (
+          <>
+            <Row label="請求額" value={formatYen(job.billing_amount)} />
+            <Row label="支払い額" value={formatYen(job.payment_amount)} />
+          </>
+        )}
         {property?.notes && <Row label="特記事項" value={property.notes} />}
       </section>
 

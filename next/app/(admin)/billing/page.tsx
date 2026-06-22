@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getCompanyFlags } from "@/lib/company";
 import type { Job, Property, User } from "@/lib/database.types";
 import { JOB_STATUS_LABEL } from "@/lib/database.types";
 import { formatDateShort, formatYen, jstMonthRange } from "@/lib/format";
@@ -14,6 +16,9 @@ export default async function BillingPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const user = await requireContractor();
+  // 請求・支払い機能が無効なら利用不可
+  const { billingEnabled } = await getCompanyFlags(user.companyId);
+  if (!billingEnabled) redirect("/dashboard");
   const { month } = await searchParams;
   const { start, end, label, value } = jstMonthRange(month);
 

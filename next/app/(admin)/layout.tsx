@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { requireContractor, isAdmin } from "@/lib/auth";
+import { getCompanyFlags } from "@/lib/company";
 import { logout } from "./actions";
 
 const NAV = [
   { href: "/dashboard", label: "ダッシュボード" },
   { href: "/schedules", label: "スケジュール" },
-  { href: "/properties", label: "物件管理" },
-  { href: "/cleaners", label: "清掃者管理" },
-  { href: "/owners", label: "オーナー管理" },
-  { href: "/staff", label: "ユーザー管理", adminOnly: true },
   { href: "/records", label: "清掃記録" },
-  { href: "/billing", label: "請求・支払い" },
+  { href: "/properties", label: "物件管理" },
+  { href: "/owners", label: "オーナー管理" },
+  { href: "/cleaners", label: "清掃者管理" },
+  { href: "/billing", label: "請求・支払い", billingOnly: true },
+  { href: "/staff", label: "ユーザー管理", adminOnly: true },
   { href: "/settings", label: "設定（LINE連携）", adminOnly: true },
 ];
 
@@ -21,6 +22,7 @@ export default async function AdminLayout({
 }) {
   const user = await requireContractor();
   const admin = isAdmin(user);
+  const { billingEnabled } = await getCompanyFlags(user.companyId);
 
   return (
     <div className="flex min-h-screen flex-1 bg-zinc-50 dark:bg-black">
@@ -31,7 +33,11 @@ export default async function AdminLayout({
           </p>
         </div>
         <nav className="flex-1 space-y-1 px-3">
-          {NAV.filter((item) => !item.adminOnly || admin).map((item) => (
+          {NAV.filter(
+            (item) =>
+              (!item.adminOnly || admin) &&
+              (!item.billingOnly || billingEnabled)
+          ).map((item) => (
             <Link
               key={item.href}
               href={item.href}

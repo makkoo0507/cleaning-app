@@ -25,6 +25,7 @@ export interface ContractorCompany {
   line_channel_access_token: string | null;
   line_channel_secret: string | null;
   slug: string | null;
+  billing_enabled: boolean;
   created_at: string;
 }
 

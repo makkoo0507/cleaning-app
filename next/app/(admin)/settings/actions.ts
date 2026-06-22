@@ -9,6 +9,19 @@ export interface SettingsFormState {
   success?: boolean;
 }
 
+// 請求・支払い機能の利用 ON/OFF（管理者のみ）
+export async function setBillingEnabled(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const enabled = formData.get("billing_enabled") != null;
+  const client = createAdminClient();
+  await client
+    .from("contractor_companies")
+    .update({ billing_enabled: enabled })
+    .eq("id", admin.companyId);
+  revalidatePath("/settings");
+  revalidatePath("/", "layout");
+}
+
 // LINE Messaging API の認証情報を保存（管理者のみ）。
 // 空欄の項目は変更しない（既存値を保持）。
 export async function updateLineSettings(
