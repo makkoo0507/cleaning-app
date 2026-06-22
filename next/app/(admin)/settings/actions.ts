@@ -16,10 +16,10 @@ export async function updateReminderSettings(formData: FormData): Promise<void> 
   await client
     .from("contractor_companies")
     .update({
-      reminder_to_cleaner: formData.get("to_cleaner") != null,
-      reminder_to_owner: formData.get("to_owner") != null,
-      reminder_prev_day: formData.get("prev_day") != null,
-      reminder_same_day: formData.get("same_day") != null,
+      reminder_cleaner_prev_day: formData.get("cleaner_prev") != null,
+      reminder_cleaner_same_day: formData.get("cleaner_same") != null,
+      reminder_owner_prev_day: formData.get("owner_prev") != null,
+      reminder_owner_same_day: formData.get("owner_same") != null,
     })
     .eq("id", admin.companyId);
   revalidatePath("/settings/reminder");

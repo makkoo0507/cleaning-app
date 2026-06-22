@@ -13,16 +13,16 @@ export default async function ReminderSettingsPage() {
   const { data: company } = await supabase
     .from("contractor_companies")
     .select(
-      "reminder_to_cleaner, reminder_to_owner, reminder_prev_day, reminder_same_day"
+      "reminder_cleaner_prev_day, reminder_cleaner_same_day, reminder_owner_prev_day, reminder_owner_same_day"
     )
     .eq("id", admin.companyId)
     .single<
       Pick<
         ContractorCompany,
-        | "reminder_to_cleaner"
-        | "reminder_to_owner"
-        | "reminder_prev_day"
-        | "reminder_same_day"
+        | "reminder_cleaner_prev_day"
+        | "reminder_cleaner_same_day"
+        | "reminder_owner_prev_day"
+        | "reminder_owner_same_day"
       >
     >();
 
@@ -44,53 +44,60 @@ export default async function ReminderSettingsPage() {
       </p>
 
       <section className="space-y-4 rounded-md border border-zinc-200 p-4 dark:border-zinc-800">
+        <p className="text-sm text-zinc-500">
+          送信先ごとに、前日・当日のどちらに送るかを選べます
+          （例: オーナーは当日のみ、清掃者は前日と当日）。
+        </p>
         <form action={updateReminderSettings} className="space-y-4">
-          <div>
-            <p className="mb-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              送信先
-            </p>
-            <div className="flex gap-4 text-sm">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="to_cleaner"
-                  defaultChecked={company?.reminder_to_cleaner ?? true}
-                />
-                清掃者
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="to_owner"
-                  defaultChecked={company?.reminder_to_owner ?? false}
-                />
-                オーナー（通知ONの関係者）
-              </label>
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              タイミング
-            </p>
-            <div className="flex gap-4 text-sm">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="prev_day"
-                  defaultChecked={company?.reminder_prev_day ?? true}
-                />
-                前日
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="same_day"
-                  defaultChecked={company?.reminder_same_day ?? false}
-                />
-                当日
-              </label>
-            </div>
-          </div>
+          <table className="text-sm">
+            <thead>
+              <tr className="text-zinc-500">
+                <th className="px-3 py-2 text-left font-medium">送信先</th>
+                <th className="px-3 py-2 font-medium">前日</th>
+                <th className="px-3 py-2 font-medium">当日</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t border-zinc-100 dark:border-zinc-800">
+                <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
+                  清掃者
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <input
+                    type="checkbox"
+                    name="cleaner_prev"
+                    defaultChecked={company?.reminder_cleaner_prev_day ?? true}
+                  />
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <input
+                    type="checkbox"
+                    name="cleaner_same"
+                    defaultChecked={company?.reminder_cleaner_same_day ?? false}
+                  />
+                </td>
+              </tr>
+              <tr className="border-t border-zinc-100 dark:border-zinc-800">
+                <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
+                  オーナー（通知ONの関係者）
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <input
+                    type="checkbox"
+                    name="owner_prev"
+                    defaultChecked={company?.reminder_owner_prev_day ?? false}
+                  />
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <input
+                    type="checkbox"
+                    name="owner_same"
+                    defaultChecked={company?.reminder_owner_same_day ?? false}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
           <button
             type="submit"
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"

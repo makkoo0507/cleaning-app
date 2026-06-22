@@ -10,10 +10,10 @@ type Kind = "prev_day" | "same_day";
 
 interface CompanySettings {
   line_channel_access_token: string | null;
-  reminder_to_cleaner: boolean;
-  reminder_to_owner: boolean;
-  reminder_prev_day: boolean;
-  reminder_same_day: boolean;
+  reminder_cleaner_prev_day: boolean;
+  reminder_cleaner_same_day: boolean;
+  reminder_owner_prev_day: boolean;
+  reminder_owner_same_day: boolean;
 }
 
 Deno.serve(async (req) => {
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     const { data } = await supabase
       .from("contractor_companies")
       .select(
-        "line_channel_access_token, reminder_to_cleaner, reminder_to_owner, reminder_prev_day, reminder_same_day"
+        "line_channel_access_token, reminder_cleaner_prev_day, reminder_cleaner_same_day, reminder_owner_prev_day, reminder_owner_same_day"
       )
       .eq("id", id)
       .single();
@@ -76,11 +76,16 @@ Deno.serve(async (req) => {
     const company = await getCompany(job.company_id);
     if (!company?.line_channel_access_token) continue;
 
-    const timingOn =
+    // この種別(前日/当日)で、清掃者・オーナーそれぞれに送るか
+    const sendCleaner =
       kind === "prev_day"
-        ? company.reminder_prev_day
-        : company.reminder_same_day;
-    if (!timingOn) continue;
+        ? company.reminder_cleaner_prev_day
+        : company.reminder_cleaner_same_day;
+    const sendOwner =
+      kind === "prev_day"
+        ? company.reminder_owner_prev_day
+        : company.reminder_owner_same_day;
+    if (!sendCleaner && !sendOwner) continue;
 
     // 重複送信防止: (job_id, kind) を先に確保。既に存在ならスキップ。
     const { error: claimErr } = await supabase
@@ -106,7 +111,7 @@ Deno.serve(async (req) => {
     const recipients: string[] = [];
 
     // 清掃者
-    if (company.reminder_to_cleaner && job.cleaner_id) {
+    if (sendCleaner && job.cleaner_id) {
       const { data: cleaner } = await supabase
         .from("users")
         .select("line_user_id")
@@ -116,7 +121,7 @@ Deno.serve(async (req) => {
     }
 
     // オーナー（通知ONの物件関係者）
-    if (company.reminder_to_owner) {
+    if (sendOwner) {
       const { data: members } = await supabase
         .from("property_members")
         .select("user_id")
