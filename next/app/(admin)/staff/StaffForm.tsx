@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import type { StaffFormState } from "./actions";
-import { Field, TextInput } from "@/components/ui";
+import { Field, TextInput, Select } from "@/components/ui";
 
 type Action = (
   prev: StaffFormState,
@@ -19,6 +19,7 @@ export default function StaffForm({
   defaultValues?: {
     name?: string;
     email?: string;
+    role?: string;
     department?: string | null;
     employee_code?: string | null;
   };
@@ -32,17 +33,24 @@ export default function StaffForm({
         <TextInput name="name" type="text" required defaultValue={defaultValues?.name ?? ""} />
       </Field>
 
-      <Field label="メールアドレス" required={!isEdit}>
-        {isEdit ? (
-          <TextInput
-            type="email"
-            defaultValue={defaultValues?.email ?? ""}
-            disabled
-          />
-        ) : (
-          <TextInput name="email" type="email" required autoComplete="off" />
-        )}
+      <Field label="メールアドレス" required>
+        <TextInput
+          name="email"
+          type="email"
+          required
+          autoComplete="off"
+          defaultValue={defaultValues?.email ?? ""}
+        />
       </Field>
+
+      {isEdit && (
+        <Field label="役職" required>
+          <Select name="role" defaultValue={defaultValues?.role ?? "contractor_staff"}>
+            <option value="contractor_staff">社員</option>
+            <option value="contractor_admin">管理者</option>
+          </Select>
+        </Field>
+      )}
 
       <Field
         label={isEdit ? "パスワード（変更する場合のみ）" : "パスワード"}

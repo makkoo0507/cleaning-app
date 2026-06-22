@@ -44,6 +44,7 @@ export default async function EditStaffPage({
         defaultValues={{
           name: user.name,
           email: authUser?.user?.email ?? "",
+          role: user.role,
           department: profile?.department ?? "",
           employee_code: profile?.employee_code ?? "",
         }}
