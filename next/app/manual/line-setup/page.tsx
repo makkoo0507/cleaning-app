@@ -177,11 +177,38 @@ export default function LineSetupManualPage() {
           </p>
         </Step>
 
-        <Step no={7} title="清掃者・オーナーに友だち追加してもらう">
+        <Step no={7} title="清掃者・オーナーに公式アカウントを友だち追加してもらう">
           <p>
-            通知（プッシュメッセージ）は、<strong>公式アカウントを友だち追加した相手にのみ</strong>
-            届きます。清掃者・オーナーには、招待 URL の案内とあわせて、自社公式アカウントの
-            友だち追加 URL／QR コードを共有してください。
+            通知は、<strong>手順1で作った自社の LINE 公式アカウントを「友だち追加」した人にだけ</strong>
+            届きます。清掃者・オーナーにその公式アカウントを友だち追加してもらってください。
+          </p>
+          <p className="font-medium text-zinc-900 dark:text-zinc-50">
+            友だち追加してもらう方法
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              <a
+                href="https://manager.line.biz/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                LINE Official Account Manager
+              </a>
+              で対象の公式アカウントを開く
+            </li>
+            <li>
+              <strong>「友だちを増やす」→「友だち追加QRコード／URL」</strong>
+              から、追加用の QR コードまたは URL を取得する
+            </li>
+            <li>
+              その QR コード／URL を、清掃者・オーナーに共有して友だち追加してもらう
+              （招待 URL を送るときに一緒に案内すると親切です）
+            </li>
+          </ul>
+          <p className="text-zinc-500">
+            ※「招待 URL（本システムへの登録）」と「公式アカウントの友だち追加（通知の受信）」は
+            別の作業です。両方そろって初めて通知が届きます。
           </p>
         </Step>
       </div>
