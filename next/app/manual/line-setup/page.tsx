@@ -42,6 +42,24 @@ export default function LineSetupManualPage() {
         </p>
       </header>
 
+      <section className="mb-6 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+        <p className="font-medium text-zinc-900 dark:text-zinc-50">前提：LINE Developers アカウント</p>
+        <p className="mt-1 leading-7">
+          Messaging API の有効化（手順2）では「プロバイダー」の指定が必要で、これは
+          LINE Developers のアカウント配下に作られます。初回のみ
+          <a
+            href="https://developers.line.biz/console/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline"
+          >
+            LINE Developers Console
+          </a>
+          に LINE Business ID（公式アカウントと同じログイン）でサインインし、
+          開発者名・メールの登録と契約同意を済ませてください（新しい ID 作成は通常不要）。
+        </p>
+      </section>
+
       <div className="space-y-6">
         <Step no={1} title="LINE公式アカウントを作成する">
           <p>
