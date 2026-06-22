@@ -29,6 +29,15 @@ export default async function SettingsPage() {
         登録すると、スケジュール作成・清掃完了時の LINE 通知が自社アカウントから送信されます。
         値はマスク表示され、保存後は再表示されません。
       </p>
+
+      <a
+        href="/manual/line-setup"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex max-w-lg items-center gap-2 rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+      >
+        📄 設定マニュアルを開く（別タブ）
+      </a>
       <SettingsForm
         tokenSet={!!company?.line_channel_access_token}
         secretSet={!!company?.line_channel_secret}
