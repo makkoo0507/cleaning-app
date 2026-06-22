@@ -13,6 +13,7 @@ const NAV = [
   { href: "/billing", label: "請求・支払い", billingOnly: true },
   { href: "/staff", label: "ユーザー管理", adminOnly: true },
   { href: "/settings", label: "設定（LINE連携）", adminOnly: true },
+  { href: "/settings/reminder", label: "設定（定期送信）", adminOnly: true },
   { href: "/settings/options", label: "設定（オプション）", adminOnly: true },
 ];
 

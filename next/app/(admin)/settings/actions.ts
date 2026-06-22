@@ -22,7 +22,7 @@ export async function updateReminderSettings(formData: FormData): Promise<void> 
       reminder_same_day: formData.get("same_day") != null,
     })
     .eq("id", admin.companyId);
-  revalidatePath("/settings");
+  revalidatePath("/settings/reminder");
 }
 
 // 請求・支払い機能の利用 ON/OFF（管理者のみ）。有効化は有料プランのみ。
