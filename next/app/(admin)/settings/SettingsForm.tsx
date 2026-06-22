@@ -113,14 +113,20 @@ export default function SettingsForm({
         </div>
       )}
       {verify.success && (
-        <div className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
-          <p>
+        <div
+          className={
+            verify.secretSet
+              ? "rounded-md border border-green-200 bg-green-50 px-3 py-2 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300"
+              : "rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+          }
+        >
+          <p className="text-sm">
+            チャネルシークレット: {verify.secretSet ? "設定済み" : "未設定"}
+          </p>
+          <p className="mt-1 text-xs">
             トークンは有効です
             {verify.accountName ? `（公式アカウント: ${verify.accountName}）` : ""}
             。
-          </p>
-          <p className="mt-1 text-xs">
-            チャネルシークレット: {verify.secretSet ? "設定済み" : "未設定"}
           </p>
         </div>
       )}
