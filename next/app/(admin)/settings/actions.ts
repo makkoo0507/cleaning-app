@@ -41,6 +41,58 @@ export async function updateLineSettings(
   return { success: true };
 }
 
+export interface VerifyTokenState {
+  error?: string;
+  success?: boolean;
+  accountName?: string;
+  secretSet?: boolean;
+}
+
+// 送信先に依存せず、チャネルアクセストークンが有効か（公式アカウントに接続できるか）を確認。
+// LINE の GET /v2/bot/info を使用（メッセージ送信なし）。
+export async function verifyToken(): Promise<VerifyTokenState> {
+  const admin = await requireAdmin();
+  const client = createAdminClient();
+
+  const { data: company } = await client
+    .from("contractor_companies")
+    .select("line_channel_access_token, line_channel_secret")
+    .eq("id", admin.companyId)
+    .single<{
+      line_channel_access_token: string | null;
+      line_channel_secret: string | null;
+    }>();
+
+  const token = company?.line_channel_access_token;
+  const secretSet = !!company?.line_channel_secret;
+
+  if (!token) {
+    return { error: "チャネルアクセストークンが登録されていません。" };
+  }
+
+  const res = await fetch("https://api.line.me/v2/bot/info", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    let msg = "トークンの確認に失敗しました。";
+    if (res.status === 401) {
+      msg = "チャネルアクセストークンが無効です。再発行して登録し直してください。";
+    }
+    return { error: `${msg}（コード: ${res.status}）`, secretSet };
+  }
+
+  const info = (await res.json().catch(() => ({}))) as {
+    displayName?: string;
+    basicId?: string;
+  };
+  const accountName = info.displayName
+    ? `${info.displayName}${info.basicId ? `（${info.basicId}）` : ""}`
+    : undefined;
+
+  return { success: true, accountName, secretSet };
+}
+
 export interface TestSendState {
   error?: string;
   success?: boolean;
