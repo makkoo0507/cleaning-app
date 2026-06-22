@@ -2,19 +2,28 @@
 
 import { useState } from "react";
 
-// 招待 URL のコピーUI。LINE 紐付け(Phase3)用の token を渡す。
-export default function InviteLink({ token }: { token: string | null }) {
+// 招待 URL のコピーUI。
+// LIFF はネイティブ起動（liff.line.me 形式）でないとログインが正しく戻らないため、
+// 招待リンクは https://liff.line.me/{liffId}/invite?token=... 形式で発行する。
+export default function InviteLink({
+  token,
+  liffId,
+}: {
+  token: string | null;
+  liffId?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   if (!token) {
     return <span className="text-xs text-green-600">紐付け済み</span>;
   }
 
-  const path = `/liff/invite?token=${token}`;
+  const url = liffId
+    ? `https://liff.line.me/${liffId}/invite?token=${token}`
+    : // liffId 未設定（環境変数未設定）時のフォールバック
+      `/liff/invite?token=${token}`;
 
   async function copy() {
-    const url =
-      typeof window !== "undefined" ? window.location.origin + path : path;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -29,7 +38,7 @@ export default function InviteLink({ token }: { token: string | null }) {
       type="button"
       onClick={copy}
       className="text-xs text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-      title={path}
+      title={url}
     >
       {copied ? "コピーしました" : "招待URLをコピー"}
     </button>

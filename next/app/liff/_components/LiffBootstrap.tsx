@@ -24,7 +24,8 @@ export default function LiffBootstrap({ liffId }: { liffId: string }) {
       await liff.init({ liffId });
 
       if (!liff.isLoggedIn()) {
-        liff.login();
+        // ログイン後は今いる画面へ戻す
+        liff.login({ redirectUri: window.location.href });
         return;
       }
 

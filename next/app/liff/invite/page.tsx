@@ -37,7 +37,12 @@ function InviteContent() {
 
       await liff.init({ liffId });
       if (!liff.isLoggedIn()) {
-        liff.login();
+        // LIFF はログイン後エンドポイント(/liff)にしか戻れないため、
+        // トークンをクエリで渡し、/liff 側から招待ページへ転送させる。
+        const origin = window.location.origin;
+        liff.login({
+          redirectUri: `${origin}/liff?invite=${encodeURIComponent(token)}`,
+        });
         return;
       }
 

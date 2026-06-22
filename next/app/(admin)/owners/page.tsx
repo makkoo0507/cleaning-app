@@ -78,7 +78,10 @@ export default async function OwnersPage() {
                             .join(", ")}
                     </td>
                     <td className="px-4 py-3">
-                      <InviteLink token={o.invite_token} />
+                      <InviteLink
+                        token={o.invite_token}
+                        liffId={process.env.NEXT_PUBLIC_LIFF_ID_OWNER}
+                      />
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <Link
