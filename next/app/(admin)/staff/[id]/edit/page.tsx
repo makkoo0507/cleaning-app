@@ -19,7 +19,7 @@ export default async function EditStaffPage({
     .from("users")
     .select("*")
     .eq("id", id)
-    .eq("role", "contractor_staff")
+    .in("role", ["contractor_admin", "contractor_staff"])
     .single<User>();
 
   if (!user) notFound();

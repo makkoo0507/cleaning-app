@@ -90,9 +90,20 @@ export async function updateStaff(
 }
 
 export async function deleteStaff(formData: FormData) {
-  await requireAdmin();
+  const me = await requireAdmin();
   const userId = String(formData.get("id") ?? "");
   if (!userId) return;
+
+  // 管理者（自分含む）はこの画面から削除させない
+  const supabase = await createClient();
+  const { data: target } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", userId)
+    .eq("company_id", me.companyId)
+    .maybeSingle<{ role: string }>();
+  if (!target || target.role !== "contractor_staff") return;
+
   await deleteManagedUser(userId);
   revalidatePath("/staff");
 }
