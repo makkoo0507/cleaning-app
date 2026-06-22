@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
-import { getLiffUser, LIFF_IDS } from "@/lib/liff-auth";
+import { getLiffUser, LIFF_ID } from "@/lib/liff-auth";
 import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
 import StatusBadge from "@/app/liff/_components/StatusBadge";
 import { formatDateShort, formatTime } from "@/lib/format";
@@ -13,7 +13,7 @@ type JobRow = Job & { properties: Pick<Property, "name" | "address"> };
 export default async function CleanerSchedulesPage() {
   const user = await getLiffUser();
   if (!user || user.role !== "cleaner") {
-    return <LiffBootstrap liffId={LIFF_IDS.cleaner} />;
+    return <LiffBootstrap liffId={LIFF_ID} />;
   }
 
   // 本人がアサインされた案件のみ（cleaner_id で明示スコープ）

@@ -18,7 +18,7 @@ function InviteContent() {
     called.current = true;
 
     async function link() {
-      // 招待トークンからロールを確認
+      // 招待トークンの有効性を確認（無効なら早期エラー）
       const roleRes = await fetch(
         `/api/liff/invite?token=${encodeURIComponent(token)}`
       );
@@ -27,15 +27,9 @@ function InviteContent() {
         setState("error");
         return;
       }
-      const { role } = await roleRes.json();
 
-      // ロールに応じた LIFF ID で初期化
-      const liffId =
-        role === "contact"
-          ? process.env.NEXT_PUBLIC_LIFF_ID_OWNER!
-          : process.env.NEXT_PUBLIC_LIFF_ID_CLEANER!;
-
-      await liff.init({ liffId });
+      // LIFF は単一アプリ（役割はユーザーレコードで判定）
+      await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID! });
       if (!liff.isLoggedIn()) {
         // liff.line.me ネイティブ起動なら、ログイン後この招待URLへ戻り
         // liff.init がログインコールバックを処理して継続できる。

@@ -59,7 +59,7 @@ export default async function CleanersPage() {
                   <td className="px-4 py-3">
                     <InviteLink
                       token={c.invite_token}
-                      liffId={process.env.NEXT_PUBLIC_LIFF_ID_CLEANER}
+                      liffId={process.env.NEXT_PUBLIC_LIFF_ID}
                     />
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">

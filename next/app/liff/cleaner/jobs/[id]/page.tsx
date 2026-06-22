@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
-import { getLiffUser, LIFF_IDS } from "@/lib/liff-auth";
+import { getLiffUser, LIFF_ID } from "@/lib/liff-auth";
 import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
 import CleanerJobActions from "./CleanerJobActions";
 import {
@@ -24,7 +24,7 @@ export default async function CleanerJobDetailPage({
 }) {
   const user = await getLiffUser();
   if (!user || user.role !== "cleaner") {
-    return <LiffBootstrap liffId={LIFF_IDS.cleaner} />;
+    return <LiffBootstrap liffId={LIFF_ID} />;
   }
 
   const { id } = await params;

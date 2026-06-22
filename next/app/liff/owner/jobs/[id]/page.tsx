@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
-import { getLiffUser, LIFF_IDS } from "@/lib/liff-auth";
+import { getLiffUser, LIFF_ID } from "@/lib/liff-auth";
 import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
 import StatusBadge from "@/app/liff/_components/StatusBadge";
 import {
@@ -24,7 +24,7 @@ export default async function OwnerJobDetailPage({
 }) {
   const user = await getLiffUser();
   if (!user || user.role !== "contact") {
-    return <LiffBootstrap liffId={LIFF_IDS.contact} />;
+    return <LiffBootstrap liffId={LIFF_ID} />;
   }
 
   const { id } = await params;

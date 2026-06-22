@@ -4,10 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import liff from "@line/liff";
 
-const LIFF_IDS = [
-  process.env.NEXT_PUBLIC_LIFF_ID_CLEANER,
-  process.env.NEXT_PUBLIC_LIFF_ID_OWNER,
-].filter(Boolean) as string[];
+const LIFF_IDS = [process.env.NEXT_PUBLIC_LIFF_ID].filter(Boolean) as string[];
 
 export default function LiffLogoutPage() {
   const [done, setDone] = useState(false);
