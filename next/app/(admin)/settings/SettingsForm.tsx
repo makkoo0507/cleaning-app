@@ -32,7 +32,11 @@ export default function SettingsForm({
   }
 
   return (
-    <form action={formAction} className="max-w-lg space-y-4">
+    <form
+      action={formAction}
+      onSubmit={() => setVerify({})}
+      className="max-w-lg space-y-4"
+    >
       <Field
         label="チャネルアクセストークン（長期）"
         hint={
