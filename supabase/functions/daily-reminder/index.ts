@@ -1,87 +1,155 @@
-// 前日リマインド Edge Function
-// pg_cron から毎日 20:00 JST（= 11:00 UTC）に呼び出される
-// 翌日の清掃案件を持つ清掃者に LINE リマインドを送信する
+// 定期リマインド Edge Function
+// pg_cron から日次で呼び出される。kind で前日/当日を切り替える。
+//   - kind=prev_day : 翌日の案件をリマインド（前日の夜に実行する想定）
+//   - kind=same_day : 当日の案件をリマインド（当日の朝に実行する想定）
+// 送信先・タイミングは会社ごとの設定（contractor_companies）に従う。
+// reminder_logs(job_id, kind) のユニーク制約で重複送信を防止する。
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-Deno.serve(async () => {
+type Kind = "prev_day" | "same_day";
+
+interface CompanySettings {
+  line_channel_access_token: string | null;
+  reminder_to_cleaner: boolean;
+  reminder_to_owner: boolean;
+  reminder_prev_day: boolean;
+  reminder_same_day: boolean;
+}
+
+Deno.serve(async (req) => {
+  // kind の決定（クエリ → ボディ → 既定 prev_day）
+  let kind = new URL(req.url).searchParams.get("kind") as Kind | null;
+  if (kind !== "prev_day" && kind !== "same_day") {
+    try {
+      const body = await req.json();
+      if (body?.kind === "prev_day" || body?.kind === "same_day") kind = body.kind;
+    } catch {
+      // body なし
+    }
+  }
+  if (kind !== "prev_day" && kind !== "same_day") kind = "prev_day";
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  // 翌日の日付（JST 基準）
-  const now = new Date();
-  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const tomorrow = new Date(jst);
-  tomorrow.setUTCDate(jst.getUTCDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+  // 対象日（JST）: 前日リマインド=翌日、当日リマインド=本日
+  const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const target = new Date(jst);
+  if (kind === "prev_day") target.setUTCDate(jst.getUTCDate() + 1);
+  const targetStr = target.toISOString().slice(0, 10);
 
-  // 翌日の案件を取得（清掃者アサイン済みのもののみ）
   const { data: jobs, error } = await supabase
     .from("jobs")
     .select(
-      "id, scheduled_date, scheduled_start_time, cleaner_id, property_id"
+      "id, scheduled_date, scheduled_start_time, cleaner_id, property_id, company_id"
     )
-    .eq("scheduled_date", tomorrowStr)
-    .eq("status", "scheduled")
-    .not("cleaner_id", "is", null);
+    .eq("scheduled_date", targetStr)
+    .eq("status", "scheduled");
 
   if (error) {
     console.error("Failed to fetch jobs:", error.message);
     return new Response("error", { status: 500 });
   }
-
   if (!jobs || jobs.length === 0) {
-    return new Response("ok: no jobs tomorrow");
+    return new Response(`ok: no jobs (${kind} ${targetStr})`);
+  }
+
+  const companyCache = new Map<string, CompanySettings | null>();
+  async function getCompany(id: string) {
+    if (companyCache.has(id)) return companyCache.get(id)!;
+    const { data } = await supabase
+      .from("contractor_companies")
+      .select(
+        "line_channel_access_token, reminder_to_cleaner, reminder_to_owner, reminder_prev_day, reminder_same_day"
+      )
+      .eq("id", id)
+      .single();
+    companyCache.set(id, (data as CompanySettings) ?? null);
+    return (data as CompanySettings) ?? null;
   }
 
   let sent = 0;
 
-  await Promise.allSettled(
-    jobs.map(async (job) => {
-      // 清掃者の LINE user ID を取得
+  for (const job of jobs) {
+    const company = await getCompany(job.company_id);
+    if (!company?.line_channel_access_token) continue;
+
+    const timingOn =
+      kind === "prev_day"
+        ? company.reminder_prev_day
+        : company.reminder_same_day;
+    if (!timingOn) continue;
+
+    // 重複送信防止: (job_id, kind) を先に確保。既に存在ならスキップ。
+    const { error: claimErr } = await supabase
+      .from("reminder_logs")
+      .insert({ job_id: job.id, kind });
+    if (claimErr) continue;
+
+    const token = company.line_channel_access_token;
+
+    const { data: prop } = await supabase
+      .from("properties")
+      .select("name")
+      .eq("id", job.property_id)
+      .single();
+    const propertyName = prop?.name ?? "";
+    const [, m, d] = job.scheduled_date.split("-").map(Number);
+    const time = job.scheduled_start_time
+      ? ` ${job.scheduled_start_time.slice(0, 5)}`
+      : "";
+    const whenWord = kind === "prev_day" ? `明日 ${m}/${d}` : `本日 ${m}/${d}`;
+    const text = `${whenWord}${time} ${propertyName}の清掃があります。`;
+
+    const recipients: string[] = [];
+
+    // 清掃者
+    if (company.reminder_to_cleaner && job.cleaner_id) {
       const { data: cleaner } = await supabase
         .from("users")
         .select("line_user_id")
         .eq("id", job.cleaner_id)
         .single();
+      if (cleaner?.line_user_id) recipients.push(cleaner.line_user_id);
+    }
 
-      if (!cleaner?.line_user_id) return;
+    // オーナー（通知ONの物件関係者）
+    if (company.reminder_to_owner) {
+      const { data: members } = await supabase
+        .from("property_members")
+        .select("user_id")
+        .eq("property_id", job.property_id)
+        .eq("notify", true);
+      const ids = (members ?? []).map((x: { user_id: string }) => x.user_id);
+      if (ids.length > 0) {
+        const { data: users } = await supabase
+          .from("users")
+          .select("line_user_id")
+          .in("id", ids)
+          .not("line_user_id", "is", null);
+        for (const u of users ?? []) {
+          if (u.line_user_id) recipients.push(u.line_user_id);
+        }
+      }
+    }
 
-      // 業者の LINE チャネルアクセストークンを取得
-      const { data: jobWithCompany } = await supabase
-        .from("jobs")
-        .select("contractor_companies(line_channel_access_token), properties(name)")
-        .eq("id", job.id)
-        .single();
+    await Promise.allSettled(
+      recipients.map((to) =>
+        fetch("https://api.line.me/v2/bot/message/push", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ to, messages: [{ type: "text", text }] }),
+        })
+      )
+    );
+    sent += recipients.length;
+  }
 
-      const token = (jobWithCompany as any)?.contractor_companies
-        ?.line_channel_access_token;
-      if (!token) return;
-
-      const propertyName = (jobWithCompany as any)?.properties?.name ?? "";
-      const [, m, d] = job.scheduled_date.split("-").map(Number);
-      const time = job.scheduled_start_time
-        ? ` ${job.scheduled_start_time.slice(0, 5)}`
-        : "";
-      const text = `明日 ${m}/${d}${time} ${propertyName}の清掃があります。`;
-
-      await fetch("https://api.line.me/v2/bot/message/push", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to: cleaner.line_user_id,
-          messages: [{ type: "text", text }],
-        }),
-      });
-
-      sent++;
-    })
-  );
-
-  console.log(`daily-reminder: sent ${sent}/${jobs.length} reminders for ${tomorrowStr}`);
-  return new Response(`ok: ${sent} reminders sent`);
+  console.log(`daily-reminder(${kind} ${targetStr}): sent ${sent}`);
+  return new Response(`ok: ${sent} sent (${kind} ${targetStr})`);
 });

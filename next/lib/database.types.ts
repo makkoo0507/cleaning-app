@@ -26,6 +26,10 @@ export interface ContractorCompany {
   line_channel_secret: string | null;
   slug: string | null;
   billing_enabled: boolean;
+  reminder_to_cleaner: boolean;
+  reminder_to_owner: boolean;
+  reminder_prev_day: boolean;
+  reminder_same_day: boolean;
   created_at: string;
 }
 

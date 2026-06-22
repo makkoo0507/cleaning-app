@@ -33,19 +33,28 @@ END
 $$;
 
 -- 本番での cron 登録は Supabase Dashboard の「Database > Cron Jobs」から
--- または以下の SQL を本番で直接実行する（ローカルでは pg_net が使えないためスキップ）:
+-- または以下の SQL を本番で直接実行する（ローカルでは pg_net が使えないためスキップ）。
+-- 前日リマインド（20:00 JST=11:00 UTC, kind=prev_day）と
+-- 当日リマインド（08:00 JST=23:00 UTC 前日, kind=same_day）の2本を登録する。
+-- 実際に送るかは会社ごとの設定（reminder_prev_day / reminder_same_day 等）で制御される。
 --
 -- SELECT cron.schedule(
---   'daily-reminder',
---   '0 11 * * *',
---   $$
---     SELECT net.http_post(
---       url       := current_setting('app.supabase_functions_url') || '/daily-reminder',
---       headers   := jsonb_build_object(
---                      'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
---                      'Content-Type',  'application/json'
---                    ),
---       body      := '{}'::jsonb
---     );
---   $$
+--   'reminder-prev-day', '0 11 * * *',
+--   $$ SELECT net.http_post(
+--        url     := current_setting('app.supabase_functions_url') || '/daily-reminder',
+--        headers := jsonb_build_object(
+--                     'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
+--                     'Content-Type',  'application/json'),
+--        body    := '{"kind":"prev_day"}'::jsonb
+--      ); $$
+-- );
+-- SELECT cron.schedule(
+--   'reminder-same-day', '0 23 * * *',
+--   $$ SELECT net.http_post(
+--        url     := current_setting('app.supabase_functions_url') || '/daily-reminder',
+--        headers := jsonb_build_object(
+--                     'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
+--                     'Content-Type',  'application/json'),
+--        body    := '{"kind":"same_day"}'::jsonb
+--      ); $$
 -- );

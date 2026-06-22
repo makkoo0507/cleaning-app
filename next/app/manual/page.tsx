@@ -21,6 +21,11 @@ const MANUALS = [
     title: "リッチメニュー設定マニュアル（任意）",
     desc: "公式アカウントのメニューにスケジュール画面を開くボタンを設置する手順。",
   },
+  {
+    href: "/manual/reminder",
+    title: "定期リマインド設定マニュアル",
+    desc: "清掃予定の前日・当日リマインドを自動送信する設定とスケジュール登録手順。",
+  },
 ];
 
 export default function ManualIndexPage() {

@@ -9,6 +9,22 @@ export interface SettingsFormState {
   success?: boolean;
 }
 
+// 定期リマインドの送信先・タイミング設定（管理者のみ）
+export async function updateReminderSettings(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const client = createAdminClient();
+  await client
+    .from("contractor_companies")
+    .update({
+      reminder_to_cleaner: formData.get("to_cleaner") != null,
+      reminder_to_owner: formData.get("to_owner") != null,
+      reminder_prev_day: formData.get("prev_day") != null,
+      reminder_same_day: formData.get("same_day") != null,
+    })
+    .eq("id", admin.companyId);
+  revalidatePath("/settings");
+}
+
 // 請求・支払い機能の利用 ON/OFF（管理者のみ）。有効化は有料プランのみ。
 export async function setBillingEnabled(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
