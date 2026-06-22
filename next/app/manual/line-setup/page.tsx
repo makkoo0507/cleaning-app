@@ -60,43 +60,64 @@ export default function LineSetupManualPage() {
 
         <Step no={2} title="LINE Developersアカウントを作成する">
           <p>
+            通知機能を使うための準備として、開発者向けのサイト
+            「
             <a
               href="https://developers.line.biz/console/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 underline"
             >
-              LINE Developers Console
+              LINE Developers
             </a>
-            に <strong>LINE Business ID（公式アカウントと同じログイン）</strong>でサインインし、
-            初回のみ開発者名・メールアドレスの登録と開発者契約への同意を行います
-            （新しい ID の作成は通常不要）。次の手順で指定する「プロバイダー」は、この
-            開発者アカウント配下に作成されます。
+            」に一度だけ登録します。むずかしい作業はありません。
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              上のリンクを開き、<strong>手順1で公式アカウントを作ったときと同じLINEアカウント</strong>
+              でログインします（新しくアカウントを作る必要はありません）。
+            </li>
+            <li>
+              初めての場合は、<strong>名前とメールアドレスの入力</strong>と、
+              <strong>利用規約への同意</strong>の画面が出るので、入力して進みます。
+            </li>
+            <li>これで準備完了です。次の手順に進みます。</li>
+          </ul>
+          <p className="text-zinc-500">
+            ※「LINE Developers」は、LINEの通知機能を使うための公式の管理サイトです。
+            登録は無料で、一度だけでOKです。
           </p>
         </Step>
 
-        <Step no={3} title="LINE公式アカウントで Messaging API を有効化する">
+        <Step no={3} title="公式アカウントで「通知の機能」をオンにする">
           <p>
-            Messaging API は公式アカウントに対して有効化して使います。
-            LINE Official Account Manager で対象アカウントを開き、
-            <strong>
-              「設定」→「Messaging API」→「Messaging API を利用する」
-            </strong>
-            を選択。プロバイダーを指定すると、
+            手順1で作った公式アカウントの管理画面（
             <a
-              href="https://developers.line.biz/console/"
+              href="https://manager.line.biz/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 underline"
             >
-              LINE Developers Console
+              LINE Official Account Manager
             </a>
-            側に対応する <strong>Messaging API チャネル</strong>が作成されます。
+            ）で、通知を送るための機能（Messaging API）をオンにします。
           </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>対象の公式アカウントを開く</li>
+            <li>
+              <strong>「設定」→「Messaging API」</strong>を開く
+            </li>
+            <li>
+              <strong>「Messaging API を利用する」</strong>を選び、画面の案内に従って進む
+            </li>
+            <li>
+              途中で「プロバイダー」を選ぶ画面が出たら、手順2で登録した自分の名前
+              （会社名など）を選ぶ／新規作成する
+            </li>
+          </ul>
           <p className="text-zinc-500">
-            ※ 以降のトークン／シークレットの取得は、この Messaging API チャネルを
-            LINE Developers Console で開いて行います。ログイン用の「LINE Login」
-            チャネルとは別物です。
+            ※「プロバイダー」は、アカウントをまとめる入れ物のようなものです。深く考えず、
+            自社名で1つ作れば大丈夫です。
           </p>
         </Step>
 
