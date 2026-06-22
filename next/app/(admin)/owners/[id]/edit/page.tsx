@@ -10,6 +10,7 @@ import type {
 import { updateOwner } from "../../actions";
 import OwnerForm from "../../OwnerForm";
 import { PageHeader } from "@/components/ui";
+import LineLinkInfo from "@/components/LineLinkInfo";
 
 export default async function EditOwnerPage({
   params,
@@ -46,6 +47,7 @@ export default async function EditOwnerPage({
   return (
     <div className="space-y-6">
       <PageHeader title="物件関係者を編集" />
+      <LineLinkInfo lineUserId={user.line_user_id} />
       <OwnerForm
         action={action}
         properties={properties}

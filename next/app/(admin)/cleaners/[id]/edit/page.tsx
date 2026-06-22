@@ -5,6 +5,7 @@ import type { CleanerProfile, User } from "@/lib/database.types";
 import { updateCleaner } from "../../actions";
 import CleanerForm from "../../CleanerForm";
 import { PageHeader } from "@/components/ui";
+import LineLinkInfo from "@/components/LineLinkInfo";
 
 export default async function EditCleanerPage({
   params,
@@ -35,6 +36,7 @@ export default async function EditCleanerPage({
   return (
     <div className="space-y-6">
       <PageHeader title="清掃者を編集" />
+      <LineLinkInfo lineUserId={user.line_user_id} />
       <CleanerForm
         action={action}
         defaultValues={{
