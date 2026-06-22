@@ -158,7 +158,11 @@ export default function LineSetupManualPage() {
             <li>
               同じ画面の<strong>「チャネル基本設定」</strong>タブを開く
             </li>
-            <li>「チャネルシークレット」の値をコピー</li>
+            <li>「チャネルシークレット」の値をコピーする</li>
+            <li>
+              <strong>コピーした値はメモ帳などに控えておく</strong>
+              （手順6で本システムに貼り付けます）
+            </li>
           </ul>
         </Step>
 
