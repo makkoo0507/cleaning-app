@@ -16,28 +16,38 @@ export default async function BillingPage({
 }) {
   const user = await requireContractor();
   const admin = isAdmin(user);
-  // 請求・支払い機能が無効のときは案内を表示（オプション）
-  const { billingEnabled } = await getCompanyFlags(user.companyId);
+  // 請求・支払い機能が無効のときは案内を表示（有料オプション）
+  const { billingEnabled, isPaid } = await getCompanyFlags(user.companyId);
   if (!billingEnabled) {
     return (
       <div className="max-w-lg space-y-4">
-        <PageHeader title="請求・支払い（オプション）" />
+        <PageHeader title="請求・支払い（有料オプション）" />
         <div className="rounded-md border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
           <p className="text-sm text-zinc-700 dark:text-zinc-300">
             案件ごとの請求額・支払い額の記録、月次集計、CSV
-            出力ができるオプション機能です。
+            出力ができる有料オプション機能です。
           </p>
-          <p className="mt-2 text-sm text-zinc-500">現在この機能は無効です。</p>
-          {admin ? (
-            <Link
-              href="/settings"
-              className="mt-4 inline-block rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900"
-            >
-              設定で有効にする
-            </Link>
+          {isPaid ? (
+            <>
+              <p className="mt-2 text-sm text-zinc-500">
+                現在この機能は無効です。
+              </p>
+              {admin ? (
+                <Link
+                  href="/settings"
+                  className="mt-4 inline-block rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900"
+                >
+                  設定で有効にする
+                </Link>
+              ) : (
+                <p className="mt-4 text-sm text-zinc-500">
+                  利用するには管理者にお問い合わせください。
+                </p>
+              )}
+            </>
           ) : (
-            <p className="mt-4 text-sm text-zinc-500">
-              利用するには管理者にお問い合わせください。
+            <p className="mt-2 text-sm text-zinc-500">
+              ご利用には有料プランへのアップグレードが必要です。プラン変更の窓口にお問い合わせください。
             </p>
           )}
         </div>

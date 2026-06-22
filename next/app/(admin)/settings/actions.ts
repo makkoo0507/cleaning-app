@@ -9,11 +9,22 @@ export interface SettingsFormState {
   success?: boolean;
 }
 
-// 請求・支払い機能の利用 ON/OFF（管理者のみ）
+// 請求・支払い機能の利用 ON/OFF（管理者のみ）。有効化は有料プランのみ。
 export async function setBillingEnabled(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   const enabled = formData.get("billing_enabled") != null;
   const client = createAdminClient();
+
+  // 有効化は有料プランのみ許可（無効化は常に可）
+  if (enabled) {
+    const { data: company } = await client
+      .from("contractor_companies")
+      .select("plan")
+      .eq("id", admin.companyId)
+      .maybeSingle<{ plan: string }>();
+    if (company?.plan !== "paid") return;
+  }
+
   await client
     .from("contractor_companies")
     .update({ billing_enabled: enabled })
