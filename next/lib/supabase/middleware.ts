@@ -11,6 +11,7 @@ const PROTECTED_PREFIXES = [
   "/staff",
   "/records",
   "/billing",
+  "/settings",
 ];
 
 export async function updateSession(request: NextRequest) {

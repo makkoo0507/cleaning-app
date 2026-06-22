@@ -11,6 +11,7 @@ const NAV = [
   { href: "/staff", label: "社員管理", adminOnly: true },
   { href: "/records", label: "清掃記録" },
   { href: "/billing", label: "請求・支払い" },
+  { href: "/settings", label: "設定（LINE連携）", adminOnly: true },
 ];
 
 export default async function AdminLayout({
