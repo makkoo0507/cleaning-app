@@ -8,7 +8,7 @@ const NAV = [
   { href: "/properties", label: "物件管理" },
   { href: "/cleaners", label: "清掃者管理" },
   { href: "/owners", label: "オーナー管理" },
-  { href: "/staff", label: "社員管理", adminOnly: true },
+  { href: "/staff", label: "ユーザー管理", adminOnly: true },
   { href: "/records", label: "清掃記録" },
   { href: "/billing", label: "請求・支払い" },
   { href: "/settings", label: "設定（LINE連携）", adminOnly: true },

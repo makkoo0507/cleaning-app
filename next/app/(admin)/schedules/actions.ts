@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireContractor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { notifyScheduleCreated } from "@/lib/line";
 import type { JobStatus } from "@/lib/database.types";
@@ -39,7 +39,7 @@ export async function createJob(
   _prev: JobFormState,
   formData: FormData
 ): Promise<JobFormState> {
-  const user = await requireContractor();
+  const user = await requireAdmin();
   const f = parseForm(formData);
 
   if (!f.propertyId || !f.scheduledDate) {
@@ -78,7 +78,7 @@ export async function updateJob(
   _prev: JobFormState,
   formData: FormData
 ): Promise<JobFormState> {
-  await requireContractor();
+  await requireAdmin();
   const f = parseForm(formData);
 
   if (!f.propertyId || !f.scheduledDate) {
@@ -107,7 +107,7 @@ export async function updateJob(
 }
 
 export async function deleteJob(formData: FormData) {
-  await requireContractor();
+  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
 

@@ -2,9 +2,15 @@
 
 export type UserRole =
   | "contractor_admin"
-  | "contractor_staff"
+  | "contractor_viewer"
   | "cleaner"
   | "contact";
+
+// 業者側ロールの表示名
+export const CONTRACTOR_ROLE_LABEL: Record<string, string> = {
+  contractor_admin: "管理者",
+  contractor_viewer: "閲覧者",
+};
 
 export type JobStatus = "scheduled" | "in_progress" | "completed";
 

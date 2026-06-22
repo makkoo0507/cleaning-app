@@ -39,10 +39,10 @@ export async function requireUser(): Promise<CurrentUser> {
   };
 }
 
-// 管理者・社員のみ許可（清掃者/関係者は管理 Web 不可）
+// 管理者・閲覧者のみ許可（清掃者/関係者は管理 Web 不可）
 export async function requireContractor(): Promise<CurrentUser> {
   const user = await requireUser();
-  if (user.role !== "contractor_admin" && user.role !== "contractor_staff") {
+  if (user.role !== "contractor_admin" && user.role !== "contractor_viewer") {
     redirect("/");
   }
   return user;

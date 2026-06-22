@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireContractor } from "@/lib/auth";
+import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Property, PropertyMember, User } from "@/lib/database.types";
 import { PROPERTY_MEMBER_ROLE_LABEL } from "@/lib/database.types";
@@ -10,7 +10,7 @@ import InviteLink from "@/components/InviteLink";
 export const dynamic = "force-dynamic";
 
 export default async function OwnersPage() {
-  await requireContractor();
+  const admin = isAdmin(await requireContractor());
   const supabase = await createClient();
 
   const { data: users } = await supabase
@@ -41,7 +41,11 @@ export default async function OwnersPage() {
     <div className="space-y-6">
       <PageHeader
         title="オーナー管理"
-        action={<PrimaryLink href="/owners/new">+ 関係者を登録</PrimaryLink>}
+        action={
+          admin ? (
+            <PrimaryLink href="/owners/new">+ 関係者を登録</PrimaryLink>
+          ) : null
+        }
       />
 
       {owners.length === 0 ? (
@@ -54,7 +58,7 @@ export default async function OwnersPage() {
                 <th className="px-4 py-3 font-medium">名前</th>
                 <th className="px-4 py-3 font-medium">担当物件</th>
                 <th className="px-4 py-3 font-medium">LINE紐付け</th>
-                <th className="px-4 py-3" />
+                {admin && <th className="px-4 py-3" />}
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 bg-white dark:divide-zinc-800 dark:bg-zinc-950">
@@ -83,23 +87,25 @@ export default async function OwnersPage() {
                         liffId={process.env.NEXT_PUBLIC_LIFF_ID}
                       />
                     </td>
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
-                      <Link
-                        href={`/owners/${o.id}/edit`}
-                        className="text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-                      >
-                        編集
-                      </Link>
-                      <form action={deleteOwner} className="ml-3 inline">
-                        <input type="hidden" name="id" value={o.id} />
-                        <button
-                          type="submit"
-                          className="text-red-600 underline hover:text-red-800"
+                    {admin && (
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <Link
+                          href={`/owners/${o.id}/edit`}
+                          className="text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                         >
-                          削除
-                        </button>
-                      </form>
-                    </td>
+                          編集
+                        </Link>
+                        <form action={deleteOwner} className="ml-3 inline">
+                          <input type="hidden" name="id" value={o.id} />
+                          <button
+                            type="submit"
+                            className="text-red-600 underline hover:text-red-800"
+                          >
+                            削除
+                          </button>
+                        </form>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

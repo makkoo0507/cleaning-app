@@ -1,10 +1,10 @@
-import { requireContractor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createCleaner } from "../actions";
 import CleanerForm from "../CleanerForm";
 import { PageHeader } from "@/components/ui";
 
 export default async function NewCleanerPage() {
-  await requireContractor();
+  await requireAdmin();
   return (
     <div className="space-y-6">
       <PageHeader title="清掃者を登録" />

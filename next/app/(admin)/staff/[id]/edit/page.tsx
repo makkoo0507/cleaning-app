@@ -19,7 +19,7 @@ export default async function EditStaffPage({
     .from("users")
     .select("*")
     .eq("id", id)
-    .in("role", ["contractor_admin", "contractor_staff"])
+    .in("role", ["contractor_admin", "contractor_viewer"])
     .single<User>();
 
   if (!user) notFound();
@@ -37,7 +37,7 @@ export default async function EditStaffPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader title="社員を編集" />
+      <PageHeader title="ユーザーを編集" />
       <StaffForm
         action={action}
         isEdit

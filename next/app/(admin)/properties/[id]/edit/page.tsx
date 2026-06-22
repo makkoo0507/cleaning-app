@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireContractor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Property } from "@/lib/database.types";
 import { updateProperty } from "../../actions";
@@ -11,7 +11,7 @@ export default async function EditPropertyPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireContractor();
+  await requireAdmin();
   const { id } = await params;
 
   const supabase = await createClient();

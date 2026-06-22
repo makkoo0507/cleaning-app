@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireContractor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   createManagedUser,
@@ -19,7 +19,7 @@ export async function createCleaner(
   _prev: CleanerFormState,
   formData: FormData
 ): Promise<CleanerFormState> {
-  const user = await requireContractor();
+  const user = await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const skills = String(formData.get("skills") ?? "").trim() || null;
   const note = String(formData.get("note") ?? "").trim() || null;
@@ -65,7 +65,7 @@ export async function updateCleaner(
   _prev: CleanerFormState,
   formData: FormData
 ): Promise<CleanerFormState> {
-  await requireContractor();
+  await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const skills = String(formData.get("skills") ?? "").trim() || null;
   const note = String(formData.get("note") ?? "").trim() || null;
@@ -88,7 +88,7 @@ export async function updateCleaner(
 }
 
 export async function deleteCleaner(formData: FormData) {
-  await requireContractor();
+  await requireAdmin();
   const userId = String(formData.get("id") ?? "");
   if (!userId) return;
   await deleteManagedUser(userId);

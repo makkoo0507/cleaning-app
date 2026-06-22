@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireContractor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { CleanerProfile, User } from "@/lib/database.types";
 import { updateCleaner } from "../../actions";
@@ -13,7 +13,7 @@ export default async function EditCleanerPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireContractor();
+  await requireAdmin();
   const { id } = await params;
 
   const supabase = await createClient();

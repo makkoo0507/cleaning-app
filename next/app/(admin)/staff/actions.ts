@@ -30,7 +30,7 @@ export async function createStaff(
 
   const result = await createManagedUser({
     companyId: admin.companyId,
-    role: "contractor_staff",
+    role: "contractor_viewer",
     name,
     email,
     password,
@@ -65,10 +65,10 @@ export async function updateStaff(
 
   if (!name) return { error: "名前は必須です。" };
   if (!email) return { error: "メールアドレスは必須です。" };
-  if (roleRaw !== "contractor_admin" && roleRaw !== "contractor_staff") {
+  if (roleRaw !== "contractor_admin" && roleRaw !== "contractor_viewer") {
     return { error: "権限を選択してください。" };
   }
-  const role = roleRaw as "contractor_admin" | "contractor_staff";
+  const role = roleRaw as "contractor_admin" | "contractor_viewer";
   if (password && password.length < 8) {
     return { error: "パスワードは8文字以上にしてください。" };
   }
@@ -143,7 +143,7 @@ export async function deleteStaff(formData: FormData) {
   const userId = String(formData.get("id") ?? "");
   if (!userId) return;
 
-  // 管理者（自分含む）はこの画面から削除させない
+  // 管理者（自分含む）はこの画面から削除させない（削除できるのは閲覧者のみ）
   const supabase = await createClient();
   const { data: target } = await supabase
     .from("users")
@@ -151,7 +151,7 @@ export async function deleteStaff(formData: FormData) {
     .eq("id", userId)
     .eq("company_id", me.companyId)
     .maybeSingle<{ role: string }>();
-  if (!target || target.role !== "contractor_staff") return;
+  if (!target || target.role !== "contractor_viewer") return;
 
   await deleteManagedUser(userId);
   revalidatePath("/staff");

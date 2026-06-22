@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireContractor } from "@/lib/auth";
+import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { CleanerProfile, User } from "@/lib/database.types";
 import { deleteCleaner } from "./actions";
@@ -9,7 +9,7 @@ import InviteLink from "@/components/InviteLink";
 export const dynamic = "force-dynamic";
 
 export default async function CleanersPage() {
-  await requireContractor();
+  const admin = isAdmin(await requireContractor());
   const supabase = await createClient();
 
   const { data: users } = await supabase
@@ -31,7 +31,11 @@ export default async function CleanersPage() {
     <div className="space-y-6">
       <PageHeader
         title="清掃者管理"
-        action={<PrimaryLink href="/cleaners/new">+ 清掃者を登録</PrimaryLink>}
+        action={
+          admin ? (
+            <PrimaryLink href="/cleaners/new">+ 清掃者を登録</PrimaryLink>
+          ) : null
+        }
       />
 
       {cleaners.length === 0 ? (
@@ -44,7 +48,7 @@ export default async function CleanersPage() {
                 <th className="px-4 py-3 font-medium">名前</th>
                 <th className="px-4 py-3 font-medium">得意分野</th>
                 <th className="px-4 py-3 font-medium">LINE紐付け</th>
-                <th className="px-4 py-3" />
+                {admin && <th className="px-4 py-3" />}
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 bg-white dark:divide-zinc-800 dark:bg-zinc-950">
@@ -62,23 +66,25 @@ export default async function CleanersPage() {
                       liffId={process.env.NEXT_PUBLIC_LIFF_ID}
                     />
                   </td>
-                  <td className="px-4 py-3 text-right whitespace-nowrap">
-                    <Link
-                      href={`/cleaners/${c.id}/edit`}
-                      className="text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
-                    >
-                      編集
-                    </Link>
-                    <form action={deleteCleaner} className="ml-3 inline">
-                      <input type="hidden" name="id" value={c.id} />
-                      <button
-                        type="submit"
-                        className="text-red-600 underline hover:text-red-800"
+                  {admin && (
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <Link
+                        href={`/cleaners/${c.id}/edit`}
+                        className="text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                       >
-                        削除
-                      </button>
-                    </form>
-                  </td>
+                        編集
+                      </Link>
+                      <form action={deleteCleaner} className="ml-3 inline">
+                        <input type="hidden" name="id" value={c.id} />
+                        <button
+                          type="submit"
+                          className="text-red-600 underline hover:text-red-800"
+                        >
+                          削除
+                        </button>
+                      </form>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

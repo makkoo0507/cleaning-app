@@ -1,4 +1,4 @@
-import { requireContractor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Property } from "@/lib/database.types";
 import { createOwner } from "../actions";
@@ -6,7 +6,7 @@ import OwnerForm from "../OwnerForm";
 import { PageHeader } from "@/components/ui";
 
 export default async function NewOwnerPage() {
-  await requireContractor();
+  await requireAdmin();
   const supabase = await createClient();
   const { data } = await supabase
     .from("properties")

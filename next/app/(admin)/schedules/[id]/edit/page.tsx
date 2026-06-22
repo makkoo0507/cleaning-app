@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireContractor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Job, Property, User } from "@/lib/database.types";
 import { updateJob } from "../../actions";
@@ -11,7 +11,7 @@ export default async function EditSchedulePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireContractor();
+  await requireAdmin();
   const { id } = await params;
   const supabase = await createClient();
 

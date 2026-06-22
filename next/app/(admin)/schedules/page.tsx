@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireContractor } from "@/lib/auth";
+import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Job, Property, User } from "@/lib/database.types";
 import { JOB_STATUS_LABEL } from "@/lib/database.types";
@@ -9,7 +9,7 @@ import { PageHeader, PrimaryLink, EmptyState, Badge } from "@/components/ui";
 export const dynamic = "force-dynamic";
 
 export default async function SchedulesPage() {
-  await requireContractor();
+  const admin = isAdmin(await requireContractor());
   const supabase = await createClient();
 
   const [{ data: jobsData }, { data: propsData }, { data: cleanersData }] =
@@ -41,7 +41,11 @@ export default async function SchedulesPage() {
     <div className="space-y-6">
       <PageHeader
         title="スケジュール"
-        action={<PrimaryLink href="/schedules/new">+ 案件を作成</PrimaryLink>}
+        action={
+          admin ? (
+            <PrimaryLink href="/schedules/new">+ 案件を作成</PrimaryLink>
+          ) : null
+        }
       />
 
       {jobs.length === 0 ? (

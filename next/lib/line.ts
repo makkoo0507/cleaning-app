@@ -143,7 +143,7 @@ export async function notifyCleaningCompleted(jobId: string): Promise<void> {
     .from("users")
     .select("line_user_id")
     .eq("company_id", job.company_id)
-    .in("role", ["contractor_admin", "contractor_staff"])
+    .in("role", ["contractor_admin", "contractor_viewer"])
     .not("line_user_id", "is", null)
     .returns<{ line_user_id: string | null }[]>();
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireContractor } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createManagedUser, deleteManagedUser } from "@/lib/users-admin";
 
@@ -31,7 +31,7 @@ export async function createOwner(
   _prev: OwnerFormState,
   formData: FormData
 ): Promise<OwnerFormState> {
-  const user = await requireContractor();
+  const user = await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const companyName = String(formData.get("company_name") ?? "").trim() || null;
   const phone = String(formData.get("phone") ?? "").trim() || null;
@@ -77,7 +77,7 @@ export async function updateOwner(
   _prev: OwnerFormState,
   formData: FormData
 ): Promise<OwnerFormState> {
-  await requireContractor();
+  await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const companyName = String(formData.get("company_name") ?? "").trim() || null;
   const phone = String(formData.get("phone") ?? "").trim() || null;
@@ -118,7 +118,7 @@ export async function updateOwner(
 }
 
 export async function deleteOwner(formData: FormData) {
-  await requireContractor();
+  await requireAdmin();
   const userId = String(formData.get("id") ?? "");
   if (!userId) return;
   await deleteManagedUser(userId);

@@ -13,7 +13,7 @@ interface CreateUserArgs {
   companyId: string;
   role: UserRole;
   name: string;
-  // 社員（contractor_staff）の場合のみ
+  // 業者ユーザー（管理者・閲覧者）の場合のみ
   email?: string;
   password?: string;
 }

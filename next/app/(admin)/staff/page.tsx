@@ -11,11 +11,11 @@ export default async function StaffPage() {
   const me = await requireAdmin();
   const supabase = await createClient();
 
-  // 管理者（自分含む）と社員を一覧に表示（role 昇順で管理者→社員）
+  // 管理者（自分含む）と閲覧者を一覧に表示（role 昇順で管理者→閲覧者）
   const { data: users } = await supabase
     .from("users")
     .select("*")
-    .in("role", ["contractor_admin", "contractor_staff"])
+    .in("role", ["contractor_admin", "contractor_viewer"])
     .order("role", { ascending: true })
     .order("created_at", { ascending: false });
   const staff = (users as User[]) ?? [];
@@ -42,12 +42,12 @@ export default async function StaffPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="社員管理"
-        action={<PrimaryLink href="/staff/new">+ 社員を登録</PrimaryLink>}
+        title="ユーザー管理"
+        action={<PrimaryLink href="/staff/new">+ 閲覧者を登録</PrimaryLink>}
       />
       <p className="text-sm text-zinc-500">
-        管理者と社員の一覧です。社員も物件・清掃者・オーナー・スケジュールの管理が可能です。
-        管理者のみの操作は「社員管理（権限変更）」と「設定（LINE連携）」です。
+        管理者と閲覧者の一覧です。管理者はすべての操作（作成・編集・削除）が可能です。
+        閲覧者はすべての画面を閲覧できますが、作成・編集・削除はできません。
       </p>
 
       {staff.length === 0 ? (
@@ -76,7 +76,7 @@ export default async function StaffPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                      {isAdminRow ? "管理者" : "社員"}
+                      {isAdminRow ? "管理者" : "閲覧者"}
                     </td>
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
                       {emailMap.get(s.id) ?? "—"}
