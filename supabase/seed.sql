@@ -71,6 +71,52 @@ insert into public.contractor_member_profiles (user_id, department)
 values ('22222222-2222-2222-2222-222222222222', '管理部')
 on conflict (user_id) do nothing;
 
+-- ── プラットフォーム管理者（ベンダー運営）──
+-- ログイン: /vendor/login   vendor@example.com / password123
+insert into auth.users (
+  instance_id, id, aud, role, email,
+  encrypted_password, email_confirmed_at,
+  created_at, updated_at,
+  raw_app_meta_data, raw_user_meta_data,
+  confirmation_token, recovery_token, email_change_token_new, email_change
+)
+values (
+  '00000000-0000-0000-0000-000000000000',
+  '44444444-4444-4444-4444-444444444444',
+  'authenticated', 'authenticated',
+  'vendor@example.com',
+  crypt('password123', gen_salt('bf')),
+  now(), now(), now(),
+  '{"provider":"email","providers":["email"]}', '{}',
+  '', '', '', ''
+)
+on conflict (id) do nothing;
+
+insert into auth.identities (
+  id, user_id, provider_id, identity_data, provider,
+  last_sign_in_at, created_at, updated_at
+)
+values (
+  '44444444-4444-4444-4444-444444444444',
+  '44444444-4444-4444-4444-444444444444',
+  '44444444-4444-4444-4444-444444444444',
+  '{"sub":"44444444-4444-4444-4444-444444444444","email":"vendor@example.com","email_verified":true}',
+  'email',
+  now(), now(), now()
+)
+on conflict (provider_id, provider) do nothing;
+
+-- 運営は会社に属さない（company_id = null）。role は制約を満たす値を入れる。
+insert into public.users (id, company_id, role, name, is_platform_admin)
+values (
+  '44444444-4444-4444-4444-444444444444',
+  null,
+  'contractor_admin',
+  'ベンダー運営',
+  true
+)
+on conflict (id) do nothing;
+
 -- サンプル物件
 insert into public.properties (id, company_id, name, address, notes)
 values

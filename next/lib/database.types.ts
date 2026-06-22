@@ -40,6 +40,7 @@ export interface User {
   name: string;
   line_user_id: string | null;
   invite_token: string | null;
+  is_platform_admin: boolean;
   created_at: string;
 }
 

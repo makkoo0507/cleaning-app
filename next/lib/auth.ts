@@ -1,6 +1,6 @@
 // 認証済みユーザー・テナント情報の取得ヘルパー（サーバー専用）
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { AppMetadata, User, UserRole } from "@/lib/database.types";
 
 export interface CurrentUser {
@@ -42,10 +42,39 @@ export async function requireUser(): Promise<CurrentUser> {
 // 管理者・閲覧者のみ許可（清掃者/関係者は管理 Web 不可）
 export async function requireContractor(): Promise<CurrentUser> {
   const user = await requireUser();
+  // 運営（会社未所属）は業者向け管理Web対象外。ベンダー画面へ。
+  if (!user.companyId) redirect("/vendor");
   if (user.role !== "contractor_admin" && user.role !== "contractor_viewer") {
     redirect("/");
   }
   return user;
+}
+
+export interface PlatformAdmin {
+  id: string;
+  email: string | undefined;
+  name: string;
+}
+
+// プラットフォーム管理者（ベンダー運営）のみ許可。
+export async function requirePlatformAdmin(): Promise<PlatformAdmin> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/vendor/login");
+
+  // RLS に依存せず service_role で運営フラグを確認
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("users")
+    .select("name, is_platform_admin")
+    .eq("id", user.id)
+    .maybeSingle<Pick<User, "name" | "is_platform_admin">>();
+
+  if (!data?.is_platform_admin) redirect("/vendor/login");
+
+  return { id: user.id, email: user.email, name: data.name };
 }
 
 // 管理者のみ許可

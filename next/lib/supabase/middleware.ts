@@ -43,6 +43,26 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
+
+  // ベンダー運営画面
+  if (path === "/vendor" || path.startsWith("/vendor/")) {
+    // ログイン関連（ページ・送信先）は未認証で許可
+    if (path.startsWith("/vendor/login")) {
+      if (user && path === "/vendor/login") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/vendor";
+        return NextResponse.redirect(url);
+      }
+      return supabaseResponse;
+    }
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/vendor/login";
+      return NextResponse.redirect(url);
+    }
+    return supabaseResponse;
+  }
+
   // 会社別ログイン: /{slug}/login
   const loginMatch = path.match(/^\/([^/]+)\/login\/?$/);
   const isProtected = PROTECTED_PREFIXES.some((p) => path.startsWith(p));
