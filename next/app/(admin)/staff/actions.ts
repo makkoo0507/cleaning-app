@@ -66,7 +66,7 @@ export async function updateStaff(
   if (!name) return { error: "名前は必須です。" };
   if (!email) return { error: "メールアドレスは必須です。" };
   if (roleRaw !== "contractor_admin" && roleRaw !== "contractor_staff") {
-    return { error: "役職を選択してください。" };
+    return { error: "権限を選択してください。" };
   }
   const role = roleRaw as "contractor_admin" | "contractor_staff";
   if (password && password.length < 8) {

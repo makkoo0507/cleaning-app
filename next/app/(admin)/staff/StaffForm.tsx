@@ -44,7 +44,7 @@ export default function StaffForm({
       </Field>
 
       {isEdit && (
-        <Field label="役職" required>
+        <Field label="権限" required>
           <Select name="role" defaultValue={defaultValues?.role ?? "contractor_staff"}>
             <option value="contractor_staff">社員</option>
             <option value="contractor_admin">管理者</option>

@@ -58,7 +58,7 @@ export default async function StaffPage() {
             <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-900">
               <tr>
                 <th className="px-4 py-3 font-medium">名前</th>
-                <th className="px-4 py-3 font-medium">役職</th>
+                <th className="px-4 py-3 font-medium">権限</th>
                 <th className="px-4 py-3 font-medium">メール</th>
                 <th className="px-4 py-3 font-medium">部署</th>
                 <th className="px-4 py-3" />
