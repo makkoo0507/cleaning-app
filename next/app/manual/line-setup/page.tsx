@@ -31,6 +31,9 @@ function Step({
 export default function LineSetupManualPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
+      <a href="/manual" className="mb-6 inline-block text-sm text-zinc-500 underline hover:text-zinc-900 dark:hover:text-zinc-50">
+        ← マニュアル一覧に戻る
+      </a>
       <header className="mb-8">
         <p className="text-sm text-zinc-500">民泊清掃管理</p>
         <h1 className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-50">
