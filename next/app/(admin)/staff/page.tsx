@@ -46,8 +46,8 @@ export default async function StaffPage() {
         action={<PrimaryLink href="/staff/new">+ 社員を登録</PrimaryLink>}
       />
       <p className="text-sm text-zinc-500">
-        管理者と社員の一覧です。社員はスケジュール管理・清掃記録の閲覧が可能です
-        （請求管理・ユーザー管理は閲覧のみ）。
+        管理者と社員の一覧です。社員も物件・清掃者・オーナー・スケジュールの管理が可能です。
+        管理者のみの操作は「社員管理（権限変更）」と「設定（LINE連携）」です。
       </p>
 
       {staff.length === 0 ? (
