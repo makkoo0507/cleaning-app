@@ -44,8 +44,7 @@ export default function ReminderManualPage() {
         </h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
           清掃予定を LINE で自動リマインドする機能です。送信先（清掃者／オーナー）と
-          タイミング（前日／当日）は管理画面の「設定（LINE連携）」で選べます。
-          自動送信を動かすには、初回のみ下記のスケジュール登録が必要です。
+          タイミング（前日／当日）を管理画面の「設定（定期送信）」で選べます。
         </p>
       </header>
 
@@ -62,76 +61,33 @@ export default function ReminderManualPage() {
       <div className="space-y-6">
         <Step no={1} title="送信先とタイミングを設定する">
           <p>
-            管理画面の<strong>「設定（LINE連携）」→「定期リマインド設定」</strong>で、
+            管理画面の<strong>「設定（定期送信）」</strong>を開き、
             送信先（清掃者／オーナー）とタイミング（前日／当日）のチェックを選んで保存します。
           </p>
-        </Step>
-
-        <Step no={2} title="拡張機能を有効化する（初回のみ・本番）">
-          <p>
-            Supabase ダッシュボードの <strong>Database → Extensions</strong> で、
-            <strong>pg_cron</strong> と <strong>pg_net</strong> を検索して有効化します。
-          </p>
           <p className="text-zinc-500">
-            ※ これを先に行わないと、Cron ジョブ作成時に
-            「relation &quot;cron.job&quot; does not exist」エラーになります。
-          </p>
-        </Step>
-
-        <Step no={3} title="Edge Function をデプロイする（初回のみ・本番）">
-          <p>リマインド送信を行う Edge Function をデプロイします。</p>
-          <pre className="overflow-x-auto rounded bg-zinc-100 p-3 text-xs dark:bg-zinc-800">{`supabase functions deploy daily-reminder`}</pre>
-        </Step>
-
-        <Step no={4} title="Cron ジョブを2本登録する（初回のみ・本番／ダッシュボード）">
-          <p>
-            Supabase ダッシュボードの <strong>Integrations → Cron</strong>
-            （または <strong>Database → Cron Jobs</strong>）を開き、
-            <strong>「Create job」</strong>から登録します。pg_cron 等の拡張は
-            初回に画面の案内で有効化できます。
-          </p>
-          <p className="font-medium text-zinc-900 dark:text-zinc-50">
-            ① 前日リマインド
-          </p>
-          <ul className="list-disc space-y-1 pl-5">
-            <li>Name: <code>reminder-prev-day</code></li>
-            <li>
-              Schedule: <code>0 11 * * *</code>（= 20:00 JST。UTC で指定）
-            </li>
-            <li>
-              Type: <strong>Supabase Edge Function</strong> → <code>daily-reminder</code> を選択
-            </li>
-            <li>Method: <code>POST</code></li>
-            <li>
-              Body: <code>{`{"kind":"prev_day"}`}</code>
-            </li>
-          </ul>
-          <p className="mt-2 font-medium text-zinc-900 dark:text-zinc-50">
-            ② 当日リマインド
-          </p>
-          <ul className="list-disc space-y-1 pl-5">
-            <li>Name: <code>reminder-same-day</code></li>
-            <li>
-              Schedule: <code>0 23 * * *</code>（= 翌 8:00 JST。UTC で指定）
-            </li>
-            <li>
-              Type: <strong>Supabase Edge Function</strong> → <code>daily-reminder</code>
-            </li>
-            <li>Method: <code>POST</code> / Body: <code>{`{"kind":"same_day"}`}</code></li>
-          </ul>
-          <p className="text-zinc-500">
-            ※ Edge Function 呼び出しタイプを選ぶと、認証ヘッダーはダッシュボードが自動で付与します。
-            SQL を手書きする必要はありません。
+            例: 「清掃者は前日と当日」「オーナーは当日のみ」のように、
+            送信先ごとに別々のタイミングを設定できます。
           </p>
         </Step>
       </div>
+
+      <section className="mt-8 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-7 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+        <p className="font-medium text-zinc-900 dark:text-zinc-50">
+          自動送信の有効化について
+        </p>
+        <p className="mt-1">
+          実際に自動送信を動かすための初期設定（サーバー側の定期実行の登録）は、
+          システム運営側で行います。設定したのにリマインドが届かない場合は、
+          運営までお問い合わせください。
+        </p>
+      </section>
 
       <section className="mt-8 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
         <p className="font-medium">届かないときのチェック</p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>設定で送信先・タイミングがオンになっているか</li>
           <li>チャネルアクセストークンが登録され、受信者が公式アカウントを友だち追加しているか</li>
-          <li>cron の時刻は UTC 指定（20:00 JST = 11:00 UTC、8:00 JST = 23:00 UTC）</li>
+          <li>清掃者・オーナーがLINE連携（紐付け）済みか</li>
         </ul>
       </section>
 
