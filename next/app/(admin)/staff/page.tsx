@@ -43,7 +43,7 @@ export default async function StaffPage() {
     <div className="space-y-6">
       <PageHeader
         title="ユーザー管理"
-        action={<PrimaryLink href="/staff/new">+ 閲覧者を登録</PrimaryLink>}
+        action={<PrimaryLink href="/staff/new">+ ユーザーを登録</PrimaryLink>}
       />
       <p className="text-sm text-zinc-500">
         管理者と閲覧者の一覧です。管理者はすべての操作（作成・編集・削除）が可能です。

@@ -43,14 +43,12 @@ export default function StaffForm({
         />
       </Field>
 
-      {isEdit && (
-        <Field label="権限" required>
-          <Select name="role" defaultValue={defaultValues?.role ?? "contractor_viewer"}>
-            <option value="contractor_viewer">閲覧者</option>
-            <option value="contractor_admin">管理者</option>
-          </Select>
-        </Field>
-      )}
+      <Field label="権限" required hint="管理者=全操作可 / 閲覧者=閲覧のみ">
+        <Select name="role" defaultValue={defaultValues?.role ?? "contractor_viewer"}>
+          <option value="contractor_viewer">閲覧者</option>
+          <option value="contractor_admin">管理者</option>
+        </Select>
+      </Field>
 
       <Field
         label={isEdit ? "パスワード（変更する場合のみ）" : "パスワード"}

@@ -7,7 +7,7 @@ export default async function NewStaffPage() {
   await requireAdmin();
   return (
     <div className="space-y-6">
-      <PageHeader title="閲覧者を登録" />
+      <PageHeader title="ユーザーを登録" />
       <StaffForm action={createStaff} />
     </div>
   );

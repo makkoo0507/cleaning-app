@@ -18,11 +18,15 @@ export async function createStaff(
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const roleRaw = String(formData.get("role") ?? "");
   const department = String(formData.get("department") ?? "").trim() || null;
   const employeeCode = String(formData.get("employee_code") ?? "").trim() || null;
 
   if (!name || !email || !password) {
     return { error: "名前・メール・パスワードは必須です。" };
+  }
+  if (roleRaw !== "contractor_admin" && roleRaw !== "contractor_viewer") {
+    return { error: "権限を選択してください。" };
   }
   if (password.length < 8) {
     return { error: "パスワードは8文字以上にしてください。" };
@@ -30,7 +34,7 @@ export async function createStaff(
 
   const result = await createManagedUser({
     companyId: admin.companyId,
-    role: "contractor_viewer",
+    role: roleRaw,
     name,
     email,
     password,
