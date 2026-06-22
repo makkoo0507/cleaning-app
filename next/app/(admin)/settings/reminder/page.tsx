@@ -48,13 +48,17 @@ export default async function ReminderSettingsPage() {
           送信先ごとに、前日・当日のどちらに送るかを選べます
           （例: オーナーは当日のみ、清掃者は前日と当日）。
         </p>
+        <p className="text-sm text-zinc-500">
+          送信時刻の目安: <strong>前日 = 20:00 頃</strong>／
+          <strong>当日 = 朝 8:00 頃</strong>（日本時間）。
+        </p>
         <form action={updateReminderSettings} className="space-y-4">
           <table className="text-sm">
             <thead>
               <tr className="text-zinc-500">
                 <th className="px-3 py-2 text-left font-medium">送信先</th>
-                <th className="px-3 py-2 font-medium">前日</th>
-                <th className="px-3 py-2 font-medium">当日</th>
+                <th className="px-3 py-2 font-medium">前日（20:00頃）</th>
+                <th className="px-3 py-2 font-medium">当日（朝8:00頃）</th>
               </tr>
             </thead>
             <tbody>

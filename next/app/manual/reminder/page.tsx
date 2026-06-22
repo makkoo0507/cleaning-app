@@ -51,8 +51,8 @@ export default function ReminderManualPage() {
       <section className="mb-6 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-7 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
         <p className="font-medium text-zinc-900 dark:text-zinc-50">仕組み</p>
         <ul className="mt-1 list-disc space-y-1 pl-5">
-          <li>前日リマインド: 翌日に予定がある案件を、前日の夜に送信</li>
-          <li>当日リマインド: 当日に予定がある案件を、当日の朝に送信</li>
+          <li>前日リマインド: 翌日に予定がある案件を、前日の <strong>20:00 頃</strong>（日本時間）に送信</li>
+          <li>当日リマインド: 当日に予定がある案件を、当日の <strong>朝 8:00 頃</strong>（日本時間）に送信</li>
           <li>送信先・タイミングは会社ごとの設定に従う（オフなら送信しない）</li>
           <li>同じ案件・同じ種別は一度だけ送信（重複送信なし）</li>
         </ul>
