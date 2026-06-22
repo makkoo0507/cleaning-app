@@ -119,7 +119,7 @@ export default async function CleanerJobDetailPage({
             )}
             {record.memo && (
               <div className="pt-1">
-                <dt className="text-zinc-500">メモ</dt>
+                <dt className="text-zinc-500">共有</dt>
                 <dd className="mt-0.5 text-zinc-900 dark:text-zinc-50">
                   {record.memo}
                 </dd>

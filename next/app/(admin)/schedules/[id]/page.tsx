@@ -122,7 +122,7 @@ export default async function JobDetailPage({
               label="所要時間"
               value={formatDuration(record.duration_minutes)}
             />
-            <Row label="メモ" value={record.memo ?? "—"} />
+            <Row label="共有" value={record.memo ?? "—"} />
           </div>
         ) : (
           <p className="rounded-md border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-700">

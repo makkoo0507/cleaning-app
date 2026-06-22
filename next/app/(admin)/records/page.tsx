@@ -67,7 +67,7 @@ export default async function RecordsPage() {
                 <th className="px-4 py-3 font-medium">開始</th>
                 <th className="px-4 py-3 font-medium">完了</th>
                 <th className="px-4 py-3 font-medium">所要時間</th>
-                <th className="px-4 py-3 font-medium">メモ</th>
+                <th className="px-4 py-3 font-medium">共有</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 bg-white dark:divide-zinc-800 dark:bg-zinc-950">

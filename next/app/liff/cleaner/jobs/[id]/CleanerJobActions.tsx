@@ -55,7 +55,7 @@ export default function CleanerJobActions({
     <textarea
       value={memo}
       onChange={(e) => setMemo(e.target.value)}
-      placeholder="メモ（任意）"
+      placeholder="共有（任意）"
       rows={3}
       className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
     />
@@ -94,7 +94,7 @@ export default function CleanerJobActions({
             清掃完了済み
           </div>
           <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            メモ（完了後も編集できます）
+            共有（完了後も編集できます）
           </label>
           {memoField}
           <button
@@ -102,7 +102,7 @@ export default function CleanerJobActions({
             disabled={submitting}
             className="w-full rounded-lg border border-zinc-300 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
           >
-            {submitting ? "保存中..." : "メモを保存"}
+            {submitting ? "保存中..." : "共有を保存"}
           </button>
           {saved && (
             <p className="text-center text-xs text-green-600">保存しました</p>
