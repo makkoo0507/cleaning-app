@@ -129,7 +129,11 @@ export default async function CleanerJobDetailPage({
         </div>
       )}
 
-      <CleanerJobActions jobId={job.id} status={job.status} />
+      <CleanerJobActions
+        jobId={job.id}
+        status={job.status}
+        initialMemo={record?.memo ?? ""}
+      />
     </div>
   );
 }

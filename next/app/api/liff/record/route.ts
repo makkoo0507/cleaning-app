@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { action, jobId, memo } = body as {
-    action: "start" | "complete";
+    action: "start" | "complete" | "update_memo";
     jobId: string;
     memo?: string;
   };
@@ -93,6 +93,30 @@ export async function POST(req: NextRequest) {
 
     // 清掃完了通知（LINE 未設定・エラーは無視）
     notifyCleaningCompleted(jobId).catch(() => {});
+
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "update_memo") {
+    // 作業中・完了後のメモ更新（時刻は変更しない）
+    const { data: record } = await supabase
+      .from("cleaning_records")
+      .select("id")
+      .eq("job_id", jobId)
+      .single();
+
+    if (!record) {
+      return NextResponse.json({ error: "record_not_found" }, { status: 404 });
+    }
+
+    const { error } = await supabase
+      .from("cleaning_records")
+      .update({ memo: memo?.trim() || null })
+      .eq("id", record.id);
+
+    if (error) {
+      return NextResponse.json({ error: "update_failed" }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true });
   }
