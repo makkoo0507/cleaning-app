@@ -29,7 +29,7 @@ export async function setBillingEnabled(formData: FormData): Promise<void> {
     .from("contractor_companies")
     .update({ billing_enabled: enabled })
     .eq("id", admin.companyId);
-  revalidatePath("/settings");
+  revalidatePath("/settings/options");
   revalidatePath("/", "layout");
 }
 
