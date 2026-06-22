@@ -1,8 +1,9 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { ContractorCompany } from "@/lib/database.types";
+import type { ContractorCompany, User } from "@/lib/database.types";
 import { PageHeader } from "@/components/ui";
 import SettingsForm from "./SettingsForm";
+import TestSend from "./TestSend";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,14 @@ export default async function SettingsPage() {
         "line_channel_access_token" | "line_channel_secret"
       >
     >();
+
+  // LINE 紐付け済みユーザー（テスト送信先）
+  const { data: usersData } = await supabase
+    .from("users")
+    .select("id, name, role")
+    .not("line_user_id", "is", null)
+    .order("role");
+  const recipients = (usersData as Pick<User, "id" | "name" | "role">[]) ?? [];
 
   return (
     <div className="space-y-6">
@@ -42,6 +51,17 @@ export default async function SettingsPage() {
         tokenSet={!!company?.line_channel_access_token}
         secretSet={!!company?.line_channel_secret}
       />
+
+      <section className="space-y-3 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+          テスト送信
+        </h2>
+        <p className="max-w-lg text-sm text-zinc-500">
+          登録したトークンで、選んだユーザーへ実際に LINE メッセージを送って動作確認します。
+          受信には、送信先が自社の公式アカウントを友だち追加している必要があります。
+        </p>
+        <TestSend recipients={recipients} />
+      </section>
     </div>
   );
 }

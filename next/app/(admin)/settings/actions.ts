@@ -40,3 +40,75 @@ export async function updateLineSettings(
   revalidatePath("/settings");
   return { success: true };
 }
+
+export interface TestSendState {
+  error?: string;
+  success?: boolean;
+}
+
+// 登録済みトークンで、紐付け済みユーザーへテストメッセージを送信（管理者のみ）
+export async function testSend(
+  _prev: TestSendState,
+  formData: FormData
+): Promise<TestSendState> {
+  const admin = await requireAdmin();
+  const userId = String(formData.get("user_id") ?? "");
+  if (!userId) return { error: "送信先を選択してください。" };
+
+  const client = createAdminClient();
+
+  const { data: company } = await client
+    .from("contractor_companies")
+    .select("line_channel_access_token")
+    .eq("id", admin.companyId)
+    .single<{ line_channel_access_token: string | null }>();
+
+  const token = company?.line_channel_access_token;
+  if (!token) {
+    return { error: "先にチャネルアクセストークンを登録してください。" };
+  }
+
+  const { data: target } = await client
+    .from("users")
+    .select("line_user_id, name")
+    .eq("id", userId)
+    .eq("company_id", admin.companyId)
+    .single<{ line_user_id: string | null; name: string }>();
+
+  if (!target?.line_user_id) {
+    return { error: "選択したユーザーは LINE 未紐付けです。" };
+  }
+
+  const res = await fetch("https://api.line.me/v2/bot/message/push", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      to: target.line_user_id,
+      messages: [
+        {
+          type: "text",
+          text: "【テスト送信】民泊清掃管理アプリからのテストメッセージです。これが届けば LINE 連携は正常です。",
+        },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const status = res.status;
+    let msg = "送信に失敗しました。";
+    if (status === 401) {
+      msg = "チャネルアクセストークンが正しくありません（認証エラー）。";
+    } else if (status === 403) {
+      msg = "権限エラーです。Messaging API の設定をご確認ください。";
+    } else if (status === 400) {
+      msg =
+        "送信できませんでした。送信先が公式アカウントを友だち追加しているかご確認ください。";
+    }
+    return { error: `${msg}（コード: ${status}）` };
+  }
+
+  return { success: true };
+}
