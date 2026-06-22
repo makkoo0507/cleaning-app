@@ -67,14 +67,23 @@ export default function ReminderManualPage() {
           </p>
         </Step>
 
-        <Step no={2} title="Edge Function をデプロイする（初回のみ・本番）">
+        <Step no={2} title="拡張機能を有効化する（初回のみ・本番）">
           <p>
-            リマインド送信を行う Edge Function をデプロイします。
+            Supabase ダッシュボードの <strong>Database → Extensions</strong> で、
+            <strong>pg_cron</strong> と <strong>pg_net</strong> を検索して有効化します。
           </p>
+          <p className="text-zinc-500">
+            ※ これを先に行わないと、Cron ジョブ作成時に
+            「relation &quot;cron.job&quot; does not exist」エラーになります。
+          </p>
+        </Step>
+
+        <Step no={3} title="Edge Function をデプロイする（初回のみ・本番）">
+          <p>リマインド送信を行う Edge Function をデプロイします。</p>
           <pre className="overflow-x-auto rounded bg-zinc-100 p-3 text-xs dark:bg-zinc-800">{`supabase functions deploy daily-reminder`}</pre>
         </Step>
 
-        <Step no={3} title="Cron ジョブを2本登録する（初回のみ・本番／ダッシュボード）">
+        <Step no={4} title="Cron ジョブを2本登録する（初回のみ・本番／ダッシュボード）">
           <p>
             Supabase ダッシュボードの <strong>Integrations → Cron</strong>
             （または <strong>Database → Cron Jobs</strong>）を開き、
