@@ -122,8 +122,20 @@ export default function LineSetupManualPage() {
         </Step>
 
         <Step no={4} title="チャネルアクセストークン（長期）を発行する">
+          <p>
+            この作業は手順2で登録した
+            <a
+              href="https://developers.line.biz/console/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              LINE Developers
+            </a>
+            の画面で行います。
+          </p>
           <ul className="list-disc space-y-1 pl-5">
-            <li>作成した Messaging API チャネルを開く</li>
+            <li>LINE Developers にログインし、手順3で作られたアカウントを開く</li>
             <li>
               <strong>「Messaging API設定」</strong>タブを開く
             </li>
@@ -135,9 +147,12 @@ export default function LineSetupManualPage() {
         </Step>
 
         <Step no={5} title="チャネルシークレットを確認する">
+          <p>
+            こちらも同じ <strong>LINE Developers</strong> の画面で行います。
+          </p>
           <ul className="list-disc space-y-1 pl-5">
             <li>
-              同じチャネルの<strong>「チャネル基本設定」</strong>タブを開く
+              同じ画面の<strong>「チャネル基本設定」</strong>タブを開く
             </li>
             <li>「チャネルシークレット」の値をコピー</li>
           </ul>
