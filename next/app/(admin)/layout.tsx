@@ -40,6 +40,9 @@ export default async function AdminLayout({
               {item.label}
             </Link>
           ))}
+        </nav>
+
+        <div className="px-3 pb-2">
           <a
             href="/manual"
             target="_blank"
@@ -48,7 +51,7 @@ export default async function AdminLayout({
           >
             マニュアル ↗
           </a>
-        </nav>
+        </div>
         <div className="border-t border-zinc-200 px-5 py-4 dark:border-zinc-800">
           <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
             {user.profile.name}
