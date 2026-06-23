@@ -58,7 +58,7 @@ values (
 on conflict (provider_id, provider) do nothing;
 
 -- public.users（管理者プロフィール）
-insert into public.users (id, company_id, role, name)
+insert into public.users (id, contractor_id, role, name)
 values (
   '22222222-2222-2222-2222-222222222222',
   '11111111-1111-1111-1111-111111111111',
@@ -72,9 +72,9 @@ values ('22222222-2222-2222-2222-222222222222', '管理部')
 on conflict (user_id) do nothing;
 
 -- 請求・支払いオプションを有効化（acme は有料プラン）
-insert into public.company_features (company_id, feature_key, enabled)
+insert into public.contractor_features (contractor_id, feature_key, enabled)
 values ('11111111-1111-1111-1111-111111111111', 'billing', true)
-on conflict (company_id, feature_key) do nothing;
+on conflict (contractor_id, feature_key) do nothing;
 
 -- ── プラットフォーム管理者（ベンダー運営）──
 -- ログイン: /vendor/login   vendor@example.com / password123
@@ -111,8 +111,8 @@ values (
 )
 on conflict (provider_id, provider) do nothing;
 
--- 運営は会社に属さない（company_id = null）
-insert into public.users (id, company_id, role, name)
+-- 運営は業者に属さない（contractor_id = null）
+insert into public.users (id, contractor_id, role, name)
 values (
   '44444444-4444-4444-4444-444444444444',
   null,
@@ -156,7 +156,7 @@ values (
 )
 on conflict (provider_id, provider) do nothing;
 
-insert into public.users (id, company_id, role, name)
+insert into public.users (id, contractor_id, role, name)
 values (
   '55555555-5555-5555-5555-555555555555',
   '11111111-1111-1111-1111-111111111111',
@@ -170,7 +170,7 @@ values ('55555555-5555-5555-5555-555555555555')
 on conflict (user_id) do nothing;
 
 -- サンプル物件
-insert into public.properties (id, company_id, name, address, notes)
+insert into public.properties (id, contractor_id, name, address, notes)
 values
   ('33333333-3333-3333-3333-333333333331', '11111111-1111-1111-1111-111111111111', '渋谷ステイ101', '東京都渋谷区1-1-1', 'オートロック。鍵はキーボックス #1234'),
   ('33333333-3333-3333-3333-333333333332', '11111111-1111-1111-1111-111111111111', '浅草ゲストハウス', '東京都台東区2-2-2', null)
