@@ -152,66 +152,92 @@ export default async function VendorPage({
         <h2 className="mb-4 text-base font-semibold text-zinc-900 dark:text-zinc-50">
           新規発行
         </h2>
-        <form method="post" action="/vendor/create" className="space-y-4">
-          <Field label="業者名" required htmlFor="contractor_name">
-            <TextInput
-              id="contractor_name"
-              name="contractor_name"
-              defaultValue={prevContractorName}
+        <form method="post" action="/vendor/create" className="space-y-6">
+          {/* 業者情報 */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+              業者情報
+            </p>
+            <Field label="業者名" required htmlFor="contractor_name">
+              <TextInput
+                id="contractor_name"
+                name="contractor_name"
+                defaultValue={prevContractorName}
+                required
+              />
+            </Field>
+            <Field
+              label="ログインURL（slug・英小文字/数字/ハイフン）"
               required
-            />
-          </Field>
-          <Field
-            label="ログインURL（slug・英小文字/数字/ハイフン）"
-            required
-            htmlFor="slug"
-          >
-            <TextInput
-              id="slug"
-              name="slug"
-              placeholder="acme"
-              defaultValue={prevSlug}
-              required
-            />
-          </Field>
-          <Field label="プラン" htmlFor="plan">
-            <Select id="plan" name="plan" defaultValue={prevPlan ?? "free"}>
-              <option value="free">free（無料）</option>
-              <option value="paid">paid（有料）</option>
-            </Select>
-          </Field>
+              htmlFor="slug"
+            >
+              <TextInput
+                id="slug"
+                name="slug"
+                placeholder="acme"
+                defaultValue={prevSlug}
+                required
+              />
+            </Field>
+            <Field label="プラン" htmlFor="plan">
+              <Select id="plan" name="plan" defaultValue={prevPlan ?? "free"}>
+                <option value="free">free（無料）</option>
+                <option value="paid">paid（有料）</option>
+              </Select>
+            </Field>
+          </div>
 
           <hr className="border-zinc-200 dark:border-zinc-800" />
 
-          <Field label="管理者名" required htmlFor="admin_name">
-            <TextInput
-              id="admin_name"
-              name="admin_name"
-              defaultValue={prevAdminName}
+          {/* 業者の管理者アカウント */}
+          <div className="space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+              業者の管理者アカウント
+            </p>
+            <Field label="管理者名" required htmlFor="admin_name">
+              <TextInput
+                id="admin_name"
+                name="admin_name"
+                defaultValue={prevAdminName}
+                required
+              />
+            </Field>
+            <Field label="メールアドレス" required htmlFor="admin_email">
+              <TextInput
+                id="admin_email"
+                name="admin_email"
+                type="email"
+                defaultValue={prevAdminEmail}
+                required
+              />
+            </Field>
+            <Field
+              label="パスワード（8文字以上）"
               required
-            />
-          </Field>
-          <Field label="管理者メールアドレス" required htmlFor="admin_email">
-            <TextInput
-              id="admin_email"
-              name="admin_email"
-              type="email"
-              defaultValue={prevAdminEmail}
-              required
-            />
-          </Field>
-          <Field
-            label="管理者パスワード（8文字以上）"
-            required
-            htmlFor="admin_password"
-          >
-            <TextInput
-              id="admin_password"
-              name="admin_password"
-              type="password"
-              required
-            />
-          </Field>
+              htmlFor="admin_password"
+            >
+              <TextInput
+                id="admin_password"
+                name="admin_password"
+                type="password"
+                required
+              />
+            </Field>
+          </div>
+
+          <hr className="border-zinc-200 dark:border-zinc-800" />
+
+          {/* ベンダーアカウント（自動生成） */}
+          <div className="rounded-md bg-zinc-50 px-4 py-3 text-sm text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+            <p className="font-medium text-zinc-700 dark:text-zinc-300">
+              ベンダーアカウント（運営用・自動生成）
+            </p>
+            <p className="mt-1">
+              運営が業者管理画面へ入るための隠しアカウントです。
+              メールアドレスは <code className="text-xs">makkoo0507+{"{slug}"}@gmail.com</code> で自動生成されます。
+              初期パスワードは上記と同じです。発行後に /vendor から変更できます。
+            </p>
+          </div>
 
           <button
             type="submit"
