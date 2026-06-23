@@ -28,17 +28,17 @@ export async function createCleaner(
 
   // プラン上限チェック（清掃者数）
   const supabase = await createClient();
-  const { data: company } = await supabase
+  const { data: contractor } = await supabase
     .from("contractors")
     .select("max_cleaners")
     .eq("id", user.contractorId)
     .single<Pick<Contractor, "max_cleaners">>();
 
-  if (company?.max_cleaners != null) {
+  if (contractor?.max_cleaners != null) {
     const current = await countCleaners(user.contractorId);
-    if (current >= company.max_cleaners) {
+    if (current >= contractor.max_cleaners) {
       return {
-        error: `清掃者数が上限（${company.max_cleaners}名）に達しています。有料プランへのアップグレードが必要です。`,
+        error: `清掃者数が上限（${contractor.max_cleaners}名）に達しています。有料プランへのアップグレードが必要です。`,
       };
     }
   }

@@ -30,7 +30,7 @@ export async function createProperty(
   const supabase = await createClient();
 
   // プラン上限チェック（テーブル設計.md）
-  const [{ data: company }, { count }] = await Promise.all([
+  const [{ data: contractor }, { count }] = await Promise.all([
     supabase
       .from("contractors")
       .select("max_properties")
@@ -42,9 +42,9 @@ export async function createProperty(
       .eq("contractor_id", user.contractorId),
   ]);
 
-  if (company?.max_properties != null && (count ?? 0) >= company.max_properties) {
+  if (contractor?.max_properties != null && (count ?? 0) >= contractor.max_properties) {
     return {
-      error: `物件数が上限（${company.max_properties}件）に達しています。有料プランへのアップグレードが必要です。`,
+      error: `物件数が上限（${contractor.max_properties}件）に達しています。有料プランへのアップグレードが必要です。`,
     };
   }
 

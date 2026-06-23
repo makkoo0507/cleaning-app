@@ -92,7 +92,7 @@ export async function verifyToken(): Promise<VerifyTokenState> {
   const admin = await requireAdmin();
   const client = createAdminClient();
 
-  const { data: company } = await client
+  const { data: contractor } = await client
     .from("contractors")
     .select("line_channel_access_token, line_channel_secret")
     .eq("id", admin.contractorId)
@@ -101,8 +101,8 @@ export async function verifyToken(): Promise<VerifyTokenState> {
       line_channel_secret: string | null;
     }>();
 
-  const token = company?.line_channel_access_token;
-  const secretSet = !!company?.line_channel_secret;
+  const token = contractor?.line_channel_access_token;
+  const secretSet = !!contractor?.line_channel_secret;
 
   if (!token) {
     return { error: "チャネルアクセストークンが登録されていません。" };

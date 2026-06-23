@@ -23,8 +23,8 @@ export async function POST(
 
   if (!email || !password) return fail("input");
 
-  const company = await getContractorBySlug(slug);
-  if (!company) return NextResponse.redirect(new URL("/", request.url), 303);
+  const contractor = await getContractorBySlug(slug);
+  if (!contractor) return NextResponse.redirect(new URL("/", request.url), 303);
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -40,7 +40,7 @@ export async function POST(
     .eq("id", data.user.id)
     .maybeSingle<Pick<User, "contractor_id">>();
 
-  if (!profile || profile.contractor_id !== company.id) {
+  if (!profile || profile.contractor_id !== contractor.id) {
     await supabase.auth.signOut();
     return fail("company");
   }

@@ -10,7 +10,7 @@ export default async function ReminderSettingsPage() {
   const admin = await requireAdmin();
   const supabase = await createClient();
 
-  const { data: company } = await supabase
+  const { data: contractor } = await supabase
     .from("contractors")
     .select(
       "reminder_cleaner_prev_day, reminder_cleaner_same_day, reminder_owner_prev_day, reminder_owner_same_day"
@@ -70,14 +70,14 @@ export default async function ReminderSettingsPage() {
                   <input
                     type="checkbox"
                     name="cleaner_prev"
-                    defaultChecked={company?.reminder_cleaner_prev_day ?? true}
+                    defaultChecked={contractor?.reminder_cleaner_prev_day ?? true}
                   />
                 </td>
                 <td className="px-3 py-2 text-center">
                   <input
                     type="checkbox"
                     name="cleaner_same"
-                    defaultChecked={company?.reminder_cleaner_same_day ?? false}
+                    defaultChecked={contractor?.reminder_cleaner_same_day ?? false}
                   />
                 </td>
               </tr>
@@ -89,14 +89,14 @@ export default async function ReminderSettingsPage() {
                   <input
                     type="checkbox"
                     name="owner_prev"
-                    defaultChecked={company?.reminder_owner_prev_day ?? false}
+                    defaultChecked={contractor?.reminder_owner_prev_day ?? false}
                   />
                 </td>
                 <td className="px-3 py-2 text-center">
                   <input
                     type="checkbox"
                     name="owner_same"
-                    defaultChecked={company?.reminder_owner_same_day ?? false}
+                    defaultChecked={contractor?.reminder_owner_same_day ?? false}
                   />
                 </td>
               </tr>

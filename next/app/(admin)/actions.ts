@@ -17,13 +17,13 @@ export async function sendTestNotification(
   const me = await requireContractor();
   const client = createAdminClient();
 
-  const { data: company } = await client
+  const { data: contractor } = await client
     .from("contractors")
     .select("line_channel_access_token")
     .eq("id", me.contractorId)
     .single<{ line_channel_access_token: string | null }>();
 
-  const token = company?.line_channel_access_token;
+  const token = contractor?.line_channel_access_token;
   if (!token) {
     return { error: "先に設定画面でチャネルアクセストークンを登録してください。" };
   }
@@ -87,12 +87,12 @@ export async function logout() {
       .eq("id", user.id)
       .maybeSingle<Pick<User, "contractor_id">>();
     if (data) {
-      const { data: company } = await supabase
+      const { data: contractor } = await supabase
         .from("contractors")
         .select("slug")
         .eq("id", data.contractor_id)
         .maybeSingle<{ slug: string | null }>();
-      slug = company?.slug ?? null;
+      slug = contractor?.slug ?? null;
     }
   }
 

@@ -19,12 +19,12 @@ export async function getContractorFlags(
   contractorId: string
 ): Promise<{ billingEnabled: boolean; isPaid: boolean }> {
   const supabase = await createClient();
-  const { data: company } = await supabase
+  const { data: contractor } = await supabase
     .from("contractors")
     .select("plan")
     .eq("id", contractorId)
     .maybeSingle<{ plan: string }>();
-  const isPaid = company?.plan === "paid";
+  const isPaid = contractor?.plan === "paid";
 
   const { data: contract } = await supabase
     .from("contractor_features")

@@ -62,24 +62,24 @@ export async function POST(request: NextRequest) {
   }
   const userId = created.user.id;
 
-  const { data: company, error: companyErr } = await admin
+  const { data: contractor, error: contractorErr } = await admin
     .from("contractors")
     .insert({ name: companyName, slug, plan: plan === "paid" ? "paid" : "free" })
     .select("id")
     .single<{ id: string }>();
-  if (companyErr || !company) {
+  if (contractorErr || !contractor) {
     await admin.auth.admin.deleteUser(userId);
     return back("company");
   }
 
   const { error: userErr } = await admin.from("users").insert({
     id: userId,
-    contractor_id: company.id,
+    contractor_id: contractor.id,
     role: "contractor_admin",
     name: adminName,
   });
   if (userErr) {
-    await admin.from("contractors").delete().eq("id", company.id);
+    await admin.from("contractors").delete().eq("id", contractor.id);
     await admin.auth.admin.deleteUser(userId);
     return back("user");
   }
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     if (vCreated?.user) {
       await admin.from("users").insert({
         id: vCreated.user.id,
-        contractor_id: company.id,
+        contractor_id: contractor.id,
         role: "contractor_vendor",
         name: "運営管理（ベンダー）",
       });

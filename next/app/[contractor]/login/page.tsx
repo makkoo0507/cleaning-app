@@ -19,9 +19,9 @@ export default async function CompanyLoginPage({
 }) {
   const { contractor: slug } = await params;
   const { error } = await searchParams;
-  const company = await getContractorBySlug(slug);
+  const contractor = await getContractorBySlug(slug);
 
-  if (!company) notFound();
+  if (!contractor) notFound();
 
   const errorMessage = error ? ERROR_MESSAGES[error] : undefined;
 
@@ -31,7 +31,7 @@ export default async function CompanyLoginPage({
         <div className="text-center">
           <p className="text-sm text-zinc-500">民泊清掃管理</p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {company.name}
+            {contractor.name}
           </h1>
           <p className="mt-2 text-sm text-zinc-500">管理者・社員ログイン</p>
         </div>

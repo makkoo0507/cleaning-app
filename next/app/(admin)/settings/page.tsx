@@ -11,7 +11,7 @@ export default async function SettingsPage() {
   // 機密列（トークン/シークレット）は service_role でのみ参照可。存在有無だけ取得する。
   const supabase = createAdminClient();
 
-  const { data: company } = await supabase
+  const { data: contractor } = await supabase
     .from("contractors")
     .select("line_channel_access_token, line_channel_secret")
     .eq("id", admin.contractorId)
@@ -40,8 +40,8 @@ export default async function SettingsPage() {
         📄 設定マニュアルを開く（別タブ）
       </a>
       <SettingsForm
-        tokenSet={!!company?.line_channel_access_token}
-        secretSet={!!company?.line_channel_secret}
+        tokenSet={!!contractor?.line_channel_access_token}
+        secretSet={!!contractor?.line_channel_secret}
       />
 
       <p className="max-w-lg text-xs text-zinc-500">
