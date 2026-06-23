@@ -24,13 +24,13 @@ const SETTINGS_NAV = [
 ];
 
 interface Props {
-  companyName: string;
+  contractorName: string;
   admin: boolean;
   billingEnabled: boolean;
   userName: string;
 }
 
-export default function SideNav({ companyName, admin, billingEnabled, userName }: Props) {
+export default function SideNav({ contractorName, admin, billingEnabled, userName }: Props) {
   const pathname = usePathname();
   const isOnSettings = pathname.startsWith("/settings");
   const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
@@ -42,7 +42,7 @@ export default function SideNav({ companyName, admin, billingEnabled, userName }
     <aside className="flex w-56 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div className="px-5 py-5">
         <p className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          {companyName}
+          {contractorName}
         </p>
       </div>
 

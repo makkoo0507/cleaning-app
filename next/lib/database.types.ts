@@ -17,12 +17,12 @@ export const CONTRACTOR_ROLE_LABEL: Record<string, string> = {
 
 export type JobStatus = "scheduled" | "in_progress" | "completed";
 
-export type CompanyPlan = "free" | "paid";
+export type ContractorPlan = "free" | "paid";
 
 export interface Contractor {
   id: string;
   name: string;
-  plan: CompanyPlan;
+  plan: ContractorPlan;
   max_properties: number | null;
   max_cleaners: number | null;
   line_channel_access_token: string | null;
@@ -44,7 +44,7 @@ export interface Feature {
   created_at: string;
 }
 
-export interface CompanyFeature {
+export interface ContractorFeature {
   contractor_id: string;
   feature_key: string;
   enabled: boolean;

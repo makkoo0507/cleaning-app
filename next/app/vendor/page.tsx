@@ -13,7 +13,7 @@ const ERRORS: Record<string, string> = {
   slug_reserved: "このログインURL（slug）は予約済みのため使用できません。",
   email_taken: "このメールアドレスは既に登録されています。",
   auth: "管理者アカウントの作成に失敗しました。",
-  company: "業者の作成に失敗しました。",
+  contractor: "業者の作成に失敗しました。",
   user: "管理者プロフィールの作成に失敗しました。",
   target: "対象ユーザーが見つかりません。",
   reset: "パスワードの再設定に失敗しました。",
@@ -25,7 +25,7 @@ interface ContractRow {
   enabled: boolean;
 }
 
-interface CompanyRow {
+interface ContractorRow {
   id: string;
   name: string;
   slug: string | null;
@@ -48,7 +48,7 @@ export default async function VendorPage({
     created?: string;
     pw_reset?: string;
     feature?: string;
-    company_name?: string;
+    contractor_name?: string;
     slug?: string;
     plan?: string;
     admin_name?: string;
@@ -61,7 +61,7 @@ export default async function VendorPage({
     created,
     pw_reset,
     feature,
-    company_name: prevCompanyName,
+    contractor_name: prevContractorName,
     slug: prevSlug,
     plan: prevPlan,
     admin_name: prevAdminName,
@@ -73,7 +73,7 @@ export default async function VendorPage({
     .from("contractors")
     .select("id, name, slug, plan, created_at")
     .order("created_at", { ascending: false })
-    .returns<CompanyRow[]>();
+    .returns<ContractorRow[]>();
 
   // 各業者のベンダーアカウント（パスワード再設定の対象）
   const { data: admins } = await client
@@ -90,11 +90,11 @@ export default async function VendorPage({
   const emailById = new Map(
     (authList?.users ?? []).map((u) => [u.id, u.email ?? ""])
   );
-  const adminsByCompany = new Map<string, AdminRow[]>();
+  const adminsByContractor = new Map<string, AdminRow[]>();
   for (const a of admins ?? []) {
-    const arr = adminsByCompany.get(a.contractor_id) ?? [];
+    const arr = adminsByContractor.get(a.contractor_id) ?? [];
     arr.push(a);
-    adminsByCompany.set(a.contractor_id, arr);
+    adminsByContractor.set(a.contractor_id, arr);
   }
 
   // オプション（カタログ）と各社の加入状況
@@ -153,11 +153,11 @@ export default async function VendorPage({
           新規発行
         </h2>
         <form method="post" action="/vendor/create" className="space-y-4">
-          <Field label="業者名" required htmlFor="company_name">
+          <Field label="業者名" required htmlFor="contractor_name">
             <TextInput
-              id="company_name"
-              name="company_name"
-              defaultValue={prevCompanyName}
+              id="contractor_name"
+              name="contractor_name"
+              defaultValue={prevContractorName}
               required
             />
           </Field>
@@ -275,7 +275,7 @@ export default async function VendorPage({
         </p>
         <div className="space-y-3">
           {(companies ?? []).map((c) => {
-            const list = adminsByCompany.get(c.id) ?? [];
+            const list = adminsByContractor.get(c.id) ?? [];
             return (
               <div
                 key={c.id}

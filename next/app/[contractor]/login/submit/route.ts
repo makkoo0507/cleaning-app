@@ -42,7 +42,7 @@ export async function POST(
 
   if (!profile || profile.contractor_id !== contractor.id) {
     await supabase.auth.signOut();
-    return fail("company");
+    return fail("contractor");
   }
 
   return NextResponse.redirect(new URL("/dashboard", request.url), 303);

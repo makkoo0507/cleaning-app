@@ -9,7 +9,7 @@ export default async function AdminLayout({
 }) {
   const user = await requireContractor();
   const admin = isAdmin(user);
-  const [{ billingEnabled }, companyName] = await Promise.all([
+  const [{ billingEnabled }, contractorName] = await Promise.all([
     getContractorFlags(user.contractorId),
     getContractorName(user.contractorId),
   ]);
@@ -17,7 +17,7 @@ export default async function AdminLayout({
   return (
     <div className="flex min-h-screen flex-1 bg-zinc-50 dark:bg-black">
       <SideNav
-        companyName={companyName}
+        contractorName={contractorName}
         admin={admin}
         billingEnabled={billingEnabled}
         userName={user.profile.name}

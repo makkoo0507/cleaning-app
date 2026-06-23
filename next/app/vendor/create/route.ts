@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   const vendor = await requirePlatformAdmin();
 
   const form = await request.formData();
-  const companyName = String(form.get("company_name") ?? "").trim();
+  const contractorName = String(form.get("contractor_name") ?? "").trim();
   const slug = String(form.get("slug") ?? "")
     .trim()
     .toLowerCase();
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   // エラー時は入力値（パスワード以外）を引き継いで再表示する
   const back = (code: string) => {
     const p = new URLSearchParams({ error: code });
-    if (companyName) p.set("company_name", companyName);
+    if (contractorName) p.set("contractor_name", contractorName);
     if (slug) p.set("slug", slug);
     if (plan) p.set("plan", plan);
     if (adminName) p.set("admin_name", adminName);
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(new URL(`/vendor?${p}`, request.url), 303);
   };
 
-  if (!companyName || !slug || !adminName || !adminEmail || !adminPassword) {
+  if (!contractorName || !slug || !adminName || !adminEmail || !adminPassword) {
     return back("input");
   }
   if (!/^[a-z0-9-]+$/.test(slug)) return back("slug_format");
@@ -64,12 +64,12 @@ export async function POST(request: NextRequest) {
 
   const { data: contractor, error: contractorErr } = await admin
     .from("contractors")
-    .insert({ name: companyName, slug, plan: plan === "paid" ? "paid" : "free" })
+    .insert({ name: contractorName, slug, plan: plan === "paid" ? "paid" : "free" })
     .select("id")
     .single<{ id: string }>();
   if (contractorErr || !contractor) {
     await admin.auth.admin.deleteUser(userId);
-    return back("company");
+    return back("contractor");
   }
 
   const { error: userErr } = await admin.from("users").insert({
