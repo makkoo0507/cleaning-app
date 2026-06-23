@@ -86,12 +86,14 @@ export async function POST(request: NextRequest) {
   await admin.from("contractor_member_profiles").insert({ user_id: userId });
 
   // ベンダー用の隠し管理者を作成（運営が /{slug}/login から入るための常設アカウント）
-  // 初期パスワードは業者管理者と同じ（運営が把握済み）。後で /vendor から変更可能。
+  // パスワード = VENDOR_PASSWORD_BASE + slug（環境変数で環境ごとに異なる base を設定）
+  const vendorPasswordBase = process.env.VENDOR_PASSWORD_BASE ?? "";
+  const vendorPassword = `${vendorPasswordBase}+${slug}`;
   const alias = vendorAlias(vendor.email, slug);
   if (alias) {
     const { data: vCreated } = await admin.auth.admin.createUser({
       email: alias,
-      password: adminPassword,
+      password: vendorPassword,
       email_confirm: true,
     });
     if (vCreated?.user) {

@@ -235,7 +235,7 @@ export default async function VendorPage({
             <p className="mt-1">
               運営が業者管理画面へ入るための隠しアカウントです。
               メールアドレスは <code className="text-xs">{admin.email?.replace("@", `+{slug}@`) ?? `vendor+{slug}@example.com`}</code> の形式で自動生成されます。
-              初期パスワードは上記と同じです。発行後に /vendor から変更できます。
+              初期パスワードは <code className="text-xs">VENDOR_PASSWORD_BASE+slug</code> の形式で自動設定されます。発行後に /vendor から変更できます。
             </p>
           </div>
 
