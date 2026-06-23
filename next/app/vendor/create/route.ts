@@ -85,12 +85,12 @@ export async function POST(request: NextRequest) {
   }
   await admin.from("contractor_member_profiles").insert({ user_id: userId });
 
-  // 通知設定の初期データ（デフォルト: 全て有効）
+  // 通知設定の初期データ（フォームで選択した値を使用）
   await admin.from("contractor_notification_settings").insert([
-    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_prev_day", enabled: true },
-    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_same_day", enabled: true },
-    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_prev_day", enabled: true },
-    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_same_day", enabled: true },
+    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_prev_day", enabled: form.get("notify_cleaner_prev") != null },
+    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_same_day", enabled: form.get("notify_cleaner_same") != null },
+    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_prev_day", enabled: form.get("notify_owner_prev")   != null },
+    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_same_day", enabled: form.get("notify_owner_same")   != null },
   ]);
 
   // ベンダー用の隠し管理者を作成（運営が /{slug}/login から入るための常設アカウント）

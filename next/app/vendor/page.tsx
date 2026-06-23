@@ -227,6 +227,44 @@ export default async function VendorPage({
 
           <hr className="border-zinc-200 dark:border-zinc-800" />
 
+          {/* 通知設定 */}
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+              リマインド通知設定
+            </p>
+            <table className="text-sm">
+              <thead>
+                <tr className="text-zinc-500">
+                  <th className="px-3 py-2 text-left font-medium">送信先</th>
+                  <th className="px-3 py-2 font-medium">前日（20:00頃）</th>
+                  <th className="px-3 py-2 font-medium">当日（朝8:00頃）</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-t border-zinc-100 dark:border-zinc-800">
+                  <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">清掃者</td>
+                  <td className="px-3 py-2 text-center">
+                    <input type="checkbox" name="notify_cleaner_prev" defaultChecked />
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    <input type="checkbox" name="notify_cleaner_same" defaultChecked />
+                  </td>
+                </tr>
+                <tr className="border-t border-zinc-100 dark:border-zinc-800">
+                  <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">オーナー</td>
+                  <td className="px-3 py-2 text-center">
+                    <input type="checkbox" name="notify_owner_prev" defaultChecked />
+                  </td>
+                  <td className="px-3 py-2 text-center">
+                    <input type="checkbox" name="notify_owner_same" defaultChecked />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <hr className="border-zinc-200 dark:border-zinc-800" />
+
           {/* ベンダーアカウント（自動生成） */}
           <div className="rounded-md bg-zinc-50 px-4 py-3 text-sm text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
             <p className="font-medium text-zinc-700 dark:text-zinc-300">
