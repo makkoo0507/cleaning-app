@@ -1,6 +1,7 @@
 // DB の型定義（テーブル設計.md v1.7 に対応）
 
 export type UserRole =
+  | "platform_admin"
   | "contractor_admin"
   | "contractor_viewer"
   | "contractor_vendor"
@@ -57,7 +58,6 @@ export interface User {
   name: string;
   line_user_id: string | null;
   invite_token: string | null;
-  is_platform_admin: boolean;
   created_at: string;
 }
 

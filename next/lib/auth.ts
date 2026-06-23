@@ -64,15 +64,15 @@ export async function requirePlatformAdmin(): Promise<PlatformAdmin> {
   } = await supabase.auth.getUser();
   if (!user) redirect("/vendor/login");
 
-  // RLS に依存せず service_role で運営フラグを確認
+  // RLS に依存せず service_role でロールを確認
   const admin = createAdminClient();
   const { data } = await admin
     .from("users")
-    .select("name, is_platform_admin")
+    .select("name, role")
     .eq("id", user.id)
-    .maybeSingle<Pick<User, "name" | "is_platform_admin">>();
+    .maybeSingle<Pick<User, "name" | "role">>();
 
-  if (!data?.is_platform_admin) redirect("/vendor/login");
+  if (data?.role !== "platform_admin") redirect("/vendor/login");
 
   return { id: user.id, email: user.email, name: data.name };
 }

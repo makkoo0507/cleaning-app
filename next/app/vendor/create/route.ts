@@ -76,7 +76,6 @@ export async function POST(request: NextRequest) {
     company_id: company.id,
     role: "contractor_admin",
     name: adminName,
-    is_platform_admin: false,
   });
   if (userErr) {
     await admin.from("contractor_companies").delete().eq("id", company.id);

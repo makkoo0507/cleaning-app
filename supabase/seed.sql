@@ -111,14 +111,13 @@ values (
 )
 on conflict (provider_id, provider) do nothing;
 
--- 運営は会社に属さない（company_id = null）。role は制約を満たす値を入れる。
-insert into public.users (id, company_id, role, name, is_platform_admin)
+-- 運営は会社に属さない（company_id = null）
+insert into public.users (id, company_id, role, name)
 values (
   '44444444-4444-4444-4444-444444444444',
   null,
-  'contractor_admin',
-  'ベンダー運営',
-  true
+  'platform_admin',
+  'ベンダー運営'
 )
 on conflict (id) do nothing;
 

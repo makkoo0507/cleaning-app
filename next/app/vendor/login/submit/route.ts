@@ -3,7 +3,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { User } from "@/lib/database.types";
 
 // ベンダー運営ログイン（ネイティブ form POST）。
-// 認証後、運営フラグ（is_platform_admin）を確認する。
+// 認証後、role = platform_admin を確認する。
 export async function POST(request: NextRequest) {
   const form = await request.formData();
   const email = String(form.get("email") ?? "").trim();
@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient();
   const { data: profile } = await admin
     .from("users")
-    .select("is_platform_admin")
+    .select("role")
     .eq("id", data.user.id)
-    .maybeSingle<Pick<User, "is_platform_admin">>();
+    .maybeSingle<Pick<User, "role">>();
 
-  if (!profile?.is_platform_admin) {
+  if (profile?.role !== "platform_admin") {
     await supabase.auth.signOut();
     return fail("forbidden");
   }
