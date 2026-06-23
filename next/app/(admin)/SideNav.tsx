@@ -18,12 +18,12 @@ const MASTER_NAV = [
 ];
 
 const BILLING_NAV = { href: "/billing", label: "請求・支払い" };
-const STAFF_NAV = { href: "/staff", label: "ユーザー管理" };
 
 const SETTINGS_NAV = [
   { href: "/settings", label: "LINE連携" },
   { href: "/settings/reminder", label: "定期送信" },
   { href: "/settings/options", label: "オプション" },
+  { href: "/staff", label: "ユーザー管理" },
 ];
 
 interface Props {
@@ -35,7 +35,7 @@ interface Props {
 
 export default function SideNav({ contractorName, admin, billingEnabled, userName }: Props) {
   const pathname = usePathname();
-  const isOnSettings = pathname.startsWith("/settings");
+  const isOnSettings = pathname.startsWith("/settings") || pathname.startsWith("/staff");
   const isOnMaster = MASTER_NAV.some((item) => pathname.startsWith(item.href));
   const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
   const [masterOpen, setMasterOpen] = useState(isOnMaster);
@@ -106,13 +106,6 @@ export default function SideNav({ contractorName, admin, billingEnabled, userNam
 
         {admin && (
           <>
-            <Link
-              href={STAFF_NAV.href}
-              className={pathname === STAFF_NAV.href ? activeLinkClass : linkClass}
-            >
-              {STAFF_NAV.label}
-            </Link>
-
             {/* 設定アコーディオン */}
             <div>
               <button

@@ -28,7 +28,7 @@ export default function PasswordManualPage() {
           管理者による再設定の手順
         </h2>
         <ol className="list-decimal space-y-1 pl-5">
-          <li>管理者でログインし、「ユーザー管理」を開く。</li>
+          <li>管理者でログインし、「設定 → ユーザー管理」を開く。</li>
           <li>パスワードを変更したいユーザーの「編集」を開く。</li>
           <li>パスワード欄に新しいパスワード（8文字以上）を入力して保存する。</li>
           <li>新しいパスワードを本人へ安全な方法で伝える。</li>
