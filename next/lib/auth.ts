@@ -44,7 +44,11 @@ export async function requireContractor(): Promise<CurrentUser> {
   const user = await requireUser();
   // 運営（会社未所属）は業者向け管理Web対象外。ベンダー画面へ。
   if (!user.companyId) redirect("/vendor");
-  if (user.role !== "contractor_admin" && user.role !== "contractor_viewer") {
+  if (
+    user.role !== "contractor_admin" &&
+    user.role !== "contractor_viewer" &&
+    user.role !== "contractor_vendor"
+  ) {
     redirect("/");
   }
   return user;
@@ -77,15 +81,15 @@ export async function requirePlatformAdmin(): Promise<PlatformAdmin> {
   return { id: user.id, email: user.email, name: data.name };
 }
 
-// 管理者のみ許可
+// 管理者のみ許可（contractor_vendor は全操作可なので管理者相当）
 export async function requireAdmin(): Promise<CurrentUser> {
   const user = await requireContractor();
-  if (user.role !== "contractor_admin") {
+  if (user.role !== "contractor_admin" && user.role !== "contractor_vendor") {
     redirect("/dashboard");
   }
   return user;
 }
 
 export function isAdmin(user: CurrentUser): boolean {
-  return user.role === "contractor_admin";
+  return user.role === "contractor_admin" || user.role === "contractor_vendor";
 }
