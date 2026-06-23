@@ -16,7 +16,6 @@ export default async function StaffPage() {
     .from("users")
     .select("*")
     .in("role", ["contractor_admin", "contractor_viewer"])
-    .eq("vendor_managed", false)
     .order("role", { ascending: true })
     .order("created_at", { ascending: false });
   const staff = (users as User[]) ?? [];

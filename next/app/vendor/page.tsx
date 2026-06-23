@@ -36,7 +36,7 @@ interface AdminRow {
   id: string;
   name: string;
   company_id: string;
-  vendor_managed: boolean;
+  role: string;
 }
 
 export default async function VendorPage({
@@ -78,9 +78,8 @@ export default async function VendorPage({
   // パスワード再設定の対象はベンダーアカウントのみ
   const { data: admins } = await client
     .from("users")
-    .select("id, name, company_id, vendor_managed")
-    .eq("role", "contractor_admin")
-    .eq("vendor_managed", true)
+    .select("id, name, company_id, role")
+    .eq("role", "contractor_vendor")
     .not("company_id", "is", null)
     .returns<AdminRow[]>();
 
@@ -298,7 +297,7 @@ export default async function VendorPage({
                     <input type="hidden" name="user_id" value={a.id} />
                     <span className="text-sm text-zinc-600 dark:text-zinc-400">
                       {a.name}
-                      {a.vendor_managed && (
+                      {a.role === "contractor_vendor" && (
                         <span className="ml-1 rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-800 dark:bg-blue-950 dark:text-blue-200">
                           運営用
                         </span>

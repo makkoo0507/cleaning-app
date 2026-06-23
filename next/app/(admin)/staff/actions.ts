@@ -79,24 +79,23 @@ export async function updateStaff(
 
   const adminClient = createAdminClient();
 
-  // 対象ユーザーの現在の役職（自社のみ・ベンダー保有アカウントは対象外）
+  // 対象ユーザーの現在の役職（自社のみ・ベンダーアカウントは対象外）
   const { data: target } = await adminClient
     .from("users")
     .select("role")
     .eq("id", userId)
     .eq("company_id", me.companyId)
-    .eq("vendor_managed", false)
+    .neq("role", "contractor_vendor")
     .maybeSingle<{ role: string }>();
   if (!target) return { error: "対象が見つかりません。" };
 
-  // 最後の管理者を降格させない（ベンダー保有アカウントは数えない）
+  // 最後の管理者を降格させない（ベンダーアカウントは数えない）
   if (target.role === "contractor_admin" && role !== "contractor_admin") {
     const { count } = await adminClient
       .from("users")
       .select("id", { count: "exact", head: true })
       .eq("company_id", me.companyId)
-      .eq("role", "contractor_admin")
-      .eq("vendor_managed", false);
+      .eq("role", "contractor_admin");
     if ((count ?? 0) <= 1) {
       return {
         error:
@@ -156,7 +155,7 @@ export async function deleteStaff(formData: FormData) {
     .select("role")
     .eq("id", userId)
     .eq("company_id", me.companyId)
-    .eq("vendor_managed", false)
+    .neq("role", "contractor_vendor")
     .maybeSingle<{ role: string }>();
   if (!target || target.role !== "contractor_viewer") return;
 

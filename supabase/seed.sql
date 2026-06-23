@@ -157,13 +157,12 @@ values (
 )
 on conflict (provider_id, provider) do nothing;
 
-insert into public.users (id, company_id, role, name, vendor_managed)
+insert into public.users (id, company_id, role, name)
 values (
   '55555555-5555-5555-5555-555555555555',
   '11111111-1111-1111-1111-111111111111',
-  'contractor_admin',
-  '運営管理（ベンダー）',
-  true
+  'contractor_vendor',
+  '運営管理（ベンダー）'
 )
 on conflict (id) do nothing;
 

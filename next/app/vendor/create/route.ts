@@ -98,10 +98,9 @@ export async function POST(request: NextRequest) {
       await admin.from("users").insert({
         id: vCreated.user.id,
         company_id: company.id,
-        role: "contractor_admin",
+        role: "contractor_vendor",
         name: "運営管理（ベンダー）",
         is_platform_admin: false,
-        vendor_managed: true,
       });
       await admin
         .from("contractor_member_profiles")

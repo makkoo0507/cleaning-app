@@ -3,6 +3,7 @@
 export type UserRole =
   | "contractor_admin"
   | "contractor_viewer"
+  | "contractor_vendor"
   | "cleaner"
   | "contact";
 
@@ -10,6 +11,7 @@ export type UserRole =
 export const CONTRACTOR_ROLE_LABEL: Record<string, string> = {
   contractor_admin: "管理者",
   contractor_viewer: "閲覧者",
+  contractor_vendor: "開発者（ベンダー）",
 };
 
 export type JobStatus = "scheduled" | "in_progress" | "completed";
@@ -56,7 +58,6 @@ export interface User {
   line_user_id: string | null;
   invite_token: string | null;
   is_platform_admin: boolean;
-  vendor_managed: boolean;
   created_at: string;
 }
 
