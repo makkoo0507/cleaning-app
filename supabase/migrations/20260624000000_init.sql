@@ -239,15 +239,15 @@ create policy "同社ユーザーを参照"
 
 create policy "管理者がユーザーを追加"
   on public.users for insert
-  with check (contractor_id = public.my_company_id() and public.my_role() = 'contractor_admin');
+  with check (contractor_id = public.my_company_id() and public.my_role() in ('contractor_admin', 'contractor_vendor'));
 
 create policy "管理者がユーザーを更新"
   on public.users for update
-  using (contractor_id = public.my_company_id() and public.my_role() = 'contractor_admin');
+  using (contractor_id = public.my_company_id() and public.my_role() in ('contractor_admin', 'contractor_vendor'));
 
 create policy "管理者がユーザーを削除"
   on public.users for delete
-  using (contractor_id = public.my_company_id() and public.my_role() = 'contractor_admin');
+  using (contractor_id = public.my_company_id() and public.my_role() in ('contractor_admin', 'contractor_vendor'));
 
 -- profiles
 create policy "同社_社員プロフィール参照"
@@ -256,7 +256,7 @@ create policy "同社_社員プロフィール参照"
 
 create policy "管理者_社員プロフィール管理"
   on public.contractor_member_profiles
-  using (public.is_same_contractor_user(user_id) and public.my_role() = 'contractor_admin');
+  using (public.is_same_contractor_user(user_id) and public.my_role() in ('contractor_admin', 'contractor_vendor'));
 
 create policy "同社_清掃者プロフィール参照"
   on public.cleaner_profiles for select
@@ -264,7 +264,7 @@ create policy "同社_清掃者プロフィール参照"
 
 create policy "管理者_清掃者プロフィール管理"
   on public.cleaner_profiles
-  using (public.is_same_contractor_user(user_id) and public.my_role() = 'contractor_admin');
+  using (public.is_same_contractor_user(user_id) and public.my_role() in ('contractor_admin', 'contractor_vendor'));
 
 create policy "同社_関係者プロフィール参照"
   on public.property_member_profiles for select
@@ -272,7 +272,7 @@ create policy "同社_関係者プロフィール参照"
 
 create policy "管理者_関係者プロフィール管理"
   on public.property_member_profiles
-  using (public.is_same_contractor_user(user_id) and public.my_role() = 'contractor_admin');
+  using (public.is_same_contractor_user(user_id) and public.my_role() in ('contractor_admin', 'contractor_vendor'));
 
 -- properties
 create policy "同社メンバーが物件を参照"
@@ -281,7 +281,7 @@ create policy "同社メンバーが物件を参照"
 
 create policy "管理者が物件を管理"
   on public.properties
-  using (contractor_id = public.my_company_id() and public.my_role() = 'contractor_admin');
+  using (contractor_id = public.my_company_id() and public.my_role() in ('contractor_admin', 'contractor_vendor'));
 
 -- property_members
 create policy "同社_物件紐付け参照"
@@ -290,7 +290,7 @@ create policy "同社_物件紐付け参照"
 
 create policy "管理者_物件紐付け管理"
   on public.property_members
-  using (public.is_same_contractor_user(user_id) and public.my_role() = 'contractor_admin');
+  using (public.is_same_contractor_user(user_id) and public.my_role() in ('contractor_admin', 'contractor_vendor'));
 
 -- jobs
 create policy "管理者と閲覧者が全案件を参照"
@@ -306,7 +306,7 @@ create policy "清掃者が自分の案件を参照"
 
 create policy "管理者が案件を管理"
   on public.jobs
-  using (contractor_id = public.my_company_id() and public.my_role() = 'contractor_admin');
+  using (contractor_id = public.my_company_id() and public.my_role() in ('contractor_admin', 'contractor_vendor'));
 
 -- cleaning_records
 create policy "管理者と閲覧者が清掃記録を参照"
