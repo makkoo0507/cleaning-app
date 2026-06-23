@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const ERROR_MESSAGES: Record<string, string> = {
   input: "メールアドレスとパスワードを入力してください。",
   auth: "ログインに失敗しました。入力内容をご確認ください。",
-  company: "このアカウントはこの会社のログインページでは使用できません。",
+  company: "このアカウントはこの業者のログインページでは使用できません。",
 };
 
 export default async function CompanyLoginPage({

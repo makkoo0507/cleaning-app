@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// ベンダーセッションをサインアウトして、指定会社のログインページへ遷移する。
+// ベンダーセッションをサインアウトして、指定業者のログインページへ遷移する。
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug");
   if (!slug) {

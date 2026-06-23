@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Field, TextInput } from "@/components/ui";
 
-// 会社URLが分からない人向けの入口。slug を入れて /{slug}/login へ。
+// 業者URLが分からない人向けの入口。slug を入れて /{slug}/login へ。
 export default function SlugEntry() {
   const router = useRouter();
   const [slug, setSlug] = useState("");
@@ -23,12 +23,12 @@ export default function SlugEntry() {
             民泊清掃管理
           </h1>
           <p className="mt-2 text-sm text-zinc-500">
-            会社のログインURLを入力してください
+            業者のログインURLを入力してください
           </p>
         </div>
 
         <form onSubmit={go} className="space-y-4">
-          <Field label="会社ID（例: acme）" required>
+          <Field label="業者ID（例: acme）" required>
             <TextInput
               value={slug}
               onChange={(e) => setSlug(e.target.value)}

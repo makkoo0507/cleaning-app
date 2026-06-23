@@ -12,7 +12,7 @@ const ERRORS: Record<string, string> = {
   slug_taken: "このログインURL（slug）は既に使われています。",
   email_taken: "このメールアドレスは既に登録されています。",
   auth: "管理者アカウントの作成に失敗しました。",
-  company: "会社の作成に失敗しました。",
+  company: "業者の作成に失敗しました。",
   user: "管理者プロフィールの作成に失敗しました。",
   target: "対象ユーザーが見つかりません。",
   reset: "パスワードの再設定に失敗しました。",
@@ -74,8 +74,7 @@ export default async function VendorPage({
     .order("created_at", { ascending: false })
     .returns<CompanyRow[]>();
 
-  // 各会社の管理者（パスワード再設定の対象）
-  // パスワード再設定の対象はベンダーアカウントのみ
+  // 各業者のベンダーアカウント（パスワード再設定の対象）
   const { data: admins } = await client
     .from("users")
     .select("id, name, company_id, role")
@@ -129,7 +128,7 @@ export default async function VendorPage({
 
       {created && (
         <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
-          会社を作成しました。ログインURL: <code>/{created}/login</code>
+          業者を作成しました。ログインURL: <code>/{created}/login</code>
         </div>
       )}
       {pw_reset === "ok" && (
@@ -224,13 +223,13 @@ export default async function VendorPage({
 
       <section>
         <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          登録済みの会社（{companies?.length ?? 0}）
+          登録済みの業者（{companies?.length ?? 0}）
         </h2>
         <div className="overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-800">
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-900">
               <tr>
-                <th className="px-3 py-2 text-left font-medium">会社名</th>
+                <th className="px-3 py-2 text-left font-medium">業者名</th>
                 <th className="px-3 py-2 text-left font-medium">ログインURL</th>
                 <th className="px-3 py-2 text-left font-medium">プラン</th>
               </tr>
@@ -269,8 +268,8 @@ export default async function VendorPage({
           ベンダーアカウントのパスワード再設定
         </h2>
         <p className="mb-3 text-sm text-zinc-500">
-          各会社のベンダー用アカウント（運営が会社管理画面へ入るためのアカウント）の
-          パスワードを再設定します。業者管理者のパスワードは、このアカウントで会社に
+          各業者のベンダー用アカウント（ベンダーが業者管理画面へ入るためのアカウント）の
+          パスワードを再設定します。業者管理者のパスワードは、このアカウントで業者に
           ログインし「ユーザー管理」から変更してください。
         </p>
         <div className="space-y-3">
@@ -333,7 +332,7 @@ export default async function VendorPage({
           オプションの加入状況
         </h2>
         <p className="mb-3 text-sm text-zinc-500">
-          各会社のオプション（有料機能含む）の加入を運営側で切り替えます。
+          各業者のオプション（有料機能含む）の加入をベンダー側で切り替えます。
         </p>
         <div className="space-y-3">
           {(companies ?? []).map((c) => (

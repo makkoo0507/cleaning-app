@@ -9,7 +9,7 @@ function vendorAlias(email: string | undefined, slug: string): string | null {
   return `${local}+${slug}@${domain}`;
 }
 
-// 会社＋その管理者アカウントを一括発行（運営のみ・ネイティブ form POST）。
+// 業者＋その管理者アカウントを一括発行（運営のみ・ネイティブ form POST）。
 export async function POST(request: NextRequest) {
   const vendor = await requirePlatformAdmin();
 
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
   await admin.from("contractor_member_profiles").insert({ user_id: userId });
 
   // ベンダー用の隠し管理者を作成（運営が /{slug}/login から入るための常設アカウント）
-  // 初期パスワードは会社管理者と同じ（運営が把握済み）。後で /vendor から変更可能。
+  // 初期パスワードは業者管理者と同じ（運営が把握済み）。後で /vendor から変更可能。
   const alias = vendorAlias(vendor.email, slug);
   if (alias) {
     const { data: vCreated } = await admin.auth.admin.createUser({

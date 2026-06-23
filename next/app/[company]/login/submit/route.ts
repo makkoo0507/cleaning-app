@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCompanyBySlug } from "@/lib/company";
 import type { User } from "@/lib/database.types";
 
-// 会社別ログインの送信先（ネイティブ form POST）。
+// 業者別ログインの送信先（ネイティブ form POST）。
 // Server Action（fetch）ではなく通常のフォーム送信＋リダイレクトにすることで、
 // ブラウザのパスワードマネージャーに「保存しますか？」を出させる。
 export async function POST(
@@ -33,7 +33,7 @@ export async function POST(
   });
   if (error || !data.user) return fail("auth");
 
-  // 所属テナントが URL の会社と一致するか検証
+  // 所属テナントが URL の業者と一致するか検証
   const { data: profile } = await supabase
     .from("users")
     .select("company_id")

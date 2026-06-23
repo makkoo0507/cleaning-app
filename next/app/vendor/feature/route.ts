@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePlatformAdmin } from "@/lib/auth";
 import { setCompanyFeature } from "@/lib/features";
 
-// 運営が各会社のオプション加入状況を変更する（運営のみ）。
+// 運営が各業者のオプション加入状況を変更する（運営のみ）。
 export async function POST(request: NextRequest) {
   await requirePlatformAdmin();
 

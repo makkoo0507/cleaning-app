@@ -13,10 +13,10 @@ export default async function Home() {
 
   if (user) redirect("/dashboard");
 
-  // 直近に使った会社のログインURLが分かれば誘導
+  // 直近に使った業者のログインURLが分かれば誘導
   const slug = (await cookies()).get("company_slug")?.value;
   if (slug) redirect(`/${slug}/login`);
 
-  // 会社が不明な場合は slug 入力画面
+  // 業者が不明な場合は slug 入力画面
   return <SlugEntry />;
 }
