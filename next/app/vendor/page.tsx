@@ -69,7 +69,7 @@ export default async function VendorPage({
 
   const client = createAdminClient();
   const { data: companies } = await client
-    .from("contractor_companies")
+    .from("contractors")
     .select("id, name, slug, plan, created_at")
     .order("created_at", { ascending: false })
     .returns<CompanyRow[]>();

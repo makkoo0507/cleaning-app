@@ -18,7 +18,7 @@ export async function sendTestNotification(
   const client = createAdminClient();
 
   const { data: company } = await client
-    .from("contractor_companies")
+    .from("contractors")
     .select("line_channel_access_token")
     .eq("id", me.companyId)
     .single<{ line_channel_access_token: string | null }>();
@@ -88,7 +88,7 @@ export async function logout() {
       .maybeSingle<Pick<User, "company_id">>();
     if (data) {
       const { data: company } = await supabase
-        .from("contractor_companies")
+        .from("contractors")
         .select("slug")
         .eq("id", data.company_id)
         .maybeSingle<{ slug: string | null }>();

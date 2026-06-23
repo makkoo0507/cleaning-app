@@ -15,7 +15,7 @@ export async function updateReminderSettings(formData: FormData): Promise<void> 
   const admin = await requireAdmin();
   const client = createAdminClient();
   await client
-    .from("contractor_companies")
+    .from("contractors")
     .update({
       reminder_cleaner_prev_day: formData.get("cleaner_prev") != null,
       reminder_cleaner_same_day: formData.get("cleaner_same") != null,
@@ -66,10 +66,10 @@ export async function updateLineSettings(
     return { error: "変更する項目を入力してください。" };
   }
 
-  // contractor_companies は RLS で更新ポリシー未定義のため service role で更新（自社に限定）
+  // contractors は RLS で更新ポリシー未定義のため service role で更新（自社に限定）
   const client = createAdminClient();
   const { error } = await client
-    .from("contractor_companies")
+    .from("contractors")
     .update(updates)
     .eq("id", admin.companyId);
 
@@ -93,7 +93,7 @@ export async function verifyToken(): Promise<VerifyTokenState> {
   const client = createAdminClient();
 
   const { data: company } = await client
-    .from("contractor_companies")
+    .from("contractors")
     .select("line_channel_access_token, line_channel_secret")
     .eq("id", admin.companyId)
     .single<{

@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { ContractorCompany } from "@/lib/database.types";
+import type { Contractor } from "@/lib/database.types";
 import { PageHeader } from "@/components/ui";
 import { updateReminderSettings } from "../actions";
 
@@ -11,14 +11,14 @@ export default async function ReminderSettingsPage() {
   const supabase = await createClient();
 
   const { data: company } = await supabase
-    .from("contractor_companies")
+    .from("contractors")
     .select(
       "reminder_cleaner_prev_day, reminder_cleaner_same_day, reminder_owner_prev_day, reminder_owner_same_day"
     )
     .eq("id", admin.companyId)
     .single<
       Pick<
-        ContractorCompany,
+        Contractor,
         | "reminder_cleaner_prev_day"
         | "reminder_cleaner_same_day"
         | "reminder_owner_prev_day"

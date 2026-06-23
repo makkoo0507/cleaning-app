@@ -19,7 +19,7 @@ export type JobStatus = "scheduled" | "in_progress" | "completed";
 
 export type CompanyPlan = "free" | "paid";
 
-export interface ContractorCompany {
+export interface Contractor {
   id: string;
   name: string;
   plan: CompanyPlan;

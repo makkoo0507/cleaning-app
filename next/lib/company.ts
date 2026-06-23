@@ -1,6 +1,6 @@
 // 会社（テナント）の参照ヘルパー
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import type { ContractorCompany } from "@/lib/database.types";
+import type { Contractor } from "@/lib/database.types";
 
 // 自社のプラン・主要機能フラグを取得。
 // billingEnabled: 請求・支払いオプションが実際に有効か（有料プラン＋契約ON）
@@ -8,7 +8,7 @@ import type { ContractorCompany } from "@/lib/database.types";
 export async function getCompanyName(companyId: string): Promise<string> {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("contractor_companies")
+    .from("contractors")
     .select("name")
     .eq("id", companyId)
     .maybeSingle<{ name: string }>();
@@ -20,7 +20,7 @@ export async function getCompanyFlags(
 ): Promise<{ billingEnabled: boolean; isPaid: boolean }> {
   const supabase = await createClient();
   const { data: company } = await supabase
-    .from("contractor_companies")
+    .from("contractors")
     .select("plan")
     .eq("id", companyId)
     .maybeSingle<{ plan: string }>();
@@ -43,12 +43,12 @@ export async function getCompanyFlags(
 // slug から会社を取得（未認証のログインページから呼ぶため service role を使用）
 export async function getCompanyBySlug(
   slug: string
-): Promise<Pick<ContractorCompany, "id" | "name" | "slug"> | null> {
+): Promise<Pick<Contractor, "id" | "name" | "slug"> | null> {
   const admin = createAdminClient();
   const { data } = await admin
-    .from("contractor_companies")
+    .from("contractors")
     .select("id, name, slug")
     .eq("slug", slug)
-    .maybeSingle<Pick<ContractorCompany, "id" | "name" | "slug">>();
+    .maybeSingle<Pick<Contractor, "id" | "name" | "slug">>();
   return data ?? null;
 }

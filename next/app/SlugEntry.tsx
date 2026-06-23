@@ -45,7 +45,7 @@ export default function SlugEntry() {
           </button>
         </form>
         <p className="text-center text-xs text-zinc-500">
-          会社IDが不明な場合は、契約している清掃業者にお問い合わせください。
+          業者IDが不明な場合は、管理者もしくはシステム運営（ベンダー）にお問い合わせください。
         </p>
       </div>
     </div>

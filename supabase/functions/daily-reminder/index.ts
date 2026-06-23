@@ -2,7 +2,7 @@
 // pg_cron から日次で呼び出される。kind で前日/当日を切り替える。
 //   - kind=prev_day : 翌日の案件をリマインド（前日の夜に実行する想定）
 //   - kind=same_day : 当日の案件をリマインド（当日の朝に実行する想定）
-// 送信先・タイミングは会社ごとの設定（contractor_companies）に従う。
+// 送信先・タイミングは会社ごとの設定（contractors）に従う。
 // reminder_logs(job_id, kind) のユニーク制約で重複送信を防止する。
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
   async function getCompany(id: string) {
     if (companyCache.has(id)) return companyCache.get(id)!;
     const { data } = await supabase
-      .from("contractor_companies")
+      .from("contractors")
       .select(
         "line_channel_access_token, reminder_cleaner_prev_day, reminder_cleaner_same_day, reminder_owner_prev_day, reminder_owner_same_day"
       )

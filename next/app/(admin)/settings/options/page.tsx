@@ -53,8 +53,8 @@ export default async function OptionSettingsPage() {
                   )}
                 </p>
                 <p className="text-xs text-zinc-500">
-                  有料オプションの加入・解約は運営でのお手続きとなります。
-                  ご希望の場合は運営までお問い合わせください。
+                  有料オプションの加入・解約は運営（ベンダー）でのお手続きとなります。
+                  ご希望の場合は運営（ベンダー）までお問い合わせください。
                 </p>
               </div>
             ) : (

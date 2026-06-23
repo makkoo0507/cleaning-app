@@ -10,7 +10,7 @@ interface JobNotifyRow {
   property_id: string;
   cleaner_id: string | null;
   properties: { name: string } | null;
-  contractor_companies: { line_channel_access_token: string | null } | null;
+  contractors: { line_channel_access_token: string | null } | null;
 }
 
 // --- 基本送信 ---
@@ -51,13 +51,13 @@ export async function notifyScheduleCreated(jobId: string): Promise<void> {
   const { data: job } = await admin
     .from("jobs")
     .select(
-      "scheduled_date, company_id, property_id, cleaner_id, properties(name), contractor_companies(line_channel_access_token)"
+      "scheduled_date, company_id, property_id, cleaner_id, properties(name), contractors(line_channel_access_token)"
     )
     .eq("id", jobId)
     .single<JobNotifyRow>();
 
   // LINE トークン未設定の業者はスキップ
-  const token = job?.contractor_companies?.line_channel_access_token;
+  const token = job?.contractors?.line_channel_access_token;
   if (!job || !token) return;
 
   const date = formatDateShort(job.scheduled_date);
@@ -103,12 +103,12 @@ export async function notifyCleaningCompleted(jobId: string): Promise<void> {
   const { data: job } = await admin
     .from("jobs")
     .select(
-      "scheduled_date, company_id, property_id, cleaner_id, properties(name), contractor_companies(line_channel_access_token)"
+      "scheduled_date, company_id, property_id, cleaner_id, properties(name), contractors(line_channel_access_token)"
     )
     .eq("id", jobId)
     .single<JobNotifyRow>();
 
-  const token = job?.contractor_companies?.line_channel_access_token;
+  const token = job?.contractors?.line_channel_access_token;
   if (!job || !token) return;
 
   const propertyName = job.properties?.name ?? "";

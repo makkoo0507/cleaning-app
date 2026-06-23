@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient();
 
   const { data: existing } = await admin
-    .from("contractor_companies")
+    .from("contractors")
     .select("id")
     .eq("slug", slug)
     .maybeSingle();
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   const userId = created.user.id;
 
   const { data: company, error: companyErr } = await admin
-    .from("contractor_companies")
+    .from("contractors")
     .insert({ name: companyName, slug, plan: plan === "paid" ? "paid" : "free" })
     .select("id")
     .single<{ id: string }>();
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     name: adminName,
   });
   if (userErr) {
-    await admin.from("contractor_companies").delete().eq("id", company.id);
+    await admin.from("contractors").delete().eq("id", company.id);
     await admin.auth.admin.deleteUser(userId);
     return back("user");
   }
@@ -99,7 +99,6 @@ export async function POST(request: NextRequest) {
         company_id: company.id,
         role: "contractor_vendor",
         name: "運営管理（ベンダー）",
-        is_platform_admin: false,
       });
       await admin
         .from("contractor_member_profiles")

@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
-import type { ContractorCompany } from "@/lib/database.types";
+import type { Contractor } from "@/lib/database.types";
 import { PageHeader } from "@/components/ui";
 import SettingsForm from "./SettingsForm";
 
@@ -12,12 +12,12 @@ export default async function SettingsPage() {
   const supabase = createAdminClient();
 
   const { data: company } = await supabase
-    .from("contractor_companies")
+    .from("contractors")
     .select("line_channel_access_token, line_channel_secret")
     .eq("id", admin.companyId)
     .single<
       Pick<
-        ContractorCompany,
+        Contractor,
         "line_channel_access_token" | "line_channel_secret"
       >
     >();

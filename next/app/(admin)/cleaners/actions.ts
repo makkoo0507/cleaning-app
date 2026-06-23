@@ -9,7 +9,7 @@ import {
   deleteManagedUser,
   countCleaners,
 } from "@/lib/users-admin";
-import type { ContractorCompany } from "@/lib/database.types";
+import type { Contractor } from "@/lib/database.types";
 
 export interface CleanerFormState {
   error?: string;
@@ -29,10 +29,10 @@ export async function createCleaner(
   // プラン上限チェック（清掃者数）
   const supabase = await createClient();
   const { data: company } = await supabase
-    .from("contractor_companies")
+    .from("contractors")
     .select("max_cleaners")
     .eq("id", user.companyId)
-    .single<Pick<ContractorCompany, "max_cleaners">>();
+    .single<Pick<Contractor, "max_cleaners">>();
 
   if (company?.max_cleaners != null) {
     const current = await countCleaners(user.companyId);

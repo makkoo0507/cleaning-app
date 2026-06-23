@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { ContractorCompany } from "@/lib/database.types";
+import type { Contractor } from "@/lib/database.types";
 
 export interface PropertyFormState {
   error?: string;
@@ -32,10 +32,10 @@ export async function createProperty(
   // プラン上限チェック（テーブル設計.md）
   const [{ data: company }, { count }] = await Promise.all([
     supabase
-      .from("contractor_companies")
+      .from("contractors")
       .select("max_properties")
       .eq("id", user.companyId)
-      .single<Pick<ContractorCompany, "max_properties">>(),
+      .single<Pick<Contractor, "max_properties">>(),
     supabase
       .from("properties")
       .select("id", { count: "exact", head: true })
