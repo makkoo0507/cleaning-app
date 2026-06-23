@@ -69,7 +69,7 @@ export default async function VendorPage({
   } = await searchParams;
 
   const client = createAdminClient();
-  const { data: companies } = await client
+  const { data: contractors } = await client
     .from("contractors")
     .select("id, name, slug, plan, created_at")
     .order("created_at", { ascending: false })
@@ -224,7 +224,7 @@ export default async function VendorPage({
 
       <section>
         <h2 className="mb-3 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          登録済みの業者（{companies?.length ?? 0}）
+          登録済みの業者（{contractors?.length ?? 0}）
         </h2>
         <div className="overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-800">
           <table className="w-full text-sm">
@@ -236,7 +236,7 @@ export default async function VendorPage({
               </tr>
             </thead>
             <tbody>
-              {(companies ?? []).map((c) => (
+              {(contractors ?? []).map((c) => (
                 <tr
                   key={c.id}
                   className="border-t border-zinc-100 dark:border-zinc-800"
@@ -274,7 +274,7 @@ export default async function VendorPage({
           ログインし「ユーザー管理」から変更してください。
         </p>
         <div className="space-y-3">
-          {(companies ?? []).map((c) => {
+          {(contractors ?? []).map((c) => {
             const list = adminsByContractor.get(c.id) ?? [];
             return (
               <div
@@ -336,7 +336,7 @@ export default async function VendorPage({
           各業者のオプション（有料機能含む）の加入をベンダー側で切り替えます。
         </p>
         <div className="space-y-3">
-          {(companies ?? []).map((c) => (
+          {(contractors ?? []).map((c) => (
             <div
               key={c.id}
               className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800"
