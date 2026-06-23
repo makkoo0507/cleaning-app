@@ -99,7 +99,7 @@ export default async function VendorPage({
   // オプション（カタログ）と各社の加入状況
   const features = await listFeatures();
   const { data: contracts } = await client
-    .from("company_features")
+    .from("contractor_features")
     .select("company_id, feature_key, enabled")
     .returns<ContractRow[]>();
   const contractMap = new Map(
@@ -152,7 +152,7 @@ export default async function VendorPage({
           新規発行
         </h2>
         <form method="post" action="/vendor/create" className="space-y-4">
-          <Field label="会社名" required htmlFor="company_name">
+          <Field label="業者名" required htmlFor="company_name">
             <TextInput
               id="company_name"
               name="company_name"

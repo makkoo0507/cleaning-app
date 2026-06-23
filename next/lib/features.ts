@@ -1,4 +1,4 @@
-// オプション（機能フラグ）= カタログ（features）＋契約（company_features）
+// オプション（機能フラグ）= カタログ（features）＋契約（contractor_features）
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { Feature } from "@/lib/database.types";
 
@@ -18,7 +18,7 @@ export async function getCompanyFeatureMap(
 ): Promise<Map<string, boolean>> {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("company_features")
+    .from("contractor_features")
     .select("feature_key, enabled")
     .eq("company_id", companyId);
   return new Map(
@@ -29,7 +29,7 @@ export async function getCompanyFeatureMap(
   );
 }
 
-// 会社で機能が「実際に有効」か。加入状況（company_features.enabled）が真実の源。
+// 会社で機能が「実際に有効」か。加入状況（contractor_features.enabled）が真実の源。
 // 有料オプションの加入可否は運営（ベンダー）が /vendor で管理する。
 export async function hasFeature(
   companyId: string,
@@ -37,7 +37,7 @@ export async function hasFeature(
 ): Promise<boolean> {
   const supabase = await createClient();
   const { data: contract } = await supabase
-    .from("company_features")
+    .from("contractor_features")
     .select("enabled")
     .eq("company_id", companyId)
     .eq("feature_key", key)
@@ -52,7 +52,7 @@ export async function setCompanyFeature(
   enabled: boolean
 ): Promise<void> {
   const admin = createAdminClient();
-  await admin.from("company_features").upsert({
+  await admin.from("contractor_features").upsert({
     company_id: companyId,
     feature_key: key,
     enabled,

@@ -27,7 +27,7 @@ export async function getCompanyFlags(
   const isPaid = company?.plan === "paid";
 
   const { data: contract } = await supabase
-    .from("company_features")
+    .from("contractor_features")
     .select("enabled")
     .eq("company_id", companyId)
     .eq("feature_key", "billing")
