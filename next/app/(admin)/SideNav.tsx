@@ -9,9 +9,12 @@ const TOP_NAV = [
   { href: "/dashboard", label: "ダッシュボード" },
   { href: "/schedules", label: "スケジュール" },
   { href: "/records", label: "清掃記録" },
-  { href: "/properties", label: "物件管理" },
-  { href: "/owners", label: "オーナー管理" },
-  { href: "/cleaners", label: "清掃者管理" },
+];
+
+const MASTER_NAV = [
+  { href: "/properties", label: "物件" },
+  { href: "/owners", label: "オーナー" },
+  { href: "/cleaners", label: "清掃者" },
 ];
 
 const BILLING_NAV = { href: "/billing", label: "請求・支払い" };
@@ -33,7 +36,9 @@ interface Props {
 export default function SideNav({ contractorName, admin, billingEnabled, userName }: Props) {
   const pathname = usePathname();
   const isOnSettings = pathname.startsWith("/settings");
+  const isOnMaster = MASTER_NAV.some((item) => pathname.startsWith(item.href));
   const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
+  const [masterOpen, setMasterOpen] = useState(isOnMaster);
 
   const linkClass = "block rounded-md px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900";
   const activeLinkClass = "block rounded-md px-3 py-2 text-sm font-medium text-zinc-900 bg-zinc-100 dark:text-zinc-50 dark:bg-zinc-800";
@@ -56,6 +61,39 @@ export default function SideNav({ contractorName, admin, billingEnabled, userNam
             {item.label}
           </Link>
         ))}
+
+        {/* 基本情報アコーディオン */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setMasterOpen((o) => !o)}
+            className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          >
+            <span>基本情報</span>
+            <svg
+              className={`h-4 w-4 transition-transform ${masterOpen ? "rotate-180" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {masterOpen && (
+            <div className="ml-3 mt-1 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700">
+              {MASTER_NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={pathname.startsWith(item.href) ? activeLinkClass : linkClass}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         {billingEnabled && (
           <Link
