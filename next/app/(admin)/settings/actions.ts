@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
 import { setContractorFeature } from "@/lib/features";
+import { setNotificationSetting } from "@/lib/notifications";
 
 export interface SettingsFormState {
   error?: string;
@@ -13,16 +14,12 @@ export interface SettingsFormState {
 // 定期リマインドの送信先・タイミング設定（管理者のみ）
 export async function updateReminderSettings(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
-  const client = createAdminClient();
-  await client
-    .from("contractors")
-    .update({
-      reminder_cleaner_prev_day: formData.get("cleaner_prev") != null,
-      reminder_cleaner_same_day: formData.get("cleaner_same") != null,
-      reminder_owner_prev_day: formData.get("owner_prev") != null,
-      reminder_owner_same_day: formData.get("owner_same") != null,
-    })
-    .eq("id", admin.contractorId);
+  await Promise.all([
+    setNotificationSetting(admin.contractorId, "cleaner", "reminder_prev_day", formData.get("cleaner_prev") != null),
+    setNotificationSetting(admin.contractorId, "cleaner", "reminder_same_day", formData.get("cleaner_same") != null),
+    setNotificationSetting(admin.contractorId, "owner",   "reminder_prev_day", formData.get("owner_prev")   != null),
+    setNotificationSetting(admin.contractorId, "owner",   "reminder_same_day", formData.get("owner_same")   != null),
+  ]);
   revalidatePath("/settings/reminder");
 }
 

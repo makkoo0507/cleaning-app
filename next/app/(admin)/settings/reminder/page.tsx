@@ -1,6 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
-import type { Contractor } from "@/lib/database.types";
+import { getNotificationSettings } from "@/lib/notifications";
 import { PageHeader } from "@/components/ui";
 import { updateReminderSettings } from "../actions";
 
@@ -8,23 +7,10 @@ export const dynamic = "force-dynamic";
 
 export default async function ReminderSettingsPage() {
   const admin = await requireAdmin();
-  const supabase = await createClient();
+  const settings = await getNotificationSettings(admin.contractorId);
 
-  const { data: contractor } = await supabase
-    .from("contractors")
-    .select(
-      "reminder_cleaner_prev_day, reminder_cleaner_same_day, reminder_owner_prev_day, reminder_owner_same_day"
-    )
-    .eq("id", admin.contractorId)
-    .single<
-      Pick<
-        Contractor,
-        | "reminder_cleaner_prev_day"
-        | "reminder_cleaner_same_day"
-        | "reminder_owner_prev_day"
-        | "reminder_owner_same_day"
-      >
-    >();
+  const get = (recipient: string, trigger: string) =>
+    settings.get(`${recipient}:${trigger}` as Parameters<typeof settings.get>[0]) ?? false;
 
   return (
     <div className="space-y-6">
@@ -70,14 +56,14 @@ export default async function ReminderSettingsPage() {
                   <input
                     type="checkbox"
                     name="cleaner_prev"
-                    defaultChecked={contractor?.reminder_cleaner_prev_day ?? true}
+                    defaultChecked={get("cleaner", "reminder_prev_day")}
                   />
                 </td>
                 <td className="px-3 py-2 text-center">
                   <input
                     type="checkbox"
                     name="cleaner_same"
-                    defaultChecked={contractor?.reminder_cleaner_same_day ?? false}
+                    defaultChecked={get("cleaner", "reminder_same_day")}
                   />
                 </td>
               </tr>
@@ -89,14 +75,14 @@ export default async function ReminderSettingsPage() {
                   <input
                     type="checkbox"
                     name="owner_prev"
-                    defaultChecked={contractor?.reminder_owner_prev_day ?? false}
+                    defaultChecked={get("owner", "reminder_prev_day")}
                   />
                 </td>
                 <td className="px-3 py-2 text-center">
                   <input
                     type="checkbox"
                     name="owner_same"
-                    defaultChecked={contractor?.reminder_owner_same_day ?? false}
+                    defaultChecked={get("owner", "reminder_same_day")}
                   />
                 </td>
               </tr>

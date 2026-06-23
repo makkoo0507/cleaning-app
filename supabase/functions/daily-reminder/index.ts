@@ -2,18 +2,16 @@
 // pg_cron から日次で呼び出される。kind で前日/当日を切り替える。
 //   - kind=prev_day : 翌日の案件をリマインド（前日の夜に実行する想定）
 //   - kind=same_day : 当日の案件をリマインド（当日の朝に実行する想定）
-// 送信先・タイミングは会社ごとの設定（contractors）に従う。
+// 送信先・タイミングは contractor_notification_settings に従う。
 // reminder_logs(job_id, kind) のユニーク制約で重複送信を防止する。
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 type Kind = "prev_day" | "same_day";
+type Recipient = "cleaner" | "owner";
 
-interface CompanySettings {
+interface ContractorCache {
   line_channel_access_token: string | null;
-  reminder_cleaner_prev_day: boolean;
-  reminder_cleaner_same_day: boolean;
-  reminder_owner_prev_day: boolean;
-  reminder_owner_same_day: boolean;
+  notifyMap: Map<`${Recipient}:${Kind}`, boolean>;
 }
 
 Deno.serve(async (req) => {
@@ -29,6 +27,8 @@ Deno.serve(async (req) => {
   }
   if (kind !== "prev_day" && kind !== "same_day") kind = "prev_day";
 
+  const trigger = kind === "prev_day" ? "reminder_prev_day" : "reminder_same_day";
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -42,9 +42,7 @@ Deno.serve(async (req) => {
 
   const { data: jobs, error } = await supabase
     .from("jobs")
-    .select(
-      "id, scheduled_date, scheduled_start_time, cleaner_id, property_id, contractor_id"
-    )
+    .select("id, scheduled_date, scheduled_start_time, cleaner_id, property_id, contractor_id")
     .eq("scheduled_date", targetStr)
     .eq("status", "scheduled");
 
@@ -56,35 +54,45 @@ Deno.serve(async (req) => {
     return new Response(`ok: no jobs (${kind} ${targetStr})`);
   }
 
-  const companyCache = new Map<string, CompanySettings | null>();
-  async function getCompany(id: string) {
-    if (companyCache.has(id)) return companyCache.get(id)!;
-    const { data } = await supabase
-      .from("contractors")
-      .select(
-        "line_channel_access_token, reminder_cleaner_prev_day, reminder_cleaner_same_day, reminder_owner_prev_day, reminder_owner_same_day"
-      )
-      .eq("id", id)
-      .single();
-    companyCache.set(id, (data as CompanySettings) ?? null);
-    return (data as CompanySettings) ?? null;
+  const contractorCache = new Map<string, ContractorCache | null>();
+
+  async function getContractor(id: string): Promise<ContractorCache | null> {
+    if (contractorCache.has(id)) return contractorCache.get(id)!;
+
+    const [{ data: c }, { data: ns }] = await Promise.all([
+      supabase
+        .from("contractors")
+        .select("line_channel_access_token")
+        .eq("id", id)
+        .single(),
+      supabase
+        .from("contractor_notification_settings")
+        .select("recipient, trigger, enabled")
+        .eq("contractor_id", id),
+    ]);
+
+    if (!c) { contractorCache.set(id, null); return null; }
+
+    const notifyMap = new Map<`${Recipient}:${Kind}`, boolean>();
+    for (const row of ns ?? []) {
+      if (row.trigger === "reminder_prev_day" || row.trigger === "reminder_same_day") {
+        const k = row.trigger === "reminder_prev_day" ? "prev_day" : "same_day";
+        notifyMap.set(`${row.recipient}:${k}`, row.enabled);
+      }
+    }
+    const result: ContractorCache = { line_channel_access_token: c.line_channel_access_token, notifyMap };
+    contractorCache.set(id, result);
+    return result;
   }
 
   let sent = 0;
 
   for (const job of jobs) {
-    const company = await getCompany(job.contractor_id);
-    if (!company?.line_channel_access_token) continue;
+    const contractor = await getContractor(job.contractor_id);
+    if (!contractor?.line_channel_access_token) continue;
 
-    // この種別(前日/当日)で、清掃者・オーナーそれぞれに送るか
-    const sendCleaner =
-      kind === "prev_day"
-        ? company.reminder_cleaner_prev_day
-        : company.reminder_cleaner_same_day;
-    const sendOwner =
-      kind === "prev_day"
-        ? company.reminder_owner_prev_day
-        : company.reminder_owner_same_day;
+    const sendCleaner = contractor.notifyMap.get(`cleaner:${kind}`) ?? false;
+    const sendOwner   = contractor.notifyMap.get(`owner:${kind}`)   ?? false;
     if (!sendCleaner && !sendOwner) continue;
 
     // 重複送信防止: (job_id, kind) を先に確保。既に存在ならスキップ。
@@ -93,7 +101,7 @@ Deno.serve(async (req) => {
       .insert({ job_id: job.id, kind });
     if (claimErr) continue;
 
-    const token = company.line_channel_access_token;
+    const token = contractor.line_channel_access_token;
 
     const { data: prop } = await supabase
       .from("properties")
@@ -155,6 +163,6 @@ Deno.serve(async (req) => {
     sent += recipients.length;
   }
 
-  console.log(`daily-reminder(${kind} ${targetStr}): sent ${sent}`);
-  return new Response(`ok: ${sent} sent (${kind} ${targetStr})`);
+  console.log(`daily-reminder(${trigger} ${targetStr}): sent ${sent}`);
+  return new Response(`ok: ${sent} sent (${trigger} ${targetStr})`);
 });

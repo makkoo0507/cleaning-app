@@ -28,11 +28,27 @@ export interface Contractor {
   line_channel_access_token: string | null;
   line_channel_secret: string | null;
   slug: string | null;
-  reminder_cleaner_prev_day: boolean;
-  reminder_cleaner_same_day: boolean;
-  reminder_owner_prev_day: boolean;
-  reminder_owner_same_day: boolean;
   created_at: string;
+}
+
+export type NotificationRecipient = "cleaner" | "owner";
+export type NotificationTrigger =
+  | "reminder_prev_day"
+  | "reminder_same_day"
+  | "job_completed";
+
+export const NOTIFICATION_TRIGGERS: NotificationTrigger[] = [
+  "reminder_prev_day",
+  "reminder_same_day",
+  "job_completed",
+];
+
+export interface ContractorNotificationSetting {
+  contractor_id: string;
+  recipient: NotificationRecipient;
+  trigger: NotificationTrigger;
+  enabled: boolean;
+  updated_at: string;
 }
 
 export interface Feature {
