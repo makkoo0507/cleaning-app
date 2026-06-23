@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
+import { setCompanyFeature } from "@/lib/features";
 
 export interface SettingsFormState {
   error?: string;
@@ -25,26 +26,23 @@ export async function updateReminderSettings(formData: FormData): Promise<void> 
   revalidatePath("/settings/reminder");
 }
 
-// 請求・支払い機能の利用 ON/OFF（管理者のみ）。有効化は有料プランのみ。
-export async function setBillingEnabled(formData: FormData): Promise<void> {
+// オプション（機能）の利用 ON/OFF（管理者のみ）。有料オプションの有効化は有料プランのみ。
+export async function setFeatureEnabled(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
-  const enabled = formData.get("billing_enabled") != null;
+  const key = String(formData.get("feature_key") ?? "");
+  if (!key) return;
+  const enabled = formData.get("enabled") != null;
+
+  // 有料オプションの加入・解約は運営のみ（業者管理者は変更不可）
   const client = createAdminClient();
+  const { data: feat } = await client
+    .from("features")
+    .select("is_paid")
+    .eq("key", key)
+    .maybeSingle<{ is_paid: boolean }>();
+  if (feat?.is_paid) return;
 
-  // 有効化は有料プランのみ許可（無効化は常に可）
-  if (enabled) {
-    const { data: company } = await client
-      .from("contractor_companies")
-      .select("plan")
-      .eq("id", admin.companyId)
-      .maybeSingle<{ plan: string }>();
-    if (company?.plan !== "paid") return;
-  }
-
-  await client
-    .from("contractor_companies")
-    .update({ billing_enabled: enabled })
-    .eq("id", admin.companyId);
+  await setCompanyFeature(admin.companyId, key, enabled);
   revalidatePath("/settings/options");
   revalidatePath("/", "layout");
 }

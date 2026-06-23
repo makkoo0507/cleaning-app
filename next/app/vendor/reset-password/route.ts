@@ -22,14 +22,21 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient();
 
-  // 対象が業者ユーザー（運営フラグなし・会社所属）であることを確認
+  // 対象はベンダーアカウント（会社所属の vendor_managed）に限定
   const { data: target } = await admin
     .from("users")
-    .select("company_id, is_platform_admin")
+    .select("company_id, is_platform_admin, vendor_managed")
     .eq("id", userId)
-    .maybeSingle<Pick<User, "company_id" | "is_platform_admin">>();
+    .maybeSingle<
+      Pick<User, "company_id" | "is_platform_admin" | "vendor_managed">
+    >();
 
-  if (!target || target.is_platform_admin || !target.company_id) {
+  if (
+    !target ||
+    target.is_platform_admin ||
+    !target.company_id ||
+    !target.vendor_managed
+  ) {
     return back("error=target");
   }
 

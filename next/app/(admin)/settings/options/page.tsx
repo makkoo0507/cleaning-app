@@ -1,70 +1,84 @@
 import { requireAdmin } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
-import type { ContractorCompany } from "@/lib/database.types";
+import { listFeatures, getCompanyFeatureMap } from "@/lib/features";
 import { PageHeader } from "@/components/ui";
-import { setBillingEnabled } from "../actions";
+import { setFeatureEnabled } from "../actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function OptionSettingsPage() {
   const admin = await requireAdmin();
-  const supabase = await createClient();
-
-  const { data: company } = await supabase
-    .from("contractor_companies")
-    .select("billing_enabled, plan")
-    .eq("id", admin.companyId)
-    .single<Pick<ContractorCompany, "billing_enabled" | "plan">>();
-
-  const billingEnabled = company?.billing_enabled ?? true;
-  const isPaid = company?.plan === "paid";
+  const features = await listFeatures();
+  const contracted = await getCompanyFeatureMap(admin.companyId);
 
   return (
     <div className="space-y-6">
       <PageHeader title="設定（オプション）" />
       <p className="max-w-lg text-sm text-zinc-500">
-        有料オプション機能の利用設定です。
+        利用できるオプション機能の一覧です。有料オプションは有料プランで利用できます。
       </p>
 
-      <section className="space-y-3 rounded-md border border-zinc-200 p-4 dark:border-zinc-800">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-50">
-          請求・支払い機能
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-200">
-            有料オプション
-          </span>
-        </h2>
-        <p className="text-xs text-zinc-500">
-          案件ごとの請求額・支払い額の記録、月次集計、CSV
-          出力ができます。有料プランで利用できます。
-        </p>
+      {features.length === 0 && (
+        <p className="text-sm text-zinc-500">利用可能なオプションはありません。</p>
+      )}
 
-        {isPaid ? (
-          <form action={setBillingEnabled} className="space-y-2">
-            <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-              <input
-                type="checkbox"
-                name="billing_enabled"
-                defaultChecked={billingEnabled}
-              />
-              請求・支払い機能を利用する
-            </label>
-            <p className="text-xs text-zinc-500">
-              オフにすると、メニュー・請求画面・案件の金額入力欄が非表示になります。
-            </p>
-            <button
-              type="submit"
-              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-            >
-              保存
-            </button>
-          </form>
-        ) : (
-          <p className="rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-            現在のプランは無料プランです。この機能を利用するには有料プランへのアップグレードが必要です。
-            （プラン変更の窓口にお問い合わせください）
-          </p>
-        )}
-      </section>
+      {features.map((f) => {
+        const enabled = contracted.get(f.key) ?? false;
+        return (
+          <section
+            key={f.key}
+            className="space-y-3 rounded-md border border-zinc-200 p-4 dark:border-zinc-800"
+          >
+            <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              {f.name}
+              {f.is_paid && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                  有料オプション
+                </span>
+              )}
+            </h2>
+            {f.description && (
+              <p className="text-xs text-zinc-500">{f.description}</p>
+            )}
+
+            {f.is_paid ? (
+              <div className="space-y-1">
+                <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                  加入状況:{" "}
+                  {enabled ? (
+                    <span className="font-medium text-green-700 dark:text-green-300">
+                      加入中
+                    </span>
+                  ) : (
+                    <span className="font-medium text-zinc-500">未加入</span>
+                  )}
+                </p>
+                <p className="text-xs text-zinc-500">
+                  有料オプションの加入・解約は運営でのお手続きとなります。
+                  ご希望の場合は運営までお問い合わせください。
+                </p>
+              </div>
+            ) : (
+              <form action={setFeatureEnabled} className="space-y-2">
+                <input type="hidden" name="feature_key" value={f.key} />
+                <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <input
+                    type="checkbox"
+                    name="enabled"
+                    defaultChecked={enabled}
+                  />
+                  この機能を利用する
+                </label>
+                <button
+                  type="submit"
+                  className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                >
+                  保存
+                </button>
+              </form>
+            )}
+          </section>
+        );
+      })}
     </div>
   );
 }

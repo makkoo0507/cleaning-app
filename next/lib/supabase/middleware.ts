@@ -46,8 +46,8 @@ export async function updateSession(request: NextRequest) {
 
   // ベンダー運営画面
   if (path === "/vendor" || path.startsWith("/vendor/")) {
-    // ログイン関連（ページ・送信先）は未認証で許可
-    if (path.startsWith("/vendor/login")) {
+    // ログイン関連・会社切替は未認証でも許可
+    if (path.startsWith("/vendor/switch") || path.startsWith("/vendor/login")) {
       if (user && path === "/vendor/login") {
         const url = request.nextUrl.clone();
         url.pathname = "/vendor";

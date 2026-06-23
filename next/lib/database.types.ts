@@ -25,12 +25,27 @@ export interface ContractorCompany {
   line_channel_access_token: string | null;
   line_channel_secret: string | null;
   slug: string | null;
-  billing_enabled: boolean;
   reminder_cleaner_prev_day: boolean;
   reminder_cleaner_same_day: boolean;
   reminder_owner_prev_day: boolean;
   reminder_owner_same_day: boolean;
   created_at: string;
+}
+
+export interface Feature {
+  key: string;
+  name: string;
+  description: string | null;
+  is_paid: boolean;
+  sort: number;
+  created_at: string;
+}
+
+export interface CompanyFeature {
+  company_id: string;
+  feature_key: string;
+  enabled: boolean;
+  updated_at: string;
 }
 
 export interface User {
@@ -41,6 +56,7 @@ export interface User {
   line_user_id: string | null;
   invite_token: string | null;
   is_platform_admin: boolean;
+  vendor_managed: boolean;
   created_at: string;
 }
 

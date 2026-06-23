@@ -2,22 +2,40 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { ContractorCompany } from "@/lib/database.types";
 
-// 自社の機能フラグ・プランを取得。RLS の「自社のみ参照」で取得可。
-// billingEnabled: 請求・支払いの利用ON/OFF
-// isPaid: 有料プランか（有料オプションの利用可否判定に使用）
+// 自社のプラン・主要機能フラグを取得。
+// billingEnabled: 請求・支払いオプションが実際に有効か（有料プラン＋契約ON）
+// isPaid: 有料プランか
+export async function getCompanyName(companyId: string): Promise<string> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("contractor_companies")
+    .select("name")
+    .eq("id", companyId)
+    .maybeSingle<{ name: string }>();
+  return data?.name ?? "民泊清掃管理";
+}
+
 export async function getCompanyFlags(
   companyId: string
 ): Promise<{ billingEnabled: boolean; isPaid: boolean }> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data: company } = await supabase
     .from("contractor_companies")
-    .select("billing_enabled, plan")
+    .select("plan")
     .eq("id", companyId)
-    .maybeSingle<{ billing_enabled: boolean; plan: string }>();
-  const isPaid = data?.plan === "paid";
+    .maybeSingle<{ plan: string }>();
+  const isPaid = company?.plan === "paid";
+
+  const { data: contract } = await supabase
+    .from("company_features")
+    .select("enabled")
+    .eq("company_id", companyId)
+    .eq("feature_key", "billing")
+    .maybeSingle<{ enabled: boolean }>();
+
   return {
-    // 請求・支払いは有料オプション。有料プランかつフラグONのときだけ有効。
-    billingEnabled: isPaid && (data?.billing_enabled ?? false),
+    // 加入状況（運営が管理）が真実の源
+    billingEnabled: contract?.enabled ?? false,
     isPaid,
   };
 }

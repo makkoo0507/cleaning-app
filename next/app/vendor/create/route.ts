@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePlatformAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
 
+// 運営メールから会社ごとのベンダー用エイリアスを作る（例 makkoo0507+beach@gmail.com）
+function vendorAlias(email: string | undefined, slug: string): string | null {
+  if (!email || !email.includes("@")) return null;
+  const [local, domain] = email.split("@");
+  return `${local}+${slug}@${domain}`;
+}
+
 // 会社＋その管理者アカウントを一括発行（運営のみ・ネイティブ form POST）。
 export async function POST(request: NextRequest) {
-  await requirePlatformAdmin();
+  const vendor = await requirePlatformAdmin();
 
   const form = await request.formData();
   const companyName = String(form.get("company_name") ?? "").trim();
@@ -18,11 +25,16 @@ export async function POST(request: NextRequest) {
     .toLowerCase();
   const adminPassword = String(form.get("admin_password") ?? "");
 
-  const back = (code: string) =>
-    NextResponse.redirect(
-      new URL(`/vendor?error=${encodeURIComponent(code)}`, request.url),
-      303
-    );
+  // エラー時は入力値（パスワード以外）を引き継いで再表示する
+  const back = (code: string) => {
+    const p = new URLSearchParams({ error: code });
+    if (companyName) p.set("company_name", companyName);
+    if (slug) p.set("slug", slug);
+    if (plan) p.set("plan", plan);
+    if (adminName) p.set("admin_name", adminName);
+    if (adminEmail) p.set("admin_email", adminEmail);
+    return NextResponse.redirect(new URL(`/vendor?${p}`, request.url), 303);
+  };
 
   if (!companyName || !slug || !adminName || !adminEmail || !adminPassword) {
     return back("input");
@@ -72,6 +84,30 @@ export async function POST(request: NextRequest) {
     return back("user");
   }
   await admin.from("contractor_member_profiles").insert({ user_id: userId });
+
+  // ベンダー用の隠し管理者を作成（運営が /{slug}/login から入るための常設アカウント）
+  // 初期パスワードは会社管理者と同じ（運営が把握済み）。後で /vendor から変更可能。
+  const alias = vendorAlias(vendor.email, slug);
+  if (alias) {
+    const { data: vCreated } = await admin.auth.admin.createUser({
+      email: alias,
+      password: adminPassword,
+      email_confirm: true,
+    });
+    if (vCreated?.user) {
+      await admin.from("users").insert({
+        id: vCreated.user.id,
+        company_id: company.id,
+        role: "contractor_admin",
+        name: "運営管理（ベンダー）",
+        is_platform_admin: false,
+        vendor_managed: true,
+      });
+      await admin
+        .from("contractor_member_profiles")
+        .insert({ user_id: vCreated.user.id });
+    }
+  }
 
   return NextResponse.redirect(
     new URL(`/vendor?created=${encodeURIComponent(slug)}`, request.url),

@@ -171,7 +171,7 @@ export default function LineSetupManualPage() {
 
         <Step no={6} title="本システムに登録する">
           <p>
-            管理画面の<strong>「設定（LINE連携）」</strong>を開き、上でコピーした
+            管理画面の<strong>「設定 &gt; LINE連携」</strong>を開き、上でコピーした
             <strong>チャネルアクセストークン</strong>と
             <strong>チャネルシークレット</strong>を貼り付けて「保存」します。
           </p>

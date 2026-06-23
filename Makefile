@@ -15,7 +15,7 @@
 #   パスワード: password123
 # ============================================================
 
-.PHONY: init setup start stop reset logs logs-app tunnel tunnel-logs
+.PHONY: init setup start restart stop reset logs logs-app tunnel tunnel-logs
 
 # LIFF 実機テスト用 ngrok 固定ドメイン
 NGROK_DOMAIN = monotype-bungee-province.ngrok-free.dev
@@ -59,6 +59,11 @@ start:
 	@echo "   公開URL(ngrok):  https://$(NGROK_DOMAIN)"
 	@echo "   ngrok 状況:      http://localhost:4040 / make tunnel-logs"
 	@echo "   デモログイン:    admin@example.com / password123"
+
+## 再起動（stop → start）
+restart:
+	$(MAKE) stop
+	$(MAKE) start
 
 ## ngrok トンネルのみ起動（フォアグラウンド表示）
 tunnel:
