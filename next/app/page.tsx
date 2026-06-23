@@ -14,7 +14,7 @@ export default async function Home() {
   if (user) redirect("/dashboard");
 
   // 直近に使った業者のログインURLが分かれば誘導
-  const slug = (await cookies()).get("company_slug")?.value;
+  const slug = (await cookies()).get("contractor_slug")?.value;
   if (slug) redirect(`/${slug}/login`);
 
   // 業者が不明な場合は slug 入力画面

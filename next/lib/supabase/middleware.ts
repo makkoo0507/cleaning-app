@@ -77,7 +77,7 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
     }
-    supabaseResponse.cookies.set("company_slug", slug, {
+    supabaseResponse.cookies.set("contractor_slug", slug, {
       path: "/",
       maxAge: 60 * 60 * 24 * 90,
       sameSite: "lax",
@@ -86,7 +86,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (!user && isProtected) {
-    const slug = request.cookies.get("company_slug")?.value;
+    const slug = request.cookies.get("contractor_slug")?.value;
     const url = request.nextUrl.clone();
     url.pathname = slug ? `/${slug}/login` : "/";
     return NextResponse.redirect(url);
