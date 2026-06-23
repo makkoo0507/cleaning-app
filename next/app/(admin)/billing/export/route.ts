@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getContractorFlags } from "@/lib/company";
+import { getContractorFlags } from "@/lib/contractor";
 import type { Job, Property, User } from "@/lib/database.types";
 import { JOB_STATUS_LABEL } from "@/lib/database.types";
 import { jstMonthRange } from "@/lib/format";

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getContractorFlags } from "@/lib/company";
+import { getContractorFlags } from "@/lib/contractor";
 import type { Job, Property, User } from "@/lib/database.types";
 import { JOB_STATUS_LABEL } from "@/lib/database.types";
 import { formatDateShort, formatYen, jstMonthRange } from "@/lib/format";

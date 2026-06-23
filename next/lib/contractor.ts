@@ -41,7 +41,7 @@ export async function getContractorFlags(
 }
 
 // slug から会社を取得（未認証のログインページから呼ぶため service role を使用）
-export async function getCompanyBySlug(
+export async function getContractorBySlug(
   slug: string
 ): Promise<Pick<Contractor, "id" | "name" | "slug"> | null> {
   const admin = createAdminClient();

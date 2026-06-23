@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getCompanyBySlug } from "@/lib/company";
+import { getContractorBySlug } from "@/lib/contractor";
 import type { User } from "@/lib/database.types";
 
 // 業者別ログインの送信先（ネイティブ form POST）。
@@ -8,9 +8,9 @@ import type { User } from "@/lib/database.types";
 // ブラウザのパスワードマネージャーに「保存しますか？」を出させる。
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ company: string }> }
+  { params }: { params: Promise<{ contractor: string }> }
 ) {
-  const { company: slug } = await params;
+  const { contractor: slug } = await params;
   const form = await request.formData();
   const email = String(form.get("email") ?? "").trim();
   const password = String(form.get("password") ?? "");
@@ -23,7 +23,7 @@ export async function POST(
 
   if (!email || !password) return fail("input");
 
-  const company = await getCompanyBySlug(slug);
+  const company = await getContractorBySlug(slug);
   if (!company) return NextResponse.redirect(new URL("/", request.url), 303);
 
   const supabase = await createClient();

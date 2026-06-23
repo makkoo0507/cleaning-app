@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCompanyBySlug } from "@/lib/company";
+import { getContractorBySlug } from "@/lib/contractor";
 import { Field, TextInput } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -14,12 +14,12 @@ export default async function CompanyLoginPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ company: string }>;
+  params: Promise<{ contractor: string }>;
   searchParams: Promise<{ error?: string }>;
 }) {
-  const { company: slug } = await params;
+  const { contractor: slug } = await params;
   const { error } = await searchParams;
-  const company = await getCompanyBySlug(slug);
+  const company = await getContractorBySlug(slug);
 
   if (!company) notFound();
 

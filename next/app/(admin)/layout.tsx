@@ -1,5 +1,5 @@
 import { requireContractor, isAdmin } from "@/lib/auth";
-import { getContractorFlags, getContractorName } from "@/lib/company";
+import { getContractorFlags, getContractorName } from "@/lib/contractor";
 import SideNav from "./SideNav";
 
 export default async function AdminLayout({

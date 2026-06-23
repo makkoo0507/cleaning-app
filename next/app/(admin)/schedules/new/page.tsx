@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getContractorFlags } from "@/lib/company";
+import { getContractorFlags } from "@/lib/contractor";
 import type { Property, User } from "@/lib/database.types";
 import { createJob } from "../actions";
 import JobForm from "../JobForm";

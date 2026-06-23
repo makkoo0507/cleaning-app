@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getContractorFlags } from "@/lib/company";
+import { getContractorFlags } from "@/lib/contractor";
 import type { Job, Property, User } from "@/lib/database.types";
 import { updateJob } from "../../actions";
 import JobForm from "../../JobForm";

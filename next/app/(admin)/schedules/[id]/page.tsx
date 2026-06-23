@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getContractorFlags } from "@/lib/company";
+import { getContractorFlags } from "@/lib/contractor";
 import type {
   CleaningRecord,
   Job,
