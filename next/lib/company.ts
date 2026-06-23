@@ -14,9 +14,11 @@ export async function getCompanyFlags(
     .select("billing_enabled, plan")
     .eq("id", companyId)
     .maybeSingle<{ billing_enabled: boolean; plan: string }>();
+  const isPaid = data?.plan === "paid";
   return {
-    billingEnabled: data?.billing_enabled ?? true,
-    isPaid: data?.plan === "paid",
+    // 請求・支払いは有料オプション。有料プランかつフラグONのときだけ有効。
+    billingEnabled: isPaid && (data?.billing_enabled ?? false),
+    isPaid,
   };
 }
 

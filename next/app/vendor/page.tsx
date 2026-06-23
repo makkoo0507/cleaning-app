@@ -13,6 +13,8 @@ const ERRORS: Record<string, string> = {
   auth: "管理者アカウントの作成に失敗しました。",
   company: "会社の作成に失敗しました。",
   user: "管理者プロフィールの作成に失敗しました。",
+  target: "対象ユーザーが見つかりません。",
+  reset: "パスワードの再設定に失敗しました。",
 };
 
 interface CompanyRow {
@@ -23,13 +25,19 @@ interface CompanyRow {
   created_at: string;
 }
 
+interface AdminRow {
+  id: string;
+  name: string;
+  company_id: string;
+}
+
 export default async function VendorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; created?: string }>;
+  searchParams: Promise<{ error?: string; created?: string; pw_reset?: string }>;
 }) {
   const admin = await requirePlatformAdmin();
-  const { error, created } = await searchParams;
+  const { error, created, pw_reset } = await searchParams;
 
   const client = createAdminClient();
   const { data: companies } = await client
@@ -37,6 +45,28 @@ export default async function VendorPage({
     .select("id, name, slug, plan, created_at")
     .order("created_at", { ascending: false })
     .returns<CompanyRow[]>();
+
+  // 各会社の管理者（パスワード再設定の対象）
+  const { data: admins } = await client
+    .from("users")
+    .select("id, name, company_id")
+    .eq("role", "contractor_admin")
+    .not("company_id", "is", null)
+    .returns<AdminRow[]>();
+
+  // 管理者のメールアドレス（auth.users から）
+  const { data: authList } = await client.auth.admin.listUsers({
+    perPage: 1000,
+  });
+  const emailById = new Map(
+    (authList?.users ?? []).map((u) => [u.id, u.email ?? ""])
+  );
+  const adminsByCompany = new Map<string, AdminRow[]>();
+  for (const a of admins ?? []) {
+    const arr = adminsByCompany.get(a.company_id) ?? [];
+    arr.push(a);
+    adminsByCompany.set(a.company_id, arr);
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10 space-y-8">
@@ -61,6 +91,11 @@ export default async function VendorPage({
       {created && (
         <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
           会社を作成しました。ログインURL: <code>/{created}/login</code>
+        </div>
+      )}
+      {pw_reset === "ok" && (
+        <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
+          パスワードを再設定しました。新しいパスワードを本人へお伝えください。
         </div>
       )}
       {error && (
@@ -158,6 +193,64 @@ export default async function VendorPage({
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-1 text-base font-semibold text-zinc-900 dark:text-zinc-50">
+          管理者パスワードの再設定
+        </h2>
+        <p className="mb-3 text-sm text-zinc-500">
+          業者管理者がパスワードを忘れた場合、新しいパスワード（8文字以上）を設定して
+          本人へお伝えください。
+        </p>
+        <div className="space-y-3">
+          {(companies ?? []).map((c) => {
+            const list = adminsByCompany.get(c.id) ?? [];
+            return (
+              <div
+                key={c.id}
+                className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800"
+              >
+                <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                  {c.name}
+                </p>
+                {list.length === 0 && (
+                  <p className="mt-1 text-sm text-zinc-500">管理者なし</p>
+                )}
+                {list.map((a) => (
+                  <form
+                    key={a.id}
+                    method="post"
+                    action="/vendor/reset-password"
+                    className="mt-2 flex flex-wrap items-center gap-2"
+                  >
+                    <input type="hidden" name="user_id" value={a.id} />
+                    <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                      {a.name}
+                      {emailById.get(a.id)
+                        ? `（${emailById.get(a.id)}）`
+                        : ""}
+                    </span>
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="新しいパスワード"
+                      autoComplete="new-password"
+                      required
+                      className="rounded-md border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-md border border-zinc-300 px-3 py-1 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                    >
+                      再設定
+                    </button>
+                  </form>
+                ))}
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>

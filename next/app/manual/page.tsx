@@ -26,6 +26,11 @@ const MANUALS = [
     title: "定期リマインド設定マニュアル",
     desc: "清掃予定の前日・当日リマインドを送る、送信先とタイミングの設定方法。",
   },
+  {
+    href: "/manual/password",
+    title: "パスワードの再設定マニュアル",
+    desc: "パスワードを忘れたとき、管理者がユーザー管理から再設定する手順。",
+  },
 ];
 
 export default function ManualIndexPage() {
