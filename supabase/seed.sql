@@ -5,9 +5,9 @@
 --   メール:     admin@example.com
 --   パスワード: password123
 
--- テスト会社（有料プラン: 上限なし）
--- 会社別ログインURL: /acme/login
-insert into public.contractor_companies (id, name, plan, max_properties, max_cleaners, slug)
+-- テスト業者（有料プラン: 上限なし）
+-- 業者別ログインURL: /acme/login
+insert into public.contractors (id, name, plan, max_properties, max_cleaners, slug)
 values (
   '11111111-1111-1111-1111-111111111111',
   'テスト清掃株式会社',
