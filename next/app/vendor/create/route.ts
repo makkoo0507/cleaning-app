@@ -85,6 +85,14 @@ export async function POST(request: NextRequest) {
   }
   await admin.from("contractor_member_profiles").insert({ user_id: userId });
 
+  // 通知設定の初期データ（デフォルト: 全て有効）
+  await admin.from("contractor_notification_settings").insert([
+    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_prev_day", enabled: true },
+    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_same_day", enabled: true },
+    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_prev_day", enabled: true },
+    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_same_day", enabled: true },
+  ]);
+
   // ベンダー用の隠し管理者を作成（運営が /{slug}/login から入るための常設アカウント）
   // パスワード = VENDOR_PASSWORD_BASE + slug（環境変数で環境ごとに異なる base を設定）
   const vendorPasswordBase = process.env.VENDOR_PASSWORD_BASE ?? "";
