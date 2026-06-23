@@ -10,6 +10,7 @@ const ERRORS: Record<string, string> = {
   slug_format: "ログインURL（slug）は英小文字・数字・ハイフンのみで入力してください。",
   password_short: "パスワードは8文字以上にしてください。",
   slug_taken: "このログインURL（slug）は既に使われています。",
+  slug_reserved: "このログインURL（slug）は予約済みのため使用できません。",
   email_taken: "このメールアドレスは既に登録されています。",
   auth: "管理者アカウントの作成に失敗しました。",
   company: "業者の作成に失敗しました。",

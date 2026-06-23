@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     return back("input");
   }
   if (!/^[a-z0-9-]+$/.test(slug)) return back("slug_format");
+  if (slug === "vendor") return back("slug_reserved");
   if (adminPassword.length < 8) return back("password_short");
 
   const admin = createAdminClient();
