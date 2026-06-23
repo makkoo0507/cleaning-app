@@ -62,6 +62,15 @@ export default function SideNav({ contractorName, admin, billingEnabled, userNam
           </Link>
         ))}
 
+        {billingEnabled && (
+          <Link
+            href={BILLING_NAV.href}
+            className={pathname === BILLING_NAV.href ? activeLinkClass : linkClass}
+          >
+            {BILLING_NAV.label}
+          </Link>
+        )}
+
         {/* 基本情報アコーディオン */}
         <div>
           <button
@@ -94,15 +103,6 @@ export default function SideNav({ contractorName, admin, billingEnabled, userNam
             </div>
           )}
         </div>
-
-        {billingEnabled && (
-          <Link
-            href={BILLING_NAV.href}
-            className={pathname === BILLING_NAV.href ? activeLinkClass : linkClass}
-          >
-            {BILLING_NAV.label}
-          </Link>
-        )}
 
         {admin && (
           <>
