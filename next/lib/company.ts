@@ -5,31 +5,31 @@ import type { Contractor } from "@/lib/database.types";
 // 自社のプラン・主要機能フラグを取得。
 // billingEnabled: 請求・支払いオプションが実際に有効か（有料プラン＋契約ON）
 // isPaid: 有料プランか
-export async function getCompanyName(companyId: string): Promise<string> {
+export async function getContractorName(contractorId: string): Promise<string> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("contractors")
     .select("name")
-    .eq("id", companyId)
+    .eq("id", contractorId)
     .maybeSingle<{ name: string }>();
   return data?.name ?? "民泊清掃管理";
 }
 
-export async function getCompanyFlags(
-  companyId: string
+export async function getContractorFlags(
+  contractorId: string
 ): Promise<{ billingEnabled: boolean; isPaid: boolean }> {
   const supabase = await createClient();
   const { data: company } = await supabase
     .from("contractors")
     .select("plan")
-    .eq("id", companyId)
+    .eq("id", contractorId)
     .maybeSingle<{ plan: string }>();
   const isPaid = company?.plan === "paid";
 
   const { data: contract } = await supabase
     .from("contractor_features")
     .select("enabled")
-    .eq("company_id", companyId)
+    .eq("contractor_id", contractorId)
     .eq("feature_key", "billing")
     .maybeSingle<{ enabled: boolean }>();
 

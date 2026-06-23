@@ -33,7 +33,7 @@ export async function createStaff(
   }
 
   const result = await createManagedUser({
-    companyId: admin.companyId,
+    contractorId: admin.contractorId,
     role: roleRaw,
     name,
     email,
@@ -84,7 +84,7 @@ export async function updateStaff(
     .from("users")
     .select("role")
     .eq("id", userId)
-    .eq("company_id", me.companyId)
+    .eq("contractor_id", me.contractorId)
     .neq("role", "contractor_vendor")
     .maybeSingle<{ role: string }>();
   if (!target) return { error: "対象が見つかりません。" };
@@ -94,7 +94,7 @@ export async function updateStaff(
     const { count } = await adminClient
       .from("users")
       .select("id", { count: "exact", head: true })
-      .eq("company_id", me.companyId)
+      .eq("contractor_id", me.contractorId)
       .eq("role", "contractor_admin");
     if ((count ?? 0) <= 1) {
       return {
@@ -109,7 +109,7 @@ export async function updateStaff(
     .from("users")
     .update({ name, role })
     .eq("id", userId)
-    .eq("company_id", me.companyId);
+    .eq("contractor_id", me.contractorId);
   if (error) return { error: "更新に失敗しました。" };
 
   await adminClient.from("contractor_member_profiles").upsert({
@@ -154,7 +154,7 @@ export async function deleteStaff(formData: FormData) {
     .from("users")
     .select("role")
     .eq("id", userId)
-    .eq("company_id", me.companyId)
+    .eq("contractor_id", me.contractorId)
     .neq("role", "contractor_vendor")
     .maybeSingle<{ role: string }>();
   if (!target || target.role !== "contractor_viewer") return;

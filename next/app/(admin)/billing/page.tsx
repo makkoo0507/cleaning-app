@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getCompanyFlags } from "@/lib/company";
+import { getContractorFlags } from "@/lib/company";
 import type { Job, Property, User } from "@/lib/database.types";
 import { JOB_STATUS_LABEL } from "@/lib/database.types";
 import { formatDateShort, formatYen, jstMonthRange } from "@/lib/format";
@@ -17,7 +17,7 @@ export default async function BillingPage({
   const user = await requireContractor();
   const admin = isAdmin(user);
   // 請求・支払い機能が無効のときは案内を表示（有料オプション）
-  const { billingEnabled, isPaid } = await getCompanyFlags(user.companyId);
+  const { billingEnabled, isPaid } = await getContractorFlags(user.contractorId);
   if (!billingEnabled) {
     return (
       <div className="max-w-lg space-y-4">

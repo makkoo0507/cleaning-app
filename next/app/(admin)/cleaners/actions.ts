@@ -31,11 +31,11 @@ export async function createCleaner(
   const { data: company } = await supabase
     .from("contractors")
     .select("max_cleaners")
-    .eq("id", user.companyId)
+    .eq("id", user.contractorId)
     .single<Pick<Contractor, "max_cleaners">>();
 
   if (company?.max_cleaners != null) {
-    const current = await countCleaners(user.companyId);
+    const current = await countCleaners(user.contractorId);
     if (current >= company.max_cleaners) {
       return {
         error: `清掃者数が上限（${company.max_cleaners}名）に達しています。有料プランへのアップグレードが必要です。`,
@@ -44,7 +44,7 @@ export async function createCleaner(
   }
 
   const result = await createManagedUser({
-    companyId: user.companyId,
+    contractorId: user.contractorId,
     role: "cleaner",
     name,
   });

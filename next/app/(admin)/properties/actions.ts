@@ -34,12 +34,12 @@ export async function createProperty(
     supabase
       .from("contractors")
       .select("max_properties")
-      .eq("id", user.companyId)
+      .eq("id", user.contractorId)
       .single<Pick<Contractor, "max_properties">>(),
     supabase
       .from("properties")
       .select("id", { count: "exact", head: true })
-      .eq("company_id", user.companyId),
+      .eq("contractor_id", user.contractorId),
   ]);
 
   if (company?.max_properties != null && (count ?? 0) >= company.max_properties) {
@@ -50,7 +50,7 @@ export async function createProperty(
 
   const { error } = await supabase
     .from("properties")
-    .insert({ company_id: user.companyId, name, address, notes });
+    .insert({ contractor_id: user.contractorId, name, address, notes });
 
   if (error) return { error: "登録に失敗しました。" };
 

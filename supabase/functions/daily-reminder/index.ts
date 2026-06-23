@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
   const { data: jobs, error } = await supabase
     .from("jobs")
     .select(
-      "id, scheduled_date, scheduled_start_time, cleaner_id, property_id, company_id"
+      "id, scheduled_date, scheduled_start_time, cleaner_id, property_id, contractor_id"
     )
     .eq("scheduled_date", targetStr)
     .eq("status", "scheduled");
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
   let sent = 0;
 
   for (const job of jobs) {
-    const company = await getCompany(job.company_id);
+    const company = await getCompany(job.contractor_id);
     if (!company?.line_channel_access_token) continue;
 
     // この種別(前日/当日)で、清掃者・オーナーそれぞれに送るか

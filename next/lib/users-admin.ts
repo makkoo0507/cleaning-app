@@ -10,7 +10,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import type { UserRole } from "@/lib/database.types";
 
 interface CreateUserArgs {
-  companyId: string;
+  contractorId: string;
   role: UserRole;
   name: string;
   // 業者ユーザー（管理者・閲覧者）の場合のみ
@@ -25,7 +25,7 @@ interface CreateUserResult {
 }
 
 export async function createManagedUser({
-  companyId,
+  contractorId,
   role,
   name,
   email,
@@ -60,7 +60,7 @@ export async function createManagedUser({
 
   const { error: insertError } = await admin.from("users").insert({
     id: userId,
-    company_id: companyId,
+    contractor_id: contractorId,
     role,
     name,
     invite_token: inviteToken ?? null,
@@ -82,12 +82,12 @@ export async function deleteManagedUser(userId: string) {
 }
 
 // 清掃者数の上限チェック
-export async function countCleaners(companyId: string): Promise<number> {
+export async function countCleaners(contractorId: string): Promise<number> {
   const admin = createAdminClient();
   const { count } = await admin
     .from("users")
     .select("id", { count: "exact", head: true })
-    .eq("company_id", companyId)
+    .eq("contractor_id", contractorId)
     .eq("role", "cleaner");
   return count ?? 0;
 }

@@ -6,7 +6,7 @@ import type { AppMetadata, User, UserRole } from "@/lib/database.types";
 export interface CurrentUser {
   id: string;
   email: string | undefined;
-  companyId: string;
+  contractorId: string;
   role: UserRole;
   profile: User;
 }
@@ -33,7 +33,7 @@ export async function requireUser(): Promise<CurrentUser> {
   return {
     id: user.id,
     email: user.email,
-    companyId: meta.company_id ?? profile.company_id,
+    contractorId: meta.contractor_id ?? profile.contractor_id,
     role: meta.role ?? profile.role,
     profile,
   };
@@ -43,7 +43,7 @@ export async function requireUser(): Promise<CurrentUser> {
 export async function requireContractor(): Promise<CurrentUser> {
   const user = await requireUser();
   // 運営（会社未所属）は業者向け管理Web対象外。ベンダー画面へ。
-  if (!user.companyId) redirect("/vendor");
+  if (!user.contractorId) redirect("/vendor");
   if (
     user.role !== "contractor_admin" &&
     user.role !== "contractor_viewer" &&

@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getCompanyFlags } from "@/lib/company";
+import { getContractorFlags } from "@/lib/company";
 import type { Property, User } from "@/lib/database.types";
 import { createJob } from "../actions";
 import JobForm from "../JobForm";
@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/ui";
 
 export default async function NewSchedulePage() {
   const admin = await requireAdmin();
-  const { billingEnabled } = await getCompanyFlags(admin.companyId);
+  const { billingEnabled } = await getContractorFlags(admin.contractorId);
   const supabase = await createClient();
   const [{ data: propsData }, { data: cleanersData }] = await Promise.all([
     supabase.from("properties").select("id, name").order("name"),

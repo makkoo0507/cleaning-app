@@ -45,7 +45,7 @@ export interface Feature {
 }
 
 export interface CompanyFeature {
-  company_id: string;
+  contractor_id: string;
   feature_key: string;
   enabled: boolean;
   updated_at: string;
@@ -53,7 +53,7 @@ export interface CompanyFeature {
 
 export interface User {
   id: string;
-  company_id: string;
+  contractor_id: string;
   role: UserRole;
   name: string;
   line_user_id: string | null;
@@ -86,7 +86,7 @@ export interface PropertyMemberProfile {
 
 export interface Property {
   id: string;
-  company_id: string;
+  contractor_id: string;
   name: string;
   address: string;
   notes: string | null;
@@ -103,7 +103,7 @@ export interface PropertyMember {
 
 export interface Job {
   id: string;
-  company_id: string;
+  contractor_id: string;
   property_id: string;
   cleaner_id: string | null;
   scheduled_date: string;
@@ -126,7 +126,7 @@ export interface CleaningRecord {
 
 // JWT app_metadata に格納されるカスタムクレーム（auth_hook 由来）
 export interface AppMetadata {
-  company_id?: string;
+  contractor_id?: string;
   role?: UserRole;
 }
 

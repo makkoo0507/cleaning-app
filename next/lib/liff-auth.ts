@@ -9,7 +9,7 @@ import type { UserRole } from "@/lib/database.types";
 export interface LiffUser {
   id: string;
   name: string;
-  companyId: string;
+  contractorId: string;
   role: UserRole;
 }
 
@@ -30,15 +30,15 @@ export async function getLiffUser(): Promise<LiffUser | null> {
   const admin = createAdminClient();
   const { data } = await admin
     .from("users")
-    .select("id, name, company_id, role")
+    .select("id, name, contractor_id, role")
     .eq("id", user.id)
-    .single<{ id: string; name: string; company_id: string; role: UserRole }>();
+    .single<{ id: string; name: string; contractor_id: string; role: UserRole }>();
 
   if (!data) return null;
   return {
     id: data.id,
     name: data.name,
-    companyId: data.company_id,
+    contractorId: data.contractor_id,
     role: data.role,
   };
 }

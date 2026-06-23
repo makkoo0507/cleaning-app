@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
-import { listFeatures, getCompanyFeatureMap } from "@/lib/features";
+import { listFeatures, getContractorFeatureMap } from "@/lib/features";
 import { PageHeader } from "@/components/ui";
 import { setFeatureEnabled } from "../actions";
 
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function OptionSettingsPage() {
   const admin = await requireAdmin();
   const features = await listFeatures();
-  const contracted = await getCompanyFeatureMap(admin.companyId);
+  const contracted = await getContractorFeatureMap(admin.contractorId);
 
   return (
     <div className="space-y-6">

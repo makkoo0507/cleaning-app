@@ -15,7 +15,7 @@ export default async function ReminderSettingsPage() {
     .select(
       "reminder_cleaner_prev_day, reminder_cleaner_same_day, reminder_owner_prev_day, reminder_owner_same_day"
     )
-    .eq("id", admin.companyId)
+    .eq("id", admin.contractorId)
     .single<
       Pick<
         Contractor,

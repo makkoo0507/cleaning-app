@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getCompanyFlags } from "@/lib/company";
+import { getContractorFlags } from "@/lib/company";
 import type { Job, Property, User } from "@/lib/database.types";
 import { JOB_STATUS_LABEL } from "@/lib/database.types";
 import { jstMonthRange } from "@/lib/format";
@@ -24,11 +24,11 @@ export async function GET(request: NextRequest) {
   // 請求・支払い機能が無効（無料プラン or オプション未加入）なら CSV 出力不可
   const { data: profile } = await supabase
     .from("users")
-    .select("company_id")
+    .select("contractor_id")
     .eq("id", user.id)
-    .maybeSingle<{ company_id: string }>();
-  if (profile?.company_id) {
-    const { billingEnabled } = await getCompanyFlags(profile.company_id);
+    .maybeSingle<{ contractor_id: string }>();
+  if (profile?.contractor_id) {
+    const { billingEnabled } = await getContractorFlags(profile.contractor_id);
     if (!billingEnabled) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }

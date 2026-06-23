@@ -19,7 +19,7 @@ const ERRORS: Record<string, string> = {
 };
 
 interface ContractRow {
-  company_id: string;
+  contractor_id: string;
   feature_key: string;
   enabled: boolean;
 }
@@ -35,7 +35,7 @@ interface CompanyRow {
 interface AdminRow {
   id: string;
   name: string;
-  company_id: string;
+  contractor_id: string;
   role: string;
 }
 
@@ -77,9 +77,9 @@ export default async function VendorPage({
   // 各業者のベンダーアカウント（パスワード再設定の対象）
   const { data: admins } = await client
     .from("users")
-    .select("id, name, company_id, role")
+    .select("id, name, contractor_id, role")
     .eq("role", "contractor_vendor")
-    .not("company_id", "is", null)
+    .not("contractor_id", "is", null)
     .returns<AdminRow[]>();
 
   // 管理者のメールアドレス（auth.users から）
@@ -91,19 +91,19 @@ export default async function VendorPage({
   );
   const adminsByCompany = new Map<string, AdminRow[]>();
   for (const a of admins ?? []) {
-    const arr = adminsByCompany.get(a.company_id) ?? [];
+    const arr = adminsByCompany.get(a.contractor_id) ?? [];
     arr.push(a);
-    adminsByCompany.set(a.company_id, arr);
+    adminsByCompany.set(a.contractor_id, arr);
   }
 
   // オプション（カタログ）と各社の加入状況
   const features = await listFeatures();
   const { data: contracts } = await client
     .from("contractor_features")
-    .select("company_id, feature_key, enabled")
+    .select("contractor_id, feature_key, enabled")
     .returns<ContractRow[]>();
   const contractMap = new Map(
-    (contracts ?? []).map((c) => [`${c.company_id}:${c.feature_key}`, c.enabled])
+    (contracts ?? []).map((c) => [`${c.contractor_id}:${c.feature_key}`, c.enabled])
   );
 
   return (
@@ -355,7 +355,7 @@ export default async function VendorPage({
                     action="/vendor/feature"
                     className="mt-2 flex flex-wrap items-center gap-2"
                   >
-                    <input type="hidden" name="company_id" value={c.id} />
+                    <input type="hidden" name="contractor_id" value={c.id} />
                     <input type="hidden" name="feature_key" value={f.key} />
                     <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
                       <input

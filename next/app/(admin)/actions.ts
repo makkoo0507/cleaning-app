@@ -20,7 +20,7 @@ export async function sendTestNotification(
   const { data: company } = await client
     .from("contractors")
     .select("line_channel_access_token")
-    .eq("id", me.companyId)
+    .eq("id", me.contractorId)
     .single<{ line_channel_access_token: string | null }>();
 
   const token = company?.line_channel_access_token;
@@ -32,7 +32,7 @@ export async function sendTestNotification(
     .from("users")
     .select("line_user_id, name")
     .eq("id", userId)
-    .eq("company_id", me.companyId)
+    .eq("contractor_id", me.contractorId)
     .single<{ line_user_id: string | null; name: string }>();
 
   if (!target?.line_user_id) {
@@ -83,14 +83,14 @@ export async function logout() {
   if (user) {
     const { data } = await supabase
       .from("users")
-      .select("company_id")
+      .select("contractor_id")
       .eq("id", user.id)
-      .maybeSingle<Pick<User, "company_id">>();
+      .maybeSingle<Pick<User, "contractor_id">>();
     if (data) {
       const { data: company } = await supabase
         .from("contractors")
         .select("slug")
-        .eq("id", data.company_id)
+        .eq("id", data.contractor_id)
         .maybeSingle<{ slug: string | null }>();
       slug = company?.slug ?? null;
     }

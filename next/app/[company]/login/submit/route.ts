@@ -36,11 +36,11 @@ export async function POST(
   // 所属テナントが URL の業者と一致するか検証
   const { data: profile } = await supabase
     .from("users")
-    .select("company_id")
+    .select("contractor_id")
     .eq("id", data.user.id)
-    .maybeSingle<Pick<User, "company_id">>();
+    .maybeSingle<Pick<User, "contractor_id">>();
 
-  if (!profile || profile.company_id !== company.id) {
+  if (!profile || profile.contractor_id !== company.id) {
     await supabase.auth.signOut();
     return fail("company");
   }

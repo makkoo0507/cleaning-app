@@ -1,5 +1,5 @@
 import { requireContractor, isAdmin } from "@/lib/auth";
-import { getCompanyFlags, getCompanyName } from "@/lib/company";
+import { getContractorFlags, getContractorName } from "@/lib/company";
 import SideNav from "./SideNav";
 
 export default async function AdminLayout({
@@ -10,8 +10,8 @@ export default async function AdminLayout({
   const user = await requireContractor();
   const admin = isAdmin(user);
   const [{ billingEnabled }, companyName] = await Promise.all([
-    getCompanyFlags(user.companyId),
-    getCompanyName(user.companyId),
+    getContractorFlags(user.contractorId),
+    getContractorName(user.contractorId),
   ]);
 
   return (

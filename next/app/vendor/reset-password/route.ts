@@ -25,11 +25,11 @@ export async function POST(request: NextRequest) {
   // 対象は contractor_vendor ロールのアカウントに限定
   const { data: target } = await admin
     .from("users")
-    .select("company_id, role")
+    .select("contractor_id, role")
     .eq("id", userId)
-    .maybeSingle<Pick<User, "company_id" | "role">>();
+    .maybeSingle<Pick<User, "contractor_id" | "role">>();
 
-  if (!target || !target.company_id || target.role !== "contractor_vendor") {
+  if (!target || !target.contractor_id || target.role !== "contractor_vendor") {
     return back("error=target");
   }
 

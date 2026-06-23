@@ -14,7 +14,7 @@ export default async function SettingsPage() {
   const { data: company } = await supabase
     .from("contractors")
     .select("line_channel_access_token, line_channel_secret")
-    .eq("id", admin.companyId)
+    .eq("id", admin.contractorId)
     .single<
       Pick<
         Contractor,

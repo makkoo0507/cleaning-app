@@ -50,7 +50,7 @@ export async function createJob(
   const { data, error } = await supabase
     .from("jobs")
     .insert({
-      company_id: user.companyId,
+      contractor_id: user.contractorId,
       property_id: f.propertyId,
       cleaner_id: f.cleanerId,
       scheduled_date: f.scheduledDate,

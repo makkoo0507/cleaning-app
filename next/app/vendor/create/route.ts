@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
   const { error: userErr } = await admin.from("users").insert({
     id: userId,
-    company_id: company.id,
+    contractor_id: company.id,
     role: "contractor_admin",
     name: adminName,
   });
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     if (vCreated?.user) {
       await admin.from("users").insert({
         id: vCreated.user.id,
-        company_id: company.id,
+        contractor_id: company.id,
         role: "contractor_vendor",
         name: "運営管理（ベンダー）",
       });

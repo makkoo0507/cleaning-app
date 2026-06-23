@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getCompanyFlags } from "@/lib/company";
+import { getContractorFlags } from "@/lib/company";
 import type {
   CleaningRecord,
   Job,
@@ -38,7 +38,7 @@ export default async function JobDetailPage({
 }) {
   const user = await requireContractor();
   const admin = isAdmin(user);
-  const { billingEnabled } = await getCompanyFlags(user.companyId);
+  const { billingEnabled } = await getContractorFlags(user.contractorId);
   const { id } = await params;
   const supabase = await createClient();
 

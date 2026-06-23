@@ -40,7 +40,7 @@ export async function createOwner(
   if (!name) return { error: "名前は必須です。" };
 
   const result = await createManagedUser({
-    companyId: user.companyId,
+    contractorId: user.contractorId,
     role: "contact",
     name,
   });

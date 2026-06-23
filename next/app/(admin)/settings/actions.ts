@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
-import { setCompanyFeature } from "@/lib/features";
+import { setContractorFeature } from "@/lib/features";
 
 export interface SettingsFormState {
   error?: string;
@@ -22,7 +22,7 @@ export async function updateReminderSettings(formData: FormData): Promise<void> 
       reminder_owner_prev_day: formData.get("owner_prev") != null,
       reminder_owner_same_day: formData.get("owner_same") != null,
     })
-    .eq("id", admin.companyId);
+    .eq("id", admin.contractorId);
   revalidatePath("/settings/reminder");
 }
 
@@ -42,7 +42,7 @@ export async function setFeatureEnabled(formData: FormData): Promise<void> {
     .maybeSingle<{ is_paid: boolean }>();
   if (feat?.is_paid) return;
 
-  await setCompanyFeature(admin.companyId, key, enabled);
+  await setContractorFeature(admin.contractorId, key, enabled);
   revalidatePath("/settings/options");
   revalidatePath("/", "layout");
 }
@@ -71,7 +71,7 @@ export async function updateLineSettings(
   const { error } = await client
     .from("contractors")
     .update(updates)
-    .eq("id", admin.companyId);
+    .eq("id", admin.contractorId);
 
   if (error) return { error: "保存に失敗しました。" };
 
@@ -95,7 +95,7 @@ export async function verifyToken(): Promise<VerifyTokenState> {
   const { data: company } = await client
     .from("contractors")
     .select("line_channel_access_token, line_channel_secret")
-    .eq("id", admin.companyId)
+    .eq("id", admin.contractorId)
     .single<{
       line_channel_access_token: string | null;
       line_channel_secret: string | null;
