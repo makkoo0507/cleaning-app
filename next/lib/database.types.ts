@@ -31,7 +31,7 @@ export interface Contractor {
   created_at: string;
 }
 
-export type NotificationRecipient = "cleaner" | "owner";
+export type NotificationRecipient = "cleaner" | "owner" | "staff";
 export type NotificationTrigger =
   | "reminder_prev_day"
   | "reminder_same_day"

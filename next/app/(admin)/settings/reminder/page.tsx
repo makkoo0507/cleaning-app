@@ -63,6 +63,52 @@ export default async function ReminderSettingsPage() {
           </table>
         </section>
 
+        {/* 清掃完了時通知 */}
+        <section className="space-y-4 rounded-md border border-zinc-200 p-4 dark:border-zinc-800">
+          <div>
+            <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              清掃完了時の通知
+            </h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              清掃者が完了を記録した際に LINE 通知を送るかどうかを設定します。
+            </p>
+          </div>
+          <table className="text-sm">
+            <thead>
+              <tr className="text-zinc-500">
+                <th className="px-3 py-2 text-left font-medium">送信先</th>
+                <th className="px-3 py-2 font-medium">送信する</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t border-zinc-100 dark:border-zinc-800">
+                <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
+                  オーナー（通知ONの関係者）
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <input
+                    type="checkbox"
+                    name="owner_job_completed"
+                    defaultChecked={get("owner", "job_completed")}
+                  />
+                </td>
+              </tr>
+              <tr className="border-t border-zinc-100 dark:border-zinc-800">
+                <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
+                  業者スタッフ（管理者・閲覧者）
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <input
+                    type="checkbox"
+                    name="staff_job_completed"
+                    defaultChecked={get("staff", "job_completed")}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
         {/* リマインド通知 */}
         <section className="space-y-4 rounded-md border border-zinc-200 p-4 dark:border-zinc-800">
           <div>

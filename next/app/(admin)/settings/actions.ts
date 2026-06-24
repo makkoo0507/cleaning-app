@@ -15,12 +15,14 @@ export interface SettingsFormState {
 export async function updateReminderSettings(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   await Promise.all([
-    setNotificationSetting(admin.contractorId, "cleaner", "job_created",       formData.get("cleaner_job_created") != null),
-    setNotificationSetting(admin.contractorId, "owner",   "job_created",       formData.get("owner_job_created")   != null),
-    setNotificationSetting(admin.contractorId, "cleaner", "reminder_prev_day", formData.get("cleaner_prev")        != null),
-    setNotificationSetting(admin.contractorId, "cleaner", "reminder_same_day", formData.get("cleaner_same")        != null),
-    setNotificationSetting(admin.contractorId, "owner",   "reminder_prev_day", formData.get("owner_prev")          != null),
-    setNotificationSetting(admin.contractorId, "owner",   "reminder_same_day", formData.get("owner_same")          != null),
+    setNotificationSetting(admin.contractorId, "cleaner", "job_created",       formData.get("cleaner_job_created")    != null),
+    setNotificationSetting(admin.contractorId, "owner",   "job_created",       formData.get("owner_job_created")      != null),
+    setNotificationSetting(admin.contractorId, "owner",   "job_completed",     formData.get("owner_job_completed")    != null),
+    setNotificationSetting(admin.contractorId, "staff",   "job_completed",     formData.get("staff_job_completed")    != null),
+    setNotificationSetting(admin.contractorId, "cleaner", "reminder_prev_day", formData.get("cleaner_prev")           != null),
+    setNotificationSetting(admin.contractorId, "cleaner", "reminder_same_day", formData.get("cleaner_same")           != null),
+    setNotificationSetting(admin.contractorId, "owner",   "reminder_prev_day", formData.get("owner_prev")             != null),
+    setNotificationSetting(admin.contractorId, "owner",   "reminder_same_day", formData.get("owner_same")             != null),
   ]);
   revalidatePath("/settings/reminder");
 }

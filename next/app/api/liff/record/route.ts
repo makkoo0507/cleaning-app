@@ -44,12 +44,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "already_started" }, { status: 409 });
     }
 
-    const { error } = await supabase
+    // 既存レコードがあれば重複挿入しない（管理者がステータスをリセットしたケース）
+    const { data: existing } = await supabase
       .from("cleaning_records")
-      .insert({ job_id: jobId, started_at: new Date().toISOString() });
+      .select("id")
+      .eq("job_id", jobId)
+      .limit(1);
 
-    if (error) {
-      return NextResponse.json({ error: "insert_failed" }, { status: 500 });
+    if (!existing || existing.length === 0) {
+      const { error } = await supabase
+        .from("cleaning_records")
+        .insert({ job_id: jobId, started_at: new Date().toISOString() });
+
+      if (error) {
+        return NextResponse.json({ error: "insert_failed" }, { status: 500 });
+      }
     }
 
     await admin.from("jobs").update({ status: "in_progress" }).eq("id", jobId);
@@ -61,32 +70,50 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "not_in_progress" }, { status: 409 });
     }
 
-    const { data: record } = await supabase
+    const completedAt = new Date().toISOString();
+
+    // 複数行が存在しうるため最新1件を取得（.single() は複数行でnullになるため使わない）
+    const { data: records } = await supabase
       .from("cleaning_records")
       .select("id, started_at")
       .eq("job_id", jobId)
-      .single();
+      .order("created_at", { ascending: false })
+      .limit(1);
 
-    if (!record) {
-      return NextResponse.json({ error: "record_not_found" }, { status: 404 });
-    }
+    const record = records?.[0] ?? null;
 
-    const completedAt = new Date().toISOString();
-    const durationMinutes = Math.round(
-      (new Date(completedAt).getTime() - new Date(record.started_at).getTime()) / 60000
-    );
+    if (record) {
+      const durationMinutes = Math.round(
+        (new Date(completedAt).getTime() - new Date(record.started_at).getTime()) / 60000
+      );
 
-    const { error } = await supabase
-      .from("cleaning_records")
-      .update({
-        completed_at: completedAt,
-        duration_minutes: durationMinutes,
-        memo: memo?.trim() || null,
-      })
-      .eq("id", record.id);
+      const { error } = await supabase
+        .from("cleaning_records")
+        .update({
+          completed_at: completedAt,
+          duration_minutes: durationMinutes,
+          memo: memo?.trim() || null,
+        })
+        .eq("id", record.id);
 
-    if (error) {
-      return NextResponse.json({ error: "update_failed" }, { status: 500 });
+      if (error) {
+        return NextResponse.json({ error: "update_failed" }, { status: 500 });
+      }
+    } else {
+      // 開始記録がない場合（管理者がステータスを直接変更したケース）は完了のみ記録
+      const { error } = await supabase
+        .from("cleaning_records")
+        .insert({
+          job_id: jobId,
+          started_at: completedAt,
+          completed_at: completedAt,
+          duration_minutes: 0,
+          memo: memo?.trim() || null,
+        });
+
+      if (error) {
+        return NextResponse.json({ error: "insert_failed" }, { status: 500 });
+      }
     }
 
     await admin.from("jobs").update({ status: "completed" }).eq("id", jobId);
@@ -99,11 +126,14 @@ export async function POST(req: NextRequest) {
 
   if (action === "update_memo") {
     // 作業中・完了後のメモ更新（時刻は変更しない）
-    const { data: record } = await supabase
+    const { data: records } = await supabase
       .from("cleaning_records")
       .select("id")
       .eq("job_id", jobId)
-      .single();
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    const record = records?.[0] ?? null;
 
     if (!record) {
       return NextResponse.json({ error: "record_not_found" }, { status: 404 });

@@ -121,6 +121,12 @@ export async function notifyCleaningCompleted(jobId: string): Promise<void> {
   const token = job?.contractors?.line_channel_access_token;
   if (!job || !token) return;
 
+  const settings = await getNotificationSettings(job.contractor_id);
+  const ownerEnabled = settings.get("owner:job_completed") ?? false;
+  const staffEnabled = settings.get("staff:job_completed") ?? false;
+
+  if (!ownerEnabled && !staffEnabled) return;
+
   const propertyName = job.properties?.name ?? "";
 
   // 清掃記録を取得
@@ -135,36 +141,40 @@ export async function notifyCleaningCompleted(jobId: string): Promise<void> {
     : "";
 
   // 物件関係者への通知
-  const contactIds = await getNotifiableLineIds(admin, job.property_id);
-  await pushAll(token, contactIds, `${propertyName}の清掃が完了しました${detail}`);
-
-  // 業者スタッフへの通知
-  let cleanerName = "担当者";
-  if (job.cleaner_id) {
-    const { data: cleaner } = await admin
-      .from("users")
-      .select("name")
-      .eq("id", job.cleaner_id)
-      .single<{ name: string }>();
-    cleanerName = cleaner?.name ?? cleanerName;
+  if (ownerEnabled) {
+    const contactIds = await getNotifiableLineIds(admin, job.property_id);
+    await pushAll(token, contactIds, `${propertyName}の清掃が完了しました${detail}`);
   }
 
-  const { data: staff } = await admin
-    .from("users")
-    .select("line_user_id")
-    .eq("contractor_id", job.contractor_id)
-    .in("role", ["contractor_admin", "contractor_viewer"])
-    .not("line_user_id", "is", null)
-    .returns<{ line_user_id: string | null }[]>();
+  // 業者スタッフへの通知
+  if (staffEnabled) {
+    let cleanerName = "担当者";
+    if (job.cleaner_id) {
+      const { data: cleaner } = await admin
+        .from("users")
+        .select("name")
+        .eq("id", job.cleaner_id)
+        .single<{ name: string }>();
+      cleanerName = cleaner?.name ?? cleanerName;
+    }
 
-  const staffIds = (staff ?? [])
-    .map((s) => s.line_user_id)
-    .filter((id): id is string => Boolean(id));
-  await pushAll(
-    token,
-    staffIds,
-    `${cleanerName}が${propertyName}の清掃を完了しました${detail}`
-  );
+    const { data: staff } = await admin
+      .from("users")
+      .select("line_user_id")
+      .eq("contractor_id", job.contractor_id)
+      .in("role", ["contractor_admin", "contractor_viewer"])
+      .not("line_user_id", "is", null)
+      .returns<{ line_user_id: string | null }[]>();
+
+    const staffIds = (staff ?? [])
+      .map((s) => s.line_user_id)
+      .filter((id): id is string => Boolean(id));
+    await pushAll(
+      token,
+      staffIds,
+      `${cleanerName}が${propertyName}の清掃を完了しました${detail}`
+    );
+  }
 }
 
 // --- 内部ヘルパー ---
