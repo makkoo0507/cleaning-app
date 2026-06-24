@@ -1,5 +1,6 @@
 // LINE Messaging API ユーティリティ（サーバー専用）
 import { createAdminClient } from "@/lib/supabase/server";
+import { getNotificationSettings } from "@/lib/notifications";
 import { formatDateShort, formatDateTime, formatDuration } from "@/lib/format";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -60,6 +61,13 @@ export async function notifyScheduleCreated(jobId: string): Promise<void> {
   const token = job?.contractors?.line_channel_access_token;
   if (!job || !token) return;
 
+  // 通知設定を確認（設定行が未作成の場合はデフォルト ON で動作）
+  const settings = await getNotificationSettings(job.contractor_id);
+  const cleanerEnabled = settings.get("cleaner:job_created") ?? false;
+  const ownerEnabled = settings.get("owner:job_created") ?? false;
+
+  if (!cleanerEnabled && !ownerEnabled) return;
+
   const date = formatDateShort(job.scheduled_date);
   const propertyName = job.properties?.name ?? "";
   // LIFF は単一アプリ（エンドポイント /liff）。役割別画面へはパスを付与して開く。
@@ -72,7 +80,7 @@ export async function notifyScheduleCreated(jobId: string): Promise<void> {
     : "";
 
   // 清掃者への通知
-  if (job.cleaner_id) {
+  if (cleanerEnabled && job.cleaner_id) {
     const { data: cleaner } = await admin
       .from("users")
       .select("line_user_id")
@@ -88,12 +96,14 @@ export async function notifyScheduleCreated(jobId: string): Promise<void> {
   }
 
   // 通知有効な物件関係者への通知
-  const contactIds = await getNotifiableLineIds(admin, job.property_id);
-  await pushAll(
-    token,
-    contactIds,
-    `${date}に${propertyName}の清掃が予定されました${ownerUrl}`
-  );
+  if (ownerEnabled) {
+    const contactIds = await getNotifiableLineIds(admin, job.property_id);
+    await pushAll(
+      token,
+      contactIds,
+      `${date}に${propertyName}の清掃が予定されました${ownerUrl}`
+    );
+  }
 }
 
 // 清掃完了時：通知有効な物件関係者 + 業者スタッフへ通知

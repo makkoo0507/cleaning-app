@@ -11,14 +11,16 @@ export interface SettingsFormState {
   success?: boolean;
 }
 
-// 定期リマインドの送信先・タイミング設定（管理者のみ）
+// 通知設定（スケジュール作成時 + 定期リマインド）の保存（管理者のみ）
 export async function updateReminderSettings(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   await Promise.all([
-    setNotificationSetting(admin.contractorId, "cleaner", "reminder_prev_day", formData.get("cleaner_prev") != null),
-    setNotificationSetting(admin.contractorId, "cleaner", "reminder_same_day", formData.get("cleaner_same") != null),
-    setNotificationSetting(admin.contractorId, "owner",   "reminder_prev_day", formData.get("owner_prev")   != null),
-    setNotificationSetting(admin.contractorId, "owner",   "reminder_same_day", formData.get("owner_same")   != null),
+    setNotificationSetting(admin.contractorId, "cleaner", "job_created",       formData.get("cleaner_job_created") != null),
+    setNotificationSetting(admin.contractorId, "owner",   "job_created",       formData.get("owner_job_created")   != null),
+    setNotificationSetting(admin.contractorId, "cleaner", "reminder_prev_day", formData.get("cleaner_prev")        != null),
+    setNotificationSetting(admin.contractorId, "cleaner", "reminder_same_day", formData.get("cleaner_same")        != null),
+    setNotificationSetting(admin.contractorId, "owner",   "reminder_prev_day", formData.get("owner_prev")          != null),
+    setNotificationSetting(admin.contractorId, "owner",   "reminder_same_day", formData.get("owner_same")          != null),
   ]);
   revalidatePath("/settings/reminder");
 }

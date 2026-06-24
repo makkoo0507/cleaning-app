@@ -35,12 +35,14 @@ export type NotificationRecipient = "cleaner" | "owner";
 export type NotificationTrigger =
   | "reminder_prev_day"
   | "reminder_same_day"
-  | "job_completed";
+  | "job_completed"
+  | "job_created";
 
 export const NOTIFICATION_TRIGGERS: NotificationTrigger[] = [
   "reminder_prev_day",
   "reminder_same_day",
   "job_completed",
+  "job_created",
 ];
 
 export interface ContractorNotificationSetting {

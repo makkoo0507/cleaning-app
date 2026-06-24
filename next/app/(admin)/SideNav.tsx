@@ -21,7 +21,7 @@ const BILLING_NAV = { href: "/billing", label: "請求・支払い" };
 
 const SETTINGS_NAV = [
   { href: "/settings", label: "LINE連携" },
-  { href: "/settings/reminder", label: "定期送信" },
+  { href: "/settings/reminder", label: "通知設定" },
   { href: "/settings/options", label: "オプション" },
   { href: "/staff", label: "ユーザー管理" },
 ];

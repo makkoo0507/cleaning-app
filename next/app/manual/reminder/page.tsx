@@ -44,7 +44,7 @@ export default function ReminderManualPage() {
         </h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
           清掃予定を LINE で自動リマインドする機能です。送信先（清掃者／オーナー）と
-          タイミング（前日／当日）を管理画面の「設定 &gt; 定期送信」で選べます。
+          タイミング（前日／当日）を管理画面の「設定 &gt; 通知設定」で選べます。
         </p>
       </header>
 
@@ -61,7 +61,7 @@ export default function ReminderManualPage() {
       <div className="space-y-6">
         <Step no={1} title="送信先とタイミングを設定する">
           <p>
-            管理画面の<strong>「設定 &gt; 定期送信」</strong>を開き、
+            管理画面の<strong>「設定 &gt; 通知設定」</strong>を開き、
             送信先（清掃者／オーナー）とタイミング（前日／当日）のチェックを選んで保存します。
           </p>
           <p className="text-zinc-500">
