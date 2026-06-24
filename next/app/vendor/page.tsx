@@ -255,6 +255,29 @@ export default async function VendorPage({
                 </tr>
               </tbody>
             </table>
+            <p className="text-xs text-zinc-500">清掃完了時</p>
+            <table className="text-sm">
+              <thead>
+                <tr className="text-zinc-500">
+                  <th className="px-3 py-2 text-left font-medium">送信先</th>
+                  <th className="px-3 py-2 font-medium">送信する</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-t border-zinc-100 dark:border-zinc-800">
+                  <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">オーナー</td>
+                  <td className="px-3 py-2 text-center">
+                    <input type="checkbox" name="notify_owner_job_completed" defaultChecked />
+                  </td>
+                </tr>
+                <tr className="border-t border-zinc-100 dark:border-zinc-800">
+                  <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">業者スタッフ</td>
+                  <td className="px-3 py-2 text-center">
+                    <input type="checkbox" name="notify_staff_job_completed" defaultChecked />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
             <p className="text-xs text-zinc-500">定期リマインド</p>
             <table className="text-sm">
               <thead>

@@ -87,12 +87,14 @@ export async function POST(request: NextRequest) {
 
   // 通知設定の初期データ（フォームで選択した値を使用）
   await admin.from("contractor_notification_settings").insert([
-    { contractor_id: contractor.id, recipient: "cleaner", trigger: "job_created",       enabled: form.get("notify_cleaner_job_created") != null },
-    { contractor_id: contractor.id, recipient: "owner",   trigger: "job_created",       enabled: form.get("notify_owner_job_created")   != null },
-    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_prev_day", enabled: form.get("notify_cleaner_prev")        != null },
-    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_same_day", enabled: form.get("notify_cleaner_same")        != null },
-    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_prev_day", enabled: form.get("notify_owner_prev")          != null },
-    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_same_day", enabled: form.get("notify_owner_same")          != null },
+    { contractor_id: contractor.id, recipient: "cleaner", trigger: "job_created",       enabled: form.get("notify_cleaner_job_created")    != null },
+    { contractor_id: contractor.id, recipient: "owner",   trigger: "job_created",       enabled: form.get("notify_owner_job_created")       != null },
+    { contractor_id: contractor.id, recipient: "owner",   trigger: "job_completed",     enabled: form.get("notify_owner_job_completed")     != null },
+    { contractor_id: contractor.id, recipient: "staff",   trigger: "job_completed",     enabled: form.get("notify_staff_job_completed")     != null },
+    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_prev_day", enabled: form.get("notify_cleaner_prev")            != null },
+    { contractor_id: contractor.id, recipient: "cleaner", trigger: "reminder_same_day", enabled: form.get("notify_cleaner_same")            != null },
+    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_prev_day", enabled: form.get("notify_owner_prev")              != null },
+    { contractor_id: contractor.id, recipient: "owner",   trigger: "reminder_same_day", enabled: form.get("notify_owner_same")              != null },
   ]);
 
   // ベンダー用の隠し管理者を作成（運営が /{slug}/login から入るための常設アカウント）
