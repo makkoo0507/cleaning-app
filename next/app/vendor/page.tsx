@@ -267,13 +267,13 @@ export default async function VendorPage({
                 <tr className="border-t border-zinc-100 dark:border-zinc-800">
                   <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">オーナー</td>
                   <td className="px-3 py-2 text-center">
-                    <input type="checkbox" name="notify_owner_job_completed" defaultChecked />
+                    <input type="checkbox" name="notify_owner_job_completed" />
                   </td>
                 </tr>
                 <tr className="border-t border-zinc-100 dark:border-zinc-800">
                   <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">業者スタッフ</td>
                   <td className="px-3 py-2 text-center">
-                    <input type="checkbox" name="notify_staff_job_completed" defaultChecked />
+                    <input type="checkbox" name="notify_staff_job_completed" />
                   </td>
                 </tr>
               </tbody>
@@ -291,19 +291,19 @@ export default async function VendorPage({
                 <tr className="border-t border-zinc-100 dark:border-zinc-800">
                   <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">清掃者</td>
                   <td className="px-3 py-2 text-center">
-                    <input type="checkbox" name="notify_cleaner_prev" defaultChecked />
+                    <input type="checkbox" name="notify_cleaner_prev" />
                   </td>
                   <td className="px-3 py-2 text-center">
-                    <input type="checkbox" name="notify_cleaner_same" defaultChecked />
+                    <input type="checkbox" name="notify_cleaner_same" />
                   </td>
                 </tr>
                 <tr className="border-t border-zinc-100 dark:border-zinc-800">
                   <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">オーナー</td>
                   <td className="px-3 py-2 text-center">
-                    <input type="checkbox" name="notify_owner_prev" defaultChecked />
+                    <input type="checkbox" name="notify_owner_prev" />
                   </td>
                   <td className="px-3 py-2 text-center">
-                    <input type="checkbox" name="notify_owner_same" defaultChecked />
+                    <input type="checkbox" name="notify_owner_same" />
                   </td>
                 </tr>
               </tbody>
