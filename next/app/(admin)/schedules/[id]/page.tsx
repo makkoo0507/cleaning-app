@@ -34,13 +34,17 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default async function JobDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const user = await requireContractor();
   const admin = isAdmin(user);
   const { billingEnabled } = await getContractorFlags(user.contractorId);
   const { id } = await params;
+  const { from } = await searchParams;
+  const backHref = from ? `/schedules?view=${from}` : "/schedules";
   const supabase = await createClient();
 
   const { data: job } = await supabase
@@ -76,6 +80,12 @@ export default async function JobDetailPage({
 
   return (
     <div className="max-w-2xl space-y-6">
+      <Link
+        href={backHref}
+        className="text-sm text-zinc-500 underline hover:text-zinc-900 dark:hover:text-zinc-50"
+      >
+        ← スケジュール一覧
+      </Link>
       <PageHeader
         title="案件詳細"
         action={

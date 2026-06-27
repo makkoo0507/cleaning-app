@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 export type CalendarJob = {
   id: string;
@@ -31,6 +32,13 @@ const STATUS_LABEL: Record<string, string> = {
   in_progress: "作業中",
   completed: "完了",
 };
+
+function chipClass(job: CalendarJob): string {
+  return STATUS_CHIP[job.status];
+}
+function dotClass(job: CalendarJob): string {
+  return STATUS_DOT[job.status];
+}
 
 function toYMD(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -104,11 +112,13 @@ function MonthView({
   month,
   todayStr,
   jobsByDate,
+  view,
 }: {
   year: number;
   month: number;
   todayStr: string;
   jobsByDate: Map<string, CalendarJob[]>;
+  view: View;
 }) {
   // Build 6-week grid starting from Monday
   const firstDay = new Date(year, month, 1);
@@ -123,9 +133,9 @@ function MonthView({
   });
 
   return (
-    <div className="overflow-hidden rounded-md border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="flex h-[calc(100vh-16rem)] flex-col overflow-hidden rounded-md border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       {/* Day-of-week header */}
-      <div className="grid grid-cols-7 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="grid flex-shrink-0 grid-cols-7 border-b border-zinc-200 dark:border-zinc-800">
         {DOW.map((d, i) => (
           <div
             key={d}
@@ -139,7 +149,7 @@ function MonthView({
       </div>
 
       {/* Date grid */}
-      <div className="grid grid-cols-7">
+      <div className="grid min-h-0 flex-1 grid-cols-7 grid-rows-6">
         {cells.map((date, idx) => {
           const ymd = toYMD(date);
           const dayJobs = jobsByDate.get(ymd) ?? [];
@@ -152,7 +162,7 @@ function MonthView({
           return (
             <div
               key={idx}
-              className={`min-h-[96px] border-b border-r border-zinc-100 p-1 dark:border-zinc-800 ${
+              className={`overflow-y-auto border-b border-r border-zinc-100 p-1 dark:border-zinc-800 ${
                 col === 6 ? "border-r-0" : ""
               } ${!isCurrentMonth ? "bg-zinc-50 dark:bg-zinc-900/40" : ""}`}
             >
@@ -175,11 +185,11 @@ function MonthView({
 
               {/* Job chips */}
               <div className="space-y-0.5">
-                {dayJobs.slice(0, 3).map((job) => (
+                {dayJobs.map((job) => (
                   <Link
                     key={job.id}
-                    href={`/schedules/${job.id}`}
-                    className={`block truncate rounded px-1 py-0.5 text-[11px] leading-tight ${STATUS_CHIP[job.status]}`}
+                    href={`/schedules/${job.id}?from=${view}`}
+                    className={`block truncate rounded px-1 py-0.5 text-[11px] leading-tight ${chipClass(job)}`}
                   >
                     {job.scheduled_start_time
                       ? job.scheduled_start_time.slice(0, 5) + " "
@@ -187,11 +197,6 @@ function MonthView({
                     {job.propertyName}
                   </Link>
                 ))}
-                {dayJobs.length > 3 && (
-                  <p className="px-1 text-[11px] text-zinc-400">
-                    +{dayJobs.length - 3}件
-                  </p>
-                )}
               </div>
             </div>
           );
@@ -206,10 +211,12 @@ function WeekView({
   weekStart,
   todayStr,
   jobsByDate,
+  view,
 }: {
   weekStart: Date;
   todayStr: string;
   jobsByDate: Map<string, CalendarJob[]>;
+  view: View;
 }) {
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart);
@@ -260,8 +267,8 @@ function WeekView({
                 dayJobs.map((job) => (
                   <Link
                     key={job.id}
-                    href={`/schedules/${job.id}`}
-                    className={`block rounded p-1 text-[11px] leading-tight ${STATUS_CHIP[job.status]}`}
+                    href={`/schedules/${job.id}?from=${view}`}
+                    className={`block rounded p-1 text-[11px] leading-tight ${chipClass(job)}`}
                   >
                     {job.scheduled_start_time && (
                       <p className="font-medium">
@@ -290,10 +297,12 @@ function AgendaView({
   todayStr,
   today,
   jobsByDate,
+  view,
 }: {
   todayStr: string;
   today: Date;
   jobsByDate: Map<string, CalendarJob[]>;
+  view: View;
 }) {
   // 過去7日〜先60日
   const dates = Array.from({ length: 67 }, (_, i) => {
@@ -345,11 +354,11 @@ function AgendaView({
               {dayJobs.map((job) => (
                 <Link
                   key={job.id}
-                  href={`/schedules/${job.id}`}
+                  href={`/schedules/${job.id}?from=${view}`}
                   className="flex items-center gap-3 rounded-md border border-zinc-200 bg-white px-3 py-2 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
                 >
                   <span
-                    className={`h-2 w-2 flex-shrink-0 rounded-full ${STATUS_DOT[job.status]}`}
+                    className={`h-2 w-2 flex-shrink-0 rounded-full ${dotClass(job)}`}
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
@@ -360,11 +369,13 @@ function AgendaView({
                         ? job.scheduled_start_time.slice(0, 5)
                         : "時刻未定"}
                       {" · "}
-                      {job.cleanerName ?? "未アサイン"}
+                      {job.cleanerName ?? (
+                        <span className="text-red-500">未アサイン</span>
+                      )}
                     </p>
                   </div>
                   <span
-                    className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] ${STATUS_CHIP[job.status]}`}
+                    className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] ${chipClass(job)}`}
                   >
                     {STATUS_LABEL[job.status]}
                   </span>
@@ -378,19 +389,33 @@ function AgendaView({
   );
 }
 
-// ─── Main ────────────────────────────────────────────────────────
-export default function CalendarView({
+// ─── Main (inner) ────────────────────────────────────────────────
+function CalendarViewInner({
   jobs,
   defaultView = "month",
 }: {
   jobs: CalendarJob[];
   defaultView?: View;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = toYMD(today);
 
-  const [view, setView] = useState<View>(defaultView);
+  const rawView = searchParams.get("view");
+  const view: View =
+    rawView === "month" || rawView === "week" || rawView === "agenda"
+      ? rawView
+      : defaultView;
+
+  function setView(v: View) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", v);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [weekStart, setWeekStart] = useState(() => getMondayOf(today));
@@ -436,8 +461,8 @@ export default function CalendarView({
       {/* View switcher */}
       <div className="flex gap-2">
         <button onClick={() => setView("agenda")} className={tabCls("agenda")}>リスト</button>
-        <button onClick={() => setView("month")} className={tabCls("month")}>月</button>
         <button onClick={() => setView("week")} className={tabCls("week")}>週</button>
+        <button onClick={() => setView("month")} className={tabCls("month")}>月</button>
       </div>
 
       {/* Navigation */}
@@ -460,16 +485,28 @@ export default function CalendarView({
 
       {/* Calendar body */}
       {view === "month" && (
-        <MonthView year={year} month={month} todayStr={todayStr} jobsByDate={jobsByDate} />
+        <MonthView year={year} month={month} todayStr={todayStr} jobsByDate={jobsByDate} view={view} />
       )}
       {view === "week" && (
-        <WeekView weekStart={weekStart} todayStr={todayStr} jobsByDate={jobsByDate} />
+        <WeekView weekStart={weekStart} todayStr={todayStr} jobsByDate={jobsByDate} view={view} />
       )}
       {view === "agenda" && (
-        <AgendaView todayStr={todayStr} today={today} jobsByDate={jobsByDate} />
+        <AgendaView todayStr={todayStr} today={today} jobsByDate={jobsByDate} view={view} />
       )}
 
       {view !== "agenda" && <Legend />}
     </div>
+  );
+}
+
+// ─── Export (Suspense wrapper) ────────────────────────────────────
+export default function CalendarView(props: {
+  jobs: CalendarJob[];
+  defaultView?: View;
+}) {
+  return (
+    <Suspense>
+      <CalendarViewInner {...props} />
+    </Suspense>
   );
 }
