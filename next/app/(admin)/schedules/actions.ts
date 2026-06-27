@@ -71,7 +71,7 @@ export async function createJob(
   }
 
   revalidatePath("/schedules");
-  redirect(`/schedules/${data.id}/edit?created=1`);
+  redirect(`/schedules/${data.id}?created=1`);
 }
 
 export async function updateJob(

@@ -172,7 +172,7 @@ export default async function BillingPage({
                   {canEdit && (
                     <td className="px-4 py-3 text-right">
                       <Link
-                        href={`/schedules/${job.id}/edit`}
+                        href={`/schedules/${job.id}`}
                         className="text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
                       >
                         金額編集

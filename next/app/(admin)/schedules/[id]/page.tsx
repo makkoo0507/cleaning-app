@@ -1,25 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireContractor, isAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getContractorFlags } from "@/lib/contractor";
-import type {
-  CleaningRecord,
-  Job,
-  Property,
-  User,
-} from "@/lib/database.types";
-import { JOB_STATUS_LABEL } from "@/lib/database.types";
-import {
-  formatDateShort,
-  formatTime,
-  formatDateTime,
-  formatDuration,
-  formatYen,
-} from "@/lib/format";
-import { deleteJob } from "../actions";
-import { PageHeader, Badge } from "@/components/ui";
+import type { CleaningRecord, Job, Property, User } from "@/lib/database.types";
+import { formatDateShort, formatDateTime, formatDuration } from "@/lib/format";
+import { updateJob, deleteJob } from "../actions";
+import JobForm from "../JobForm";
 import { DeleteButton } from "@/components/DeleteButton";
+import { CreatedBanner } from "@/components/CreatedBanner";
+import { PageHeader } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -39,27 +28,23 @@ export default async function JobDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ from?: string }>;
 }) {
-  const user = await requireContractor();
-  const admin = isAdmin(user);
-  const { billingEnabled } = await getContractorFlags(user.contractorId);
+  const admin = await requireAdmin();
   const { id } = await params;
   const { from } = await searchParams;
   const backHref = from ? `/schedules?view=${from}` : "/schedules";
+
   const supabase = await createClient();
 
-  const { data: job } = await supabase
-    .from("jobs")
-    .select("*")
-    .eq("id", id)
-    .single<Job>();
+  const [{ data: job }, { data: propsData }, { data: cleanersData }] =
+    await Promise.all([
+      supabase.from("jobs").select("*").eq("id", id).single<Job>(),
+      supabase.from("properties").select("id, name").order("name"),
+      supabase.from("users").select("id, name").eq("role", "cleaner").order("name"),
+    ]);
   if (!job) notFound();
 
   const [{ data: property }, { data: record }] = await Promise.all([
-    supabase
-      .from("properties")
-      .select("*")
-      .eq("id", job.property_id)
-      .single<Property>(),
+    supabase.from("properties").select("*").eq("id", job.property_id).single<Property>(),
     supabase
       .from("cleaning_records")
       .select("*")
@@ -68,15 +53,7 @@ export default async function JobDetailPage({
       .maybeSingle<CleaningRecord>(),
   ]);
 
-  let cleaner: Pick<User, "name"> | null = null;
-  if (job.cleaner_id) {
-    const { data } = await supabase
-      .from("users")
-      .select("name")
-      .eq("id", job.cleaner_id)
-      .maybeSingle<Pick<User, "name">>();
-    cleaner = data;
-  }
+  const action = updateJob.bind(null, id);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -86,46 +63,39 @@ export default async function JobDetailPage({
       >
         ← スケジュール一覧
       </Link>
+
+      <CreatedBanner />
+
       <PageHeader
         title="案件詳細"
         action={
-          admin ? (
-            <div className="flex items-center gap-3">
-              <Link
-                href={`/schedules/${id}/edit`}
-                className="rounded-md border border-zinc-300 px-3 py-2 text-sm hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
-              >
-                編集
-              </Link>
-              <DeleteButton
-                action={deleteJob}
-                id={id}
-                name={`${property?.name ?? "案件"} (${formatDateShort(job.scheduled_date)})`}
-                className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-              />
-            </div>
-          ) : null
+          <DeleteButton
+            action={deleteJob}
+            id={id}
+            name={`${property?.name ?? "案件"} (${formatDateShort(job.scheduled_date)})`}
+            className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+          />
         }
       />
 
-      <section className="rounded-md border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-950">
-        <Row label="物件" value={property?.name ?? "—"} />
-        <Row label="住所" value={property?.address ?? "—"} />
-        <Row label="清掃日" value={formatDateShort(job.scheduled_date)} />
-        <Row label="開始予定時刻" value={formatTime(job.scheduled_start_time)} />
-        <Row
-          label="担当清掃者"
-          value={cleaner?.name ?? "未アサイン"}
-        />
-        <Row label="状態" value={<Badge>{JOB_STATUS_LABEL[job.status]}</Badge>} />
-        {billingEnabled && (
-          <>
-            <Row label="請求額" value={formatYen(job.billing_amount)} />
-            <Row label="支払い額" value={formatYen(job.payment_amount)} />
-          </>
-        )}
-        {property?.notes && <Row label="特記事項" value={property.notes} />}
-      </section>
+      <JobForm
+        action={action}
+        job={job}
+        properties={(propsData as Pick<Property, "id" | "name">[]) ?? []}
+        cleaners={(cleanersData as Pick<User, "id" | "name">[]) ?? []}
+      />
+
+      {(property?.address || property?.notes) && (
+        <section>
+          <h2 className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            物件情報
+          </h2>
+          <div className="rounded-md border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+            {property?.address && <Row label="住所" value={property.address} />}
+            {property?.notes && <Row label="特記事項" value={property.notes} />}
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
@@ -135,10 +105,7 @@ export default async function JobDetailPage({
           <div className="rounded-md border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-950">
             <Row label="開始時刻" value={formatDateTime(record.started_at)} />
             <Row label="完了時刻" value={formatDateTime(record.completed_at)} />
-            <Row
-              label="所要時間"
-              value={formatDuration(record.duration_minutes)}
-            />
+            <Row label="所要時間" value={formatDuration(record.duration_minutes)} />
             <Row label="共有" value={record.memo ?? "—"} />
           </div>
         ) : (

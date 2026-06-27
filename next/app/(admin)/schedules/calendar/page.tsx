@@ -36,6 +36,8 @@ export default async function ScheduleCalendarPage() {
     status: j.status,
     propertyName: propMap.get(j.property_id) ?? "不明",
     cleanerName: j.cleaner_id ? (cleanerMap.get(j.cleaner_id) ?? null) : null,
+    billingAmount: j.billing_amount,
+    paymentAmount: j.payment_amount,
   }));
 
   return (
@@ -46,7 +48,7 @@ export default async function ScheduleCalendarPage() {
           admin ? <PrimaryLink href="/schedules/new">+ 案件を作成</PrimaryLink> : null
         }
       />
-      <CalendarView jobs={jobs} />
+      <CalendarView jobs={jobs} admin={admin} />
     </div>
   );
 }
