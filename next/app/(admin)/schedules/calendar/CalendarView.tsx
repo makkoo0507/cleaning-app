@@ -435,9 +435,9 @@ export default function CalendarView({
     <div className="space-y-4">
       {/* View switcher */}
       <div className="flex gap-2">
+        <button onClick={() => setView("agenda")} className={tabCls("agenda")}>リスト</button>
         <button onClick={() => setView("month")} className={tabCls("month")}>月</button>
         <button onClick={() => setView("week")} className={tabCls("week")}>週</button>
-        <button onClick={() => setView("agenda")} className={tabCls("agenda")}>リスト</button>
       </div>
 
       {/* Navigation */}
