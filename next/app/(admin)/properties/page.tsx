@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Property } from "@/lib/database.types";
 import { deleteProperty } from "./actions";
 import { PageHeader, PrimaryLink, EmptyState } from "@/components/ui";
+import { DeleteButton } from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -61,15 +62,12 @@ export default async function PropertiesPage() {
                       >
                         編集
                       </Link>
-                      <form action={deleteProperty} className="ml-3 inline">
-                        <input type="hidden" name="id" value={p.id} />
-                        <button
-                          type="submit"
-                          className="text-red-600 underline hover:text-red-800"
-                        >
-                          削除
-                        </button>
-                      </form>
+                      <DeleteButton
+                        action={deleteProperty}
+                        id={p.id}
+                        name={p.name}
+                        className="ml-3 text-red-600 underline hover:text-red-800"
+                      />
                     </td>
                   )}
                 </tr>

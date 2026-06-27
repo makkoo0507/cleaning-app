@@ -19,6 +19,7 @@ import {
 } from "@/lib/format";
 import { deleteJob } from "../actions";
 import { PageHeader, Badge } from "@/components/ui";
+import { DeleteButton } from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -86,15 +87,12 @@ export default async function JobDetailPage({
               >
                 編集
               </Link>
-              <form action={deleteJob}>
-                <input type="hidden" name="id" value={id} />
-                <button
-                  type="submit"
-                  className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                >
-                  削除
-                </button>
-              </form>
+              <DeleteButton
+                action={deleteJob}
+                id={id}
+                name={`${property?.name ?? "案件"} (${formatDateShort(job.scheduled_date)})`}
+                className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+              />
             </div>
           ) : null
         }

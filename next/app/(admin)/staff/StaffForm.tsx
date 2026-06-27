@@ -77,6 +77,9 @@ export default function StaffForm({
           {state.error}
         </p>
       )}
+      {state.success && (
+        <p className="text-sm text-green-600">保存しました。</p>
+      )}
 
       <div className="flex items-center gap-3">
         <button

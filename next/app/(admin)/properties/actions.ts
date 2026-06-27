@@ -8,6 +8,7 @@ import type { Contractor } from "@/lib/database.types";
 
 export interface PropertyFormState {
   error?: string;
+  success?: boolean;
 }
 
 function parseForm(formData: FormData) {
@@ -48,14 +49,16 @@ export async function createProperty(
     };
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("properties")
-    .insert({ contractor_id: user.contractorId, name, address, notes });
+    .insert({ contractor_id: user.contractorId, name, address, notes })
+    .select("id")
+    .single();
 
-  if (error) return { error: "登録に失敗しました。" };
+  if (error || !data) return { error: "登録に失敗しました。" };
 
   revalidatePath("/properties");
-  redirect("/properties");
+  redirect(`/properties/${data.id}/edit?created=1`);
 }
 
 export async function updateProperty(
@@ -77,7 +80,7 @@ export async function updateProperty(
   if (error) return { error: "更新に失敗しました。" };
 
   revalidatePath("/properties");
-  redirect("/properties");
+  return { success: true };
 }
 
 export async function deleteProperty(formData: FormData) {

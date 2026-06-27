@@ -5,6 +5,7 @@ import type { ContractorMemberProfile, User } from "@/lib/database.types";
 import { updateStaff } from "../../actions";
 import StaffForm from "../../StaffForm";
 import { PageHeader } from "@/components/ui";
+import { CreatedBanner } from "@/components/CreatedBanner";
 
 export default async function EditStaffPage({
   params,
@@ -38,6 +39,7 @@ export default async function EditStaffPage({
   return (
     <div className="space-y-6">
       <PageHeader title="ユーザーを編集" />
+      <CreatedBanner />
       <StaffForm
         action={action}
         isEdit

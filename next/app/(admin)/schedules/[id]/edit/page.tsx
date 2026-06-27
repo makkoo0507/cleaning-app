@@ -6,6 +6,7 @@ import type { Job, Property, User } from "@/lib/database.types";
 import { updateJob } from "../../actions";
 import JobForm from "../../JobForm";
 import { PageHeader } from "@/components/ui";
+import { CreatedBanner } from "@/components/CreatedBanner";
 
 export default async function EditSchedulePage({
   params,
@@ -34,6 +35,7 @@ export default async function EditSchedulePage({
   return (
     <div className="space-y-6">
       <PageHeader title="案件を編集" />
+      <CreatedBanner />
       <JobForm
         action={action}
         job={job}

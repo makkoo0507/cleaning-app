@@ -13,6 +13,7 @@ import type { Contractor } from "@/lib/database.types";
 
 export interface CleanerFormState {
   error?: string;
+  success?: boolean;
 }
 
 export async function createCleaner(
@@ -57,7 +58,7 @@ export async function createCleaner(
     .insert({ user_id: result.userId, skills, note });
 
   revalidatePath("/cleaners");
-  redirect("/cleaners");
+  redirect(`/cleaners/${result.userId}/edit?created=1`);
 }
 
 export async function updateCleaner(
@@ -84,7 +85,7 @@ export async function updateCleaner(
     .upsert({ user_id: userId, skills, note });
 
   revalidatePath("/cleaners");
-  redirect("/cleaners");
+  return { success: true };
 }
 
 export async function deleteCleaner(formData: FormData) {

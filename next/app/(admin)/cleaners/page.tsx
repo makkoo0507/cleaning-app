@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { CleanerProfile, User } from "@/lib/database.types";
 import { deleteCleaner } from "./actions";
 import { PageHeader, PrimaryLink, EmptyState } from "@/components/ui";
+import { DeleteButton } from "@/components/DeleteButton";
 import InviteLink from "@/components/InviteLink";
 
 export const dynamic = "force-dynamic";
@@ -74,15 +75,12 @@ export default async function CleanersPage() {
                       >
                         編集
                       </Link>
-                      <form action={deleteCleaner} className="ml-3 inline">
-                        <input type="hidden" name="id" value={c.id} />
-                        <button
-                          type="submit"
-                          className="text-red-600 underline hover:text-red-800"
-                        >
-                          削除
-                        </button>
-                      </form>
+                      <DeleteButton
+                        action={deleteCleaner}
+                        id={c.id}
+                        name={c.name}
+                        className="ml-3 text-red-600 underline hover:text-red-800"
+                      />
                     </td>
                   )}
                 </tr>

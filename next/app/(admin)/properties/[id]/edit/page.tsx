@@ -5,6 +5,7 @@ import type { Property } from "@/lib/database.types";
 import { updateProperty } from "../../actions";
 import PropertyForm from "../../PropertyForm";
 import { PageHeader } from "@/components/ui";
+import { CreatedBanner } from "@/components/CreatedBanner";
 
 export default async function EditPropertyPage({
   params,
@@ -28,6 +29,7 @@ export default async function EditPropertyPage({
   return (
     <div className="space-y-6">
       <PageHeader title="物件を編集" />
+      <CreatedBanner />
       <PropertyForm action={action} property={data} />
     </div>
   );

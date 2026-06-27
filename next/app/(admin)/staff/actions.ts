@@ -8,6 +8,7 @@ import { createManagedUser, deleteManagedUser } from "@/lib/users-admin";
 
 export interface StaffFormState {
   error?: string;
+  success?: boolean;
 }
 
 export async function createStaff(
@@ -51,7 +52,7 @@ export async function createStaff(
   });
 
   revalidatePath("/staff");
-  redirect("/staff");
+  redirect(`/staff/${result.userId}/edit?created=1`);
 }
 
 export async function updateStaff(
@@ -140,7 +141,7 @@ export async function updateStaff(
   }
 
   revalidatePath("/staff");
-  redirect("/staff");
+  return { success: true };
 }
 
 export async function deleteStaff(formData: FormData) {

@@ -8,6 +8,7 @@ import { createManagedUser, deleteManagedUser } from "@/lib/users-admin";
 
 export interface OwnerFormState {
   error?: string;
+  success?: boolean;
 }
 
 // フォームから物件紐付けを抽出
@@ -69,7 +70,7 @@ export async function createOwner(
   }
 
   revalidatePath("/owners");
-  redirect("/owners");
+  redirect(`/owners/${result.userId}/edit?created=1`);
 }
 
 export async function updateOwner(
@@ -114,7 +115,7 @@ export async function updateOwner(
   }
 
   revalidatePath("/owners");
-  redirect("/owners");
+  return { success: true };
 }
 
 export async function deleteOwner(formData: FormData) {

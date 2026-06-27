@@ -9,6 +9,7 @@ import type { JobStatus } from "@/lib/database.types";
 
 export interface JobFormState {
   error?: string;
+  success?: boolean;
 }
 
 const VALID_STATUS: JobStatus[] = ["scheduled", "in_progress", "completed"];
@@ -70,7 +71,7 @@ export async function createJob(
   }
 
   revalidatePath("/schedules");
-  redirect("/schedules");
+  redirect(`/schedules/${data.id}/edit?created=1`);
 }
 
 export async function updateJob(
@@ -103,7 +104,7 @@ export async function updateJob(
 
   revalidatePath("/schedules");
   revalidatePath(`/schedules/${id}`);
-  redirect(`/schedules/${id}`);
+  return { success: true };
 }
 
 export async function deleteJob(formData: FormData) {

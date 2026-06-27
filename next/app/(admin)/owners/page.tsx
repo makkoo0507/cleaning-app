@@ -5,6 +5,7 @@ import type { Property, PropertyMember, User } from "@/lib/database.types";
 import { PROPERTY_MEMBER_ROLE_LABEL } from "@/lib/database.types";
 import { deleteOwner } from "./actions";
 import { PageHeader, PrimaryLink, EmptyState } from "@/components/ui";
+import { DeleteButton } from "@/components/DeleteButton";
 import InviteLink from "@/components/InviteLink";
 
 export const dynamic = "force-dynamic";
@@ -95,15 +96,12 @@ export default async function OwnersPage() {
                         >
                           編集
                         </Link>
-                        <form action={deleteOwner} className="ml-3 inline">
-                          <input type="hidden" name="id" value={o.id} />
-                          <button
-                            type="submit"
-                            className="text-red-600 underline hover:text-red-800"
-                          >
-                            削除
-                          </button>
-                        </form>
+                        <DeleteButton
+                          action={deleteOwner}
+                          id={o.id}
+                          name={o.name}
+                          className="ml-3 text-red-600 underline hover:text-red-800"
+                        />
                       </td>
                     )}
                   </tr>

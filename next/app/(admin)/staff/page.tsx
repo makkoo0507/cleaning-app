@@ -4,6 +4,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { ContractorMemberProfile, User } from "@/lib/database.types";
 import { deleteStaff } from "./actions";
 import { PageHeader, PrimaryLink, EmptyState } from "@/components/ui";
+import { DeleteButton } from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -93,15 +94,12 @@ export default async function StaffPage() {
                       </Link>
                       {/* 管理者（自分含む）は社員管理からは削除不可 */}
                       {!isAdminRow && (
-                        <form action={deleteStaff} className="ml-3 inline">
-                          <input type="hidden" name="id" value={s.id} />
-                          <button
-                            type="submit"
-                            className="text-red-600 underline hover:text-red-800"
-                          >
-                            削除
-                          </button>
-                        </form>
+                        <DeleteButton
+                          action={deleteStaff}
+                          id={s.id}
+                          name={s.name}
+                          className="ml-3 text-red-600 underline hover:text-red-800"
+                        />
                       )}
                     </td>
                   </tr>
