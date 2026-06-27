@@ -39,6 +39,14 @@ export default function PropertyForm({
         <Textarea name="notes" rows={4} defaultValue={property?.notes ?? ""} />
       </Field>
 
+      <Field label="デフォルト開始時刻" hint="案件作成時に自動セット">
+        <TextInput
+          name="default_start_time"
+          type="time"
+          defaultValue={property?.default_start_time?.slice(0, 5) ?? ""}
+        />
+      </Field>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="デフォルト請求額" hint="案件作成時に自動セット">
           <TextInput

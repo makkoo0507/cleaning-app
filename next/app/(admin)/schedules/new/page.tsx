@@ -9,16 +9,16 @@ export default async function NewSchedulePage() {
   const admin = await requireAdmin();
   const supabase = await createClient();
   const [{ data: propsData }, { data: cleanersData }] = await Promise.all([
-    supabase.from("properties").select("id, name, default_billing_amount, default_payment_amount").order("name"),
+    supabase.from("properties").select("id, name, default_billing_amount, default_payment_amount, default_start_time").order("name"),
     supabase.from("users").select("id, name").eq("role", "cleaner").order("name"),
   ]);
 
-  type PropRow = Pick<Property, "id" | "name" | "default_billing_amount" | "default_payment_amount">;
+  type PropRow = Pick<Property, "id" | "name" | "default_billing_amount" | "default_payment_amount" | "default_start_time">;
   const properties = (propsData as PropRow[]) ?? [];
   const propertyDefaults = Object.fromEntries(
     properties.map((p) => [
       p.id,
-      { billing: p.default_billing_amount, payment: p.default_payment_amount },
+      { billing: p.default_billing_amount, payment: p.default_payment_amount, startTime: p.default_start_time },
     ])
   );
 

@@ -11,7 +11,7 @@ type Action = (
   formData: FormData
 ) => Promise<JobFormState>;
 
-type PropertyDefault = { billing: number | null; payment: number | null };
+type PropertyDefault = { billing: number | null; payment: number | null; startTime: string | null };
 
 export default function JobForm({
   action,
@@ -34,6 +34,9 @@ export default function JobForm({
   const [paymentAmount, setPaymentAmount] = useState<string>(
     job?.payment_amount != null ? String(job.payment_amount) : ""
   );
+  const [startTime, setStartTime] = useState<string>(
+    job?.scheduled_start_time?.slice(0, 5) ?? ""
+  );
 
   function handlePropertyChange(e: React.ChangeEvent<HTMLSelectElement>) {
     if (job) return; // 編集時はデフォルトを上書きしない
@@ -41,6 +44,7 @@ export default function JobForm({
     if (defaults) {
       setBillingAmount(defaults.billing != null ? String(defaults.billing) : "");
       setPaymentAmount(defaults.payment != null ? String(defaults.payment) : "");
+      setStartTime(defaults.startTime?.slice(0, 5) ?? "");
     }
   }
 
@@ -77,7 +81,8 @@ export default function JobForm({
           <TextInput
             name="scheduled_start_time"
             type="time"
-            defaultValue={job?.scheduled_start_time?.slice(0, 5) ?? ""}
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
           />
         </Field>
       </div>

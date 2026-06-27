@@ -110,6 +110,7 @@ export interface Property {
   notes: string | null;
   default_billing_amount: number | null;
   default_payment_amount: number | null;
+  default_start_time: string | null;
   created_at: string;
 }
 
