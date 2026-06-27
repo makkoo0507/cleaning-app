@@ -39,6 +39,27 @@ export default function PropertyForm({
         <Textarea name="notes" rows={4} defaultValue={property?.notes ?? ""} />
       </Field>
 
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="デフォルト請求額" hint="案件作成時に自動セット">
+          <TextInput
+            name="default_billing_amount"
+            type="number"
+            min="0"
+            step="1"
+            defaultValue={property?.default_billing_amount ?? ""}
+          />
+        </Field>
+        <Field label="デフォルト支払い額" hint="案件作成時に自動セット">
+          <TextInput
+            name="default_payment_amount"
+            type="number"
+            min="0"
+            step="1"
+            defaultValue={property?.default_payment_amount ?? ""}
+          />
+        </Field>
+      </div>
+
       {state.error && (
         <p className="text-sm text-red-600" role="alert">
           {state.error}

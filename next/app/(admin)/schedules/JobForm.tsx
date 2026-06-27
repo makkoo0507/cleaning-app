@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useState, useActionState } from "react";
 import type { JobFormState } from "./actions";
 import type { Job, Property, User } from "@/lib/database.types";
 import { Field, TextInput, Select } from "@/components/ui";
@@ -11,23 +11,48 @@ type Action = (
   formData: FormData
 ) => Promise<JobFormState>;
 
+type PropertyDefault = { billing: number | null; payment: number | null };
+
 export default function JobForm({
   action,
   properties,
   cleaners,
   job,
+  propertyDefaults = {},
 }: {
   action: Action;
   properties: Pick<Property, "id" | "name">[];
   cleaners: Pick<User, "id" | "name">[];
   job?: Job;
+  propertyDefaults?: Record<string, PropertyDefault>;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
+
+  const [billingAmount, setBillingAmount] = useState<string>(
+    job?.billing_amount != null ? String(job.billing_amount) : ""
+  );
+  const [paymentAmount, setPaymentAmount] = useState<string>(
+    job?.payment_amount != null ? String(job.payment_amount) : ""
+  );
+
+  function handlePropertyChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    if (job) return; // 編集時はデフォルトを上書きしない
+    const defaults = propertyDefaults[e.target.value];
+    if (defaults) {
+      setBillingAmount(defaults.billing != null ? String(defaults.billing) : "");
+      setPaymentAmount(defaults.payment != null ? String(defaults.payment) : "");
+    }
+  }
 
   return (
     <form action={formAction} className="max-w-lg space-y-4">
       <Field label="物件" required>
-        <Select name="property_id" required defaultValue={job?.property_id ?? ""}>
+        <Select
+          name="property_id"
+          required
+          defaultValue={job?.property_id ?? ""}
+          onChange={handlePropertyChange}
+        >
           <option value="" disabled>
             選択してください
           </option>
@@ -83,7 +108,8 @@ export default function JobForm({
             type="number"
             min="0"
             step="1"
-            defaultValue={job?.billing_amount ?? ""}
+            value={billingAmount}
+            onChange={(e) => setBillingAmount(e.target.value)}
           />
         </Field>
         <Field label="支払い額（清掃者向け）">
@@ -92,7 +118,8 @@ export default function JobForm({
             type="number"
             min="0"
             step="1"
-            defaultValue={job?.payment_amount ?? ""}
+            value={paymentAmount}
+            onChange={(e) => setPaymentAmount(e.target.value)}
           />
         </Field>
       </div>

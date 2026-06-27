@@ -12,10 +12,14 @@ export interface PropertyFormState {
 }
 
 function parseForm(formData: FormData) {
+  const billing = formData.get("default_billing_amount");
+  const payment = formData.get("default_payment_amount");
   return {
     name: String(formData.get("name") ?? "").trim(),
     address: String(formData.get("address") ?? "").trim(),
     notes: String(formData.get("notes") ?? "").trim() || null,
+    default_billing_amount: billing ? Number(billing) : null,
+    default_payment_amount: payment ? Number(payment) : null,
   };
 }
 
@@ -24,7 +28,7 @@ export async function createProperty(
   formData: FormData
 ): Promise<PropertyFormState> {
   const user = await requireAdmin();
-  const { name, address, notes } = parseForm(formData);
+  const { name, address, notes, default_billing_amount, default_payment_amount } = parseForm(formData);
 
   if (!name || !address) return { error: "物件名と住所は必須です。" };
 
@@ -51,7 +55,7 @@ export async function createProperty(
 
   const { data, error } = await supabase
     .from("properties")
-    .insert({ contractor_id: user.contractorId, name, address, notes })
+    .insert({ contractor_id: user.contractorId, name, address, notes, default_billing_amount, default_payment_amount })
     .select("id")
     .single();
 
@@ -67,14 +71,14 @@ export async function updateProperty(
   formData: FormData
 ): Promise<PropertyFormState> {
   await requireAdmin();
-  const { name, address, notes } = parseForm(formData);
+  const { name, address, notes, default_billing_amount, default_payment_amount } = parseForm(formData);
 
   if (!name || !address) return { error: "物件名と住所は必須です。" };
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("properties")
-    .update({ name, address, notes })
+    .update({ name, address, notes, default_billing_amount, default_payment_amount })
     .eq("id", id);
 
   if (error) return { error: "更新に失敗しました。" };

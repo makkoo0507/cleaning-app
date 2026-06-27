@@ -108,6 +108,8 @@ export interface Property {
   name: string;
   address: string;
   notes: string | null;
+  default_billing_amount: number | null;
+  default_payment_amount: number | null;
   created_at: string;
 }
 
