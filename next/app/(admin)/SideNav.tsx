@@ -62,14 +62,25 @@ export default function SideNav({ contractorName, admin, billingEnabled, userNam
           </Link>
         ))}
 
-        {billingEnabled && (
-          <Link
-            href={BILLING_NAV.href}
-            className={pathname === BILLING_NAV.href ? activeLinkClass : linkClass}
-          >
-            {BILLING_NAV.label}
-          </Link>
-        )}
+        <Link
+          href={BILLING_NAV.href}
+          className={
+            !billingEnabled
+              ? "flex items-center justify-between rounded-md px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-100 dark:text-zinc-500 dark:hover:bg-zinc-900"
+              : `${pathname === BILLING_NAV.href ? activeLinkClass : linkClass} block`
+          }
+        >
+          {!billingEnabled ? (
+            <>
+              <span>🔒 {BILLING_NAV.label}</span>
+              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                オプション
+              </span>
+            </>
+          ) : (
+            BILLING_NAV.label
+          )}
+        </Link>
 
         {/* 基本情報アコーディオン */}
         <div>
