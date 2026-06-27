@@ -6,6 +6,8 @@ import StatusBadge from "@/app/liff/_components/StatusBadge";
 import { formatDateShort, formatTime } from "@/lib/format";
 import type { Job, Property } from "@/lib/database.types";
 
+type PropertyWithDefaults = Pick<Property, "id" | "name" | "default_start_time" | "default_billing_amount">;
+
 export const dynamic = "force-dynamic";
 
 type JobRow = Job & { properties: Pick<Property, "name" | "address"> };
@@ -25,6 +27,12 @@ export default async function OwnerSchedulesPage() {
     .eq("user_id", user.id);
   const propertyIds = (members ?? []).map((m) => m.property_id);
 
+  // 物件情報（依頼ボタン用）
+  const { data: propertiesData } = propertyIds.length > 0
+    ? await admin.from("properties").select("id, name, default_start_time, default_billing_amount").in("id", propertyIds)
+    : { data: [] };
+  const properties = (propertiesData as PropertyWithDefaults[]) ?? [];
+
   let jobs: JobRow[] = [];
   if (propertyIds.length > 0) {
     const { data } = await admin
@@ -43,6 +51,32 @@ export default async function OwnerSchedulesPage() {
         </h1>
         <span className="text-sm text-zinc-500">{user.name}</span>
       </div>
+
+      {/* 依頼ボタン */}
+      {properties.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {properties.map((p) => {
+            const params = new URLSearchParams({
+              property_id: p.id,
+              property_name: p.name,
+              ...(p.default_start_time ? { default_time: p.default_start_time.slice(0, 5) } : {}),
+              ...(p.default_billing_amount != null ? { default_billing: String(p.default_billing_amount) } : {}),
+            });
+            return (
+              <Link
+                key={p.id}
+                href={`/liff/owner/request?${params.toString()}`}
+                className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm dark:border-amber-900 dark:bg-amber-950/40"
+              >
+                <span className="font-medium text-zinc-900 dark:text-zinc-50">{p.name}</span>
+                <span className="rounded-full bg-amber-200 px-3 py-1 text-xs font-medium text-amber-900 dark:bg-amber-800 dark:text-amber-100">
+                  清掃を依頼する
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
       {jobs.length === 0 ? (
         <p className="text-sm text-zinc-500">案件はありません。</p>

@@ -12,6 +12,7 @@ type Action = (
 ) => Promise<JobFormState>;
 
 type PropertyDefault = { billing: number | null; payment: number | null; startTime: string | null };
+type RequestPreset = { request_id: string; property_id: string; scheduled_date: string; scheduled_start_time: string | null };
 
 export default function JobForm({
   action,
@@ -19,12 +20,14 @@ export default function JobForm({
   cleaners,
   job,
   propertyDefaults = {},
+  requestPreset,
 }: {
   action: Action;
   properties: Pick<Property, "id" | "name">[];
   cleaners: Pick<User, "id" | "name">[];
   job?: Job;
   propertyDefaults?: Record<string, PropertyDefault>;
+  requestPreset?: RequestPreset | null;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
 
@@ -35,7 +38,7 @@ export default function JobForm({
     job?.payment_amount != null ? String(job.payment_amount) : ""
   );
   const [startTime, setStartTime] = useState<string>(
-    job?.scheduled_start_time?.slice(0, 5) ?? ""
+    job?.scheduled_start_time?.slice(0, 5) ?? requestPreset?.scheduled_start_time?.slice(0, 5) ?? ""
   );
 
   function handlePropertyChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -50,11 +53,14 @@ export default function JobForm({
 
   return (
     <form action={formAction} className="max-w-lg space-y-4">
+      {requestPreset && (
+        <input type="hidden" name="request_id" value={requestPreset.request_id} />
+      )}
       <Field label="物件" required>
         <Select
           name="property_id"
           required
-          defaultValue={job?.property_id ?? ""}
+          defaultValue={job?.property_id ?? requestPreset?.property_id ?? ""}
           onChange={handlePropertyChange}
         >
           <option value="" disabled>
@@ -74,7 +80,7 @@ export default function JobForm({
             name="scheduled_date"
             type="date"
             required
-            defaultValue={job?.scheduled_date ?? ""}
+            defaultValue={job?.scheduled_date ?? requestPreset?.scheduled_date ?? ""}
           />
         </Field>
         <Field label="開始予定時刻">

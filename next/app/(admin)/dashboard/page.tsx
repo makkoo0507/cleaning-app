@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireContractor, isAdmin } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { Job, Property, User } from "@/lib/database.types";
 import { jstDateRanges } from "@/lib/format";
 import { WeekNav } from "./WeekNav";
@@ -55,6 +55,7 @@ export default async function DashboardPage({
   const user = await requireContractor();
   const admin = isAdmin(user);
   const supabase = await createClient();
+  const adminClient = createAdminClient();
   const { today, weekStart, weekEnd } = jstDateRanges();
   const { week: weekParam } = await searchParams;
   const weekOffset = Number(weekParam ?? "0") * 7;
@@ -75,6 +76,7 @@ export default async function DashboardPage({
     { data: sevenDayData },
     { data: propsData },
     { data: cleanersData },
+    { data: pendingRequestsData },
   ] = await Promise.all([
     supabase.from("jobs").select("*").eq("scheduled_date", today).order("scheduled_start_time", { ascending: true }),
     supabase.from("jobs").select("*").gte("scheduled_date", weekStart).lte("scheduled_date", weekEnd),
@@ -82,6 +84,7 @@ export default async function DashboardPage({
     supabase.from("jobs").select("*").gte("scheduled_date", gridStart).lte("scheduled_date", sevenDaysEnd).order("scheduled_date").order("scheduled_start_time", { ascending: true }),
     supabase.from("properties").select("id, name"),
     supabase.from("users").select("id, name").eq("role", "cleaner"),
+    adminClient.from("cleaning_requests").select("id, requested_date, property_id").eq("contractor_id", user.contractorId).eq("status", "pending").order("requested_date"),
   ]);
 
   const propMap = new Map(((propsData as Pick<Property, "id" | "name">[]) ?? []).map((p) => [p.id, p.name]));
@@ -127,6 +130,20 @@ export default async function DashboardPage({
     status: j.status,
   }));
 
+  // 未対応の依頼
+  type PendingRequest = { id: string; requested_date: string; property_id: string };
+  const pendingRequests = (pendingRequestsData as PendingRequest[]) ?? [];
+
+  // 依頼件数（期間別）
+  const countRequests = (start: string, end: string) =>
+    pendingRequests.filter((r) => r.requested_date >= start && r.requested_date <= end).length;
+
+  const requestCounts = {
+    today:  countRequests(today, today),
+    week:   countRequests(weekStart, weekEnd),
+    month:  countRequests(monthStart, monthEnd),
+  };
+
   // 要対応：7日以内の未アサイン
   const alerts = sevenDayJobs
     .filter((j) => !j.cleaner_id && j.status === "scheduled")
@@ -144,13 +161,19 @@ export default async function DashboardPage({
     arr.push(job);
     jobsByDate.set(job.scheduled_date, arr);
   }
+  const requestsByDate = new Map<string, PendingRequest[]>();
+  for (const req of pendingRequests) {
+    const arr = requestsByDate.get(req.requested_date) ?? [];
+    arr.push(req);
+    requestsByDate.set(req.requested_date, arr);
+  }
 
   const barWidths = [1, 5, 20];
   const maxWidth = Math.max(...barWidths);
   const rows = [
-    { label: "本日の案件", total: kpi.todayTotal, completed: kpi.todayCompleted, inProgress: kpi.todayInProgress, scheduled: kpi.todayScheduled, unassigned: kpi.todayUnassigned },
-    { label: "今週の案件", total: kpi.weekTotal,  completed: kpi.weekCompleted,  inProgress: kpi.weekInProgress,  scheduled: kpi.weekScheduled,  unassigned: kpi.weekUnassigned  },
-    { label: "今月の案件", total: kpi.monthTotal, completed: kpi.monthCompleted, inProgress: kpi.monthInProgress, scheduled: kpi.monthScheduled, unassigned: kpi.monthUnassigned },
+    { label: "本日の案件", total: kpi.todayTotal, completed: kpi.todayCompleted, inProgress: kpi.todayInProgress, scheduled: kpi.todayScheduled, unassigned: kpi.todayUnassigned, requests: requestCounts.today },
+    { label: "今週の案件", total: kpi.weekTotal,  completed: kpi.weekCompleted,  inProgress: kpi.weekInProgress,  scheduled: kpi.weekScheduled,  unassigned: kpi.weekUnassigned,  requests: requestCounts.week  },
+    { label: "今月の案件", total: kpi.monthTotal, completed: kpi.monthCompleted, inProgress: kpi.monthInProgress, scheduled: kpi.monthScheduled, unassigned: kpi.monthUnassigned, requests: requestCounts.month },
   ];
 
   return (
@@ -178,23 +201,32 @@ export default async function DashboardPage({
             <div key={row.label} className={i > 0 ? "border-t border-zinc-100 pt-2 dark:border-zinc-800" : ""}>
               <div className="flex items-center gap-3">
                 <p className="w-20 flex-shrink-0 text-xs font-medium text-zinc-500">{row.label}</p>
-                <p className="w-8 flex-shrink-0 text-right text-lg font-bold text-zinc-900 dark:text-zinc-50">{row.total}</p>
+                <p className="w-8 flex-shrink-0 text-right text-lg font-bold text-zinc-900 dark:text-zinc-50">{row.total + row.requests}</p>
                 <div className="flex flex-1 flex-col gap-1">
-                  {row.total > 0 ? (
+                  {row.total + row.requests > 0 ? (
                     <>
                       <div className="h-3 overflow-hidden rounded-full">
-                        <div className="flex h-full overflow-hidden rounded-full" style={{ width: `${(barWidths[i] / maxWidth) * 100}%` }}>
-                          <div className="bg-green-500" style={{ width: `${(row.completed / row.total) * 100}%` }} />
-                          <div className="bg-amber-400" style={{ width: `${(row.inProgress / row.total) * 100}%` }} />
-                          <div className="bg-blue-400" style={{ width: `${((row.scheduled - row.unassigned) / row.total) * 100}%` }} />
-                          <div className="bg-red-400" style={{ width: `${(row.unassigned / row.total) * 100}%` }} />
-                        </div>
+                        {(() => {
+                          const grandTotal = row.total + row.requests;
+                          return (
+                            <div className="flex h-full overflow-hidden rounded-full" style={{ width: `${(barWidths[i] / maxWidth) * 100}%` }}>
+                              <div className="bg-green-500" style={{ width: `${(row.completed / grandTotal) * 100}%` }} />
+                              <div className="bg-amber-400" style={{ width: `${(row.inProgress / grandTotal) * 100}%` }} />
+                              <div className="bg-blue-400" style={{ width: `${((row.scheduled - row.unassigned) / grandTotal) * 100}%` }} />
+                              <div className="bg-red-400" style={{ width: `${(row.unassigned / grandTotal) * 100}%` }} />
+                              <div className="bg-slate-500" style={{ width: `${(row.requests / grandTotal) * 100}%` }} />
+                            </div>
+                          );
+                        })()}
                       </div>
                       <div className="flex gap-2">
                         <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500"><span className="h-1.5 w-1.5 rounded-full bg-green-500" />完 {row.completed}</span>
                         <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500"><span className="h-1.5 w-1.5 rounded-full bg-amber-400" />作中 {row.inProgress}</span>
                         <span className="inline-flex items-center gap-1 text-[11px] text-zinc-500"><span className="h-1.5 w-1.5 rounded-full bg-blue-400" />予 {row.scheduled - row.unassigned}</span>
                         <span className="inline-flex items-center gap-1 text-[11px] text-red-500"><span className="h-1.5 w-1.5 rounded-full bg-red-400" />未アサ {row.unassigned}</span>
+                        {row.requests > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-slate-600"><span className="h-1.5 w-1.5 rounded-full bg-slate-500" />依頼 {row.requests}</span>
+                        )}
                       </div>
                     </>
                   ) : (
@@ -256,19 +288,31 @@ export default async function DashboardPage({
         <section>
           <h2 className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
             <span className="h-2 w-2 rounded-full bg-red-500" />
-            要対応（7日以内）
-            <span className="text-xs font-normal text-red-500">＊未アサイン</span>
+            要対応
           </h2>
-          {alerts.length === 0 ? (
+          {pendingRequests.length === 0 && alerts.length === 0 ? (
             <p className="rounded-lg border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700">
-              未アサインの案件はありません
+              要対応の案件はありません
             </p>
           ) : (
             <div className="overflow-hidden rounded-md border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
               <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                {pendingRequests.map((r) => (
+                  <li key={r.id} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-900">
+                    <div className="flex items-center gap-3">
+                      <span className="flex-shrink-0 rounded-full bg-slate-200 px-1.5 py-0.5 text-[11px] text-slate-600 dark:bg-slate-700 dark:text-slate-300">依頼</span>
+                      <span className="flex-shrink-0 text-xs text-zinc-400">{shortDate(r.requested_date)}</span>
+                      <p className="font-medium text-zinc-900 dark:text-zinc-50">{propMap.get(r.property_id) ?? "不明"}</p>
+                    </div>
+                    <Link href="/schedules" className="text-xs text-amber-600 hover:text-amber-800">
+                      確認する
+                    </Link>
+                  </li>
+                ))}
                 {alerts.map((a) => (
                   <li key={a.id} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-900">
                     <div className="flex items-center gap-3">
+                      <span className="flex-shrink-0 rounded-full bg-red-100 px-1.5 py-0.5 text-[11px] text-red-700 dark:bg-red-950 dark:text-red-300">未アサ</span>
                       <span className="flex-shrink-0 text-xs text-zinc-400">{a.date}</span>
                       <p className="font-medium text-zinc-900 dark:text-zinc-50">{a.property}</p>
                     </div>
@@ -292,22 +336,35 @@ export default async function DashboardPage({
           {sevenDays.map((ymd) => {
             const isToday = ymd === today;
             const dayJobs = jobsByDate.get(ymd) ?? [];
+            const dayReqs = requestsByDate.get(ymd) ?? [];
             return (
               <div key={ymd} className={`rounded-lg border p-2 ${isToday ? "border-zinc-900 bg-white dark:border-zinc-50 dark:bg-zinc-950" : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"}`}>
                 <p className={`mb-2 text-center text-xs font-medium ${isToday ? "text-zinc-900 dark:text-zinc-50" : "text-zinc-500"}`}>
                   {gridLabel(ymd)}
                 </p>
                 <div className="space-y-1">
-                  {dayJobs.length === 0 ? (
+                  {dayJobs.length === 0 && dayReqs.length === 0 ? (
                     <p className="text-center text-[10px] text-zinc-300 dark:text-zinc-700">—</p>
-                  ) : dayJobs.map((job) => (
-                    <Link key={job.id} href={`/schedules/${job.id}`} className="block">
-                      <div className={`rounded px-1 py-0.5 text-[10px] leading-tight ${!job.cleaner_id ? "bg-red-100 text-red-700" : STATUS_CHIP[job.status]}`}>
-                        <p className="truncate font-medium">{propMap.get(job.property_id) ?? "不明"}</p>
-                        {job.scheduled_start_time && <p className="opacity-70">{job.scheduled_start_time.slice(0, 5)}</p>}
-                      </div>
-                    </Link>
-                  ))}
+                  ) : (
+                    <>
+                      {dayReqs.map((req) => (
+                        <Link key={req.id} href="/schedules" className="block">
+                          <div className="rounded bg-slate-200 px-1 py-0.5 text-[10px] leading-tight text-slate-600 dark:bg-slate-700 dark:text-slate-200">
+                            <p className="truncate font-medium">{propMap.get(req.property_id) ?? "不明"}</p>
+                            <p className="opacity-70">依頼</p>
+                          </div>
+                        </Link>
+                      ))}
+                      {dayJobs.map((job) => (
+                        <Link key={job.id} href={`/schedules/${job.id}`} className="block">
+                          <div className={`rounded px-1 py-0.5 text-[10px] leading-tight ${!job.cleaner_id ? "bg-red-100 text-red-700" : STATUS_CHIP[job.status]}`}>
+                            <p className="truncate font-medium">{propMap.get(job.property_id) ?? "不明"}</p>
+                            {job.scheduled_start_time && <p className="opacity-70">{job.scheduled_start_time.slice(0, 5)}</p>}
+                          </div>
+                        </Link>
+                      ))}
+                    </>
+                  )}
                 </div>
               </div>
             );

@@ -42,6 +42,7 @@ export async function createJob(
 ): Promise<JobFormState> {
   const user = await requireAdmin();
   const f = parseForm(formData);
+  const requestId = String(formData.get("request_id") ?? "") || null;
 
   if (!f.propertyId || !f.scheduledDate) {
     return { error: "物件と清掃日は必須です。" };
@@ -59,11 +60,20 @@ export async function createJob(
       status: f.status,
       billing_amount: f.billingAmount,
       payment_amount: f.paymentAmount,
+      request_id: requestId,
     })
     .select("id")
     .single();
 
   if (error) return { error: "作成に失敗しました。" };
+
+  // 依頼から作成した場合は承認済みに更新
+  if (requestId && data?.id) {
+    await supabase
+      .from("cleaning_requests")
+      .update({ status: "approved" })
+      .eq("id", requestId);
+  }
 
   // スケジュール作成通知（LINE 未設定・エラーは無視）
   if (data?.id) {

@@ -132,6 +132,22 @@ export interface Job {
   status: JobStatus;
   billing_amount: number | null;
   payment_amount: number | null;
+  request_id: string | null;
+  created_at: string;
+}
+
+export type CleaningRequestStatus = "pending" | "approved" | "rejected";
+
+export interface CleaningRequest {
+  id: string;
+  contractor_id: string;
+  property_id: string;
+  requested_by: string;
+  requested_date: string;
+  requested_start_time: string | null;
+  note: string | null;
+  status: CleaningRequestStatus;
+  rejection_reason: string | null;
   created_at: string;
 }
 
