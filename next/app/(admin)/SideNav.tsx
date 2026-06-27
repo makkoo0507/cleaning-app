@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { logout } from "./actions";
 
 const TOP_NAV = [
@@ -34,11 +34,21 @@ interface Props {
 }
 
 export default function SideNav({ contractorName, admin, billingEnabled, userName }: Props) {
-  const pathname = usePathname();
+  const rawPathname = usePathname();
+  // SSR とクライアントの不一致を防ぐため、アクティブ状態はクライアント側でのみ反映
+  const [pathname, setPathname] = useState("");
+  useEffect(() => { setPathname(rawPathname); }, [rawPathname]);
+
   const isOnSettings = pathname.startsWith("/settings") || pathname.startsWith("/staff");
   const isOnMaster = MASTER_NAV.some((item) => pathname.startsWith(item.href));
-  const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
-  const [masterOpen, setMasterOpen] = useState(isOnMaster);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [masterOpen, setMasterOpen] = useState(false);
+
+  useEffect(() => {
+    setSettingsOpen(isOnSettings);
+    setMasterOpen(isOnMaster);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const linkClass = "block rounded-md px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900";
   const activeLinkClass = "block rounded-md px-3 py-2 text-sm font-medium text-zinc-900 bg-zinc-100 dark:text-zinc-50 dark:bg-zinc-800";
