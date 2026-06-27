@@ -2,11 +2,11 @@ import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Job, Property, User } from "@/lib/database.types";
 import { PageHeader, PrimaryLink } from "@/components/ui";
-import CalendarView, { type CalendarJob } from "./calendar/CalendarView";
+import CalendarView, { type CalendarJob } from "./CalendarView";
 
 export const dynamic = "force-dynamic";
 
-export default async function SchedulesPage() {
+export default async function ScheduleCalendarPage() {
   const user = await requireContractor();
   const admin = isAdmin(user);
   const supabase = await createClient();
@@ -41,12 +41,12 @@ export default async function SchedulesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="スケジュール"
+        title="スケジュール（カレンダー）"
         action={
           admin ? <PrimaryLink href="/schedules/new">+ 案件を作成</PrimaryLink> : null
         }
       />
-      <CalendarView jobs={jobs} defaultView="agenda" />
+      <CalendarView jobs={jobs} />
     </div>
   );
 }
