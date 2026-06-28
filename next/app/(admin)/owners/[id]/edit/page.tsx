@@ -11,6 +11,7 @@ import { updateOwner } from "../../actions";
 import OwnerForm from "../../OwnerForm";
 import { PageHeader } from "@/components/ui";
 import LineLinkInfo from "@/components/LineLinkInfo";
+import { LIFF_ID } from "@/lib/liff-auth";
 import LineTestButton from "@/components/LineTestButton";
 import { CreatedBanner } from "@/components/CreatedBanner";
 
@@ -51,7 +52,7 @@ export default async function EditOwnerPage({
       <PageHeader title="物件関係者を編集" />
       <CreatedBanner />
       <div>
-        <LineLinkInfo lineUserId={user.line_user_id} />
+        <LineLinkInfo lineUserId={user.line_user_id} inviteToken={user.invite_token} liffId={LIFF_ID} />
         {user.line_user_id && <LineTestButton userId={id} />}
       </div>
       <OwnerForm

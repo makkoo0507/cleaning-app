@@ -50,7 +50,7 @@ function RequestForm() {
         <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">依頼を送信しました</p>
         <p className="mt-2 text-sm text-zinc-500">管理者が確認後、スケジュールに登録されます。</p>
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push("/liff/owner/schedules")}
           className="mt-6 rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300"
         >
           戻る

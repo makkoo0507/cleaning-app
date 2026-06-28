@@ -37,7 +37,7 @@ export default function InviteLink({
     <button
       type="button"
       onClick={copy}
-      className="text-xs text-zinc-600 underline hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
+      className="text-xs text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
       title={url}
     >
       {copied ? "コピーしました" : "招待URLをコピー"}
