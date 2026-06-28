@@ -22,7 +22,7 @@ export default async function SchedulesPage() {
         .from("cleaning_requests")
         .select("*")
         .eq("contractor_id", user.contractorId)
-        .eq("status", "pending")
+        .in("status", ["pending", "rejected"])
         .order("requested_date"),
       supabase.from("users").select("id, name").eq("role", "contact"),
     ]);
@@ -57,6 +57,7 @@ export default async function SchedulesPage() {
     propertyName: propMap.get(r.property_id) ?? "不明",
     requesterName: contactMap.get(r.requested_by) ?? "不明",
     note: r.note,
+    status: r.status as "pending" | "rejected",
   }));
 
   return (

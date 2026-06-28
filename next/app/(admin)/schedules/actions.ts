@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
-import { notifyScheduleCreated } from "@/lib/line";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { notifyScheduleCreated, notifyCleaningCompleted } from "@/lib/line";
 import type { JobStatus } from "@/lib/database.types";
 
 export interface JobFormState {
@@ -97,6 +97,13 @@ export async function updateJob(
   }
 
   const supabase = await createClient();
+
+  const { data: current } = await supabase
+    .from("jobs")
+    .select("status")
+    .eq("id", id)
+    .single<{ status: JobStatus }>();
+
   const { error } = await supabase
     .from("jobs")
     .update({
@@ -112,8 +119,83 @@ export async function updateJob(
 
   if (error) return { error: "更新に失敗しました。" };
 
+  if (f.status === "completed" && current?.status !== "completed") {
+    notifyCleaningCompleted(id).catch(() => {});
+  }
+
   revalidatePath("/schedules");
   revalidatePath(`/schedules/${id}`);
+  return { success: true };
+}
+
+export interface RecordFormState {
+  error?: string;
+  success?: boolean;
+}
+
+export async function upsertRecord(
+  jobId: string,
+  _prev: RecordFormState,
+  formData: FormData
+): Promise<RecordFormState> {
+  await requireAdmin();
+
+  const startedAtLocal = String(formData.get("started_at") ?? "");
+  const completedAtLocal = String(formData.get("completed_at") ?? "") || null;
+  const memo = String(formData.get("memo") ?? "").trim() || null;
+
+  if (!startedAtLocal) return { error: "開始時刻は必須です。" };
+
+  const startedAt = new Date(startedAtLocal + ":00+09:00").toISOString();
+  const completedAt = completedAtLocal
+    ? new Date(completedAtLocal + ":00+09:00").toISOString()
+    : null;
+
+  if (completedAt && completedAt < startedAt) {
+    return { error: "完了時刻は開始時刻より後にしてください。" };
+  }
+
+  const durationMinutes =
+    completedAt
+      ? Math.round((new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 60000)
+      : null;
+
+  const supabase = await createClient();
+  const admin = createAdminClient();
+
+  const { data: existing } = await admin
+    .from("cleaning_records")
+    .select("id")
+    .eq("job_id", jobId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await admin
+      .from("cleaning_records")
+      .update({ started_at: startedAt, completed_at: completedAt, duration_minutes: durationMinutes, memo })
+      .eq("id", existing.id);
+    if (error) return { error: "更新に失敗しました。" };
+  } else {
+    const { error } = await admin
+      .from("cleaning_records")
+      .insert({ job_id: jobId, started_at: startedAt, completed_at: completedAt, duration_minutes: durationMinutes, memo });
+    if (error) return { error: "作成に失敗しました。" };
+  }
+
+  const { data: current } = await supabase
+    .from("jobs")
+    .select("status")
+    .eq("id", jobId)
+    .single<{ status: JobStatus }>();
+
+  const newStatus: JobStatus = completedAt ? "completed" : "in_progress";
+  await supabase.from("jobs").update({ status: newStatus }).eq("id", jobId);
+
+  if (newStatus === "completed" && current?.status !== "completed") {
+    notifyCleaningCompleted(jobId).catch(() => {});
+  }
+
+  revalidatePath(`/schedules/${jobId}`);
   return { success: true };
 }
 

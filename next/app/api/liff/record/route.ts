@@ -17,13 +17,34 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { action, jobId, memo } = body as {
-    action: "start" | "complete" | "update_memo";
+    action: "start" | "complete" | "update_memo" | "revert_start" | "revert_complete";
     jobId: string;
     memo?: string;
   };
 
   if (!action || !jobId) {
     return NextResponse.json({ error: "action and jobId required" }, { status: 400 });
+  }
+
+  if (action === "revert_start") {
+    const { data: j } = await supabase.from("jobs").select("id, status, cleaner_id").eq("id", jobId).single();
+    if (!j || j.cleaner_id !== user.id) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    if (j.status !== "in_progress") return NextResponse.json({ error: "not_in_progress" }, { status: 409 });
+    await supabase.from("cleaning_records").delete().eq("job_id", jobId);
+    await createAdminClient().from("jobs").update({ status: "scheduled" }).eq("id", jobId);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "revert_complete") {
+    const { data: j } = await supabase.from("jobs").select("id, status, cleaner_id").eq("id", jobId).single();
+    if (!j || j.cleaner_id !== user.id) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    if (j.status !== "completed") return NextResponse.json({ error: "not_completed" }, { status: 409 });
+    const { data: records } = await supabase.from("cleaning_records").select("id").eq("job_id", jobId).order("created_at", { ascending: false }).limit(1);
+    if (records?.[0]) {
+      await supabase.from("cleaning_records").update({ completed_at: null, duration_minutes: null }).eq("id", records[0].id);
+    }
+    await createAdminClient().from("jobs").update({ status: "in_progress" }).eq("id", jobId);
+    return NextResponse.json({ ok: true });
   }
 
   // 担当確認（自分がアサインされた案件かつ RLS で同テナント）

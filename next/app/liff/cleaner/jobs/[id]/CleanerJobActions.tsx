@@ -20,7 +20,7 @@ export default function CleanerJobActions({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  async function send(action: "start" | "complete" | "update_memo") {
+  async function send(action: "start" | "complete" | "update_memo" | "revert_start" | "revert_complete") {
     setSubmitting(true);
     setError(null);
     setSaved(false);
@@ -85,6 +85,13 @@ export default function CleanerJobActions({
           >
             {submitting ? "処理中..." : "清掃完了"}
           </button>
+          <button
+            onClick={() => send("revert_start")}
+            disabled={submitting}
+            className="w-full rounded-lg border border-zinc-300 py-2 text-sm text-zinc-500 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+          >
+            開始を取り消す
+          </button>
         </>
       )}
 
@@ -107,6 +114,13 @@ export default function CleanerJobActions({
           {saved && (
             <p className="text-center text-xs text-green-600">保存しました</p>
           )}
+          <button
+            onClick={() => send("revert_complete")}
+            disabled={submitting}
+            className="w-full rounded-lg border border-zinc-300 py-2 text-sm text-zinc-500 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+          >
+            完了を取り消す
+          </button>
         </>
       )}
     </div>

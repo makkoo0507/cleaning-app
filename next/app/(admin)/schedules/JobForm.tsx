@@ -31,6 +31,7 @@ export default function JobForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
 
+  const [status, setStatus] = useState<string>(job?.status ?? "scheduled");
   const [billingAmount, setBillingAmount] = useState<string>(
     job?.billing_amount != null ? String(job.billing_amount) : ""
   );
@@ -105,7 +106,7 @@ export default function JobForm({
       </Field>
 
       <Field label="ステータス">
-        <Select name="status" defaultValue={job?.status ?? "scheduled"}>
+        <Select key={status} name="status" defaultValue={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="scheduled">予定</option>
           <option value="in_progress">作業中</option>
           <option value="completed">完了</option>

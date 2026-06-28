@@ -8,6 +8,7 @@ import { logout } from "./actions";
 const TOP_NAV = [
   { href: "/dashboard", label: "ダッシュボード" },
   { href: "/schedules", label: "スケジュール" },
+  { href: "/requests", label: "依頼" },
   { href: "/records", label: "清掃記録" },
 ];
 

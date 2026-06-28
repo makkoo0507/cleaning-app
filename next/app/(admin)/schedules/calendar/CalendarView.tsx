@@ -4,7 +4,6 @@ import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { formatYen } from "@/lib/format";
-import { RejectRequestButton } from "@/components/RejectRequestButton";
 
 export type CalendarJob = {
   id: string;
@@ -24,6 +23,7 @@ export type CalendarRequest = {
   propertyName: string;
   requesterName: string;
   note: string | null;
+  status: "pending" | "rejected";
 };
 
 type View = "month" | "week" | "agenda";
@@ -169,24 +169,19 @@ function RequestPopover({ request, admin, onClose }: {
             </p>
           )}
         </div>
-        {admin && (
-          <div className="mt-6 flex justify-end gap-3">
-            <RejectRequestButton id={request.id} onDone={onClose} />
+        <div className="mt-6 flex justify-end gap-3">
+          <button onClick={onClose} className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900">
+            閉じる
+          </button>
+          {admin && (
             <Link
-              href={`/schedules/new?request_id=${request.id}`}
+              href={`/requests/${request.id}`}
               className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
-              承認
+              依頼を確認する
             </Link>
-          </div>
-        )}
-        {!admin && (
-          <div className="mt-6 flex justify-end">
-            <button onClick={onClose} className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900">
-              閉じる
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -266,7 +261,7 @@ function MonthView({ year, month, todayStr, jobsByDate, requestsByDate, onSelect
               <div className="space-y-0.5">
                 {dayReqs.map((req) => (
                   <button key={req.id} onClick={() => onSelectRequest(req)}
-                    className={`block w-full truncate rounded px-1 py-0.5 text-left text-[11px] leading-tight ${REQUEST_CHIP}`}>
+                    className={`block w-full truncate rounded px-1 py-0.5 text-left text-[11px] leading-tight ${req.status === "rejected" ? "bg-zinc-100 text-zinc-400 line-through dark:bg-zinc-800" : REQUEST_CHIP}`}>
                     {req.scheduled_start_time ? req.scheduled_start_time.slice(0, 5) + " " : ""}
                     {req.propertyName}
                   </button>
@@ -320,7 +315,7 @@ function WeekView({ weekStart, todayStr, jobsByDate, requestsByDate, onSelectJob
               )}
               {dayReqs.map((req) => (
                 <button key={req.id} onClick={() => onSelectRequest(req)}
-                  className={`block w-full rounded p-1 text-left text-[11px] leading-tight ${REQUEST_CHIP}`}>
+                  className={`block w-full rounded p-1 text-left text-[11px] leading-tight ${req.status === "rejected" ? "bg-zinc-100 text-zinc-400 line-through dark:bg-zinc-800" : REQUEST_CHIP}`}>
                   {req.scheduled_start_time && <p className="font-medium">{req.scheduled_start_time.slice(0, 5)}</p>}
                   <p className="truncate">{req.propertyName}</p>
                   <p className="truncate text-[10px] opacity-70">依頼</p>
@@ -382,16 +377,18 @@ function AgendaView({ todayStr, today, jobsByDate, requestsByDate, onSelectJob, 
             <div className="flex-1 space-y-1 border-l-2 border-zinc-200 pl-4 pt-3 dark:border-zinc-800">
               {dayReqs.map((req) => (
                 <button key={req.id} onClick={() => onSelectRequest(req)}
-                  className="flex w-full items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-left hover:bg-slate-100 border-l-4 border-l-slate-400 dark:border-slate-700 dark:border-l-slate-400 dark:bg-slate-800/40 dark:hover:bg-slate-700/40">
-                  <span className={`h-2 w-2 flex-shrink-0 rounded-full ${REQUEST_DOT}`} />
+                  className={`flex w-full items-center gap-3 rounded-md border px-3 py-2 text-left border-l-4 ${req.status === "rejected" ? "border-zinc-200 border-l-zinc-300 bg-zinc-50 hover:bg-zinc-100 dark:border-zinc-700 dark:border-l-zinc-600 dark:bg-zinc-900/40" : "border-slate-200 bg-slate-50 hover:bg-slate-100 border-l-slate-400 dark:border-slate-700 dark:border-l-slate-400 dark:bg-slate-800/40 dark:hover:bg-slate-700/40"}`}>
+                  <span className={`h-2 w-2 flex-shrink-0 rounded-full ${req.status === "rejected" ? "bg-zinc-400" : REQUEST_DOT}`} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">{req.propertyName}</p>
+                    <p className={`truncate text-sm font-medium ${req.status === "rejected" ? "text-zinc-400 line-through" : "text-zinc-900 dark:text-zinc-50"}`}>{req.propertyName}</p>
                     <p className="text-xs text-zinc-500">
                       {req.scheduled_start_time ? req.scheduled_start_time.slice(0, 5) : "時刻未定"}
                       {" · "}依頼者: {req.requesterName}
                     </p>
                   </div>
-                  <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] ${REQUEST_CHIP}`}>依頼</span>
+                  <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] ${req.status === "rejected" ? "bg-red-100 text-red-500" : REQUEST_CHIP}`}>
+                    {req.status === "rejected" ? "却下" : "依頼"}
+                  </span>
                 </button>
               ))}
               {dayJobs.map((job) => (
@@ -456,9 +453,14 @@ function CalendarViewInner({ jobs, requests = [], defaultView = "month", admin }
   const [weekStart, setWeekStart] = useState(() => getMondayOf(today));
   const [selectedJob, setSelectedJob] = useState<CalendarJob | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<CalendarRequest | null>(null);
+  const [showRejected, setShowRejected] = useState(false);
+
+  const filteredRequests = showRejected
+    ? requests
+    : requests.filter((r) => r.status !== "rejected");
 
   const jobsByDate = groupJobsByDate(jobs);
-  const requestsByDate = groupRequestsByDate(requests);
+  const requestsByDate = groupRequestsByDate(filteredRequests);
 
   const tabCls = (v: View) =>
     view === v
@@ -482,10 +484,18 @@ function CalendarViewInner({ jobs, requests = [], defaultView = "month", admin }
         <RequestPopover request={selectedRequest} admin={admin} onClose={() => setSelectedRequest(null)} />
       )}
 
-      <div className="flex gap-2">
-        <button onClick={() => setView("agenda")} className={tabCls("agenda")}>リスト</button>
-        <button onClick={() => setView("week")} className={tabCls("week")}>週</button>
-        <button onClick={() => setView("month")} className={tabCls("month")}>月</button>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-2">
+          <button onClick={() => setView("agenda")} className={tabCls("agenda")}>リスト</button>
+          <button onClick={() => setView("week")} className={tabCls("week")}>週</button>
+          <button onClick={() => setView("month")} className={tabCls("month")}>月</button>
+        </div>
+        <button
+          onClick={() => setShowRejected((v) => !v)}
+          className={`text-xs ${showRejected ? "text-zinc-700 underline dark:text-zinc-300" : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"}`}
+        >
+          {showRejected ? "却下済みを非表示" : "却下済みを表示"}
+        </button>
       </div>
 
       {view === "month" && (

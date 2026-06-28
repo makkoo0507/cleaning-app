@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { CleaningRecord, Job, Property, User } from "@/lib/database.types";
-import { formatDateShort, formatDateTime, formatDuration } from "@/lib/format";
-import { updateJob, deleteJob } from "../actions";
+import { formatDateShort } from "@/lib/format";
+import { updateJob, deleteJob, upsertRecord } from "../actions";
 import JobForm from "../JobForm";
+import RecordForm from "../RecordForm";
 import { DeleteButton } from "@/components/DeleteButton";
 import { CreatedBanner } from "@/components/CreatedBanner";
 import { PageHeader } from "@/components/ui";
@@ -28,7 +29,7 @@ export default async function JobDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ from?: string }>;
 }) {
-  const admin = await requireAdmin();
+  await requireAdmin();
   const { id } = await params;
   const { from } = await searchParams;
   const backHref = from ? `/schedules?view=${from}` : "/schedules";
@@ -101,18 +102,9 @@ export default async function JobDetailPage({
         <h2 className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
           清掃記録
         </h2>
-        {record ? (
-          <div className="rounded-md border border-zinc-200 bg-white px-4 py-2 dark:border-zinc-800 dark:bg-zinc-950">
-            <Row label="開始時刻" value={formatDateTime(record.started_at)} />
-            <Row label="完了時刻" value={formatDateTime(record.completed_at)} />
-            <Row label="所要時間" value={formatDuration(record.duration_minutes)} />
-            <Row label="共有" value={record.memo ?? "—"} />
-          </div>
-        ) : (
-          <p className="rounded-md border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-700">
-            まだ清掃記録はありません。
-          </p>
-        )}
+        <div className="rounded-md border border-zinc-200 bg-white px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950">
+          <RecordForm action={upsertRecord.bind(null, id)} record={record} />
+        </div>
       </section>
     </div>
   );
