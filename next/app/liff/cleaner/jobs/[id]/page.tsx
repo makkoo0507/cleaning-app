@@ -11,6 +11,13 @@ import {
 } from "@/lib/format";
 import type { CleaningRecord, Job, Property } from "@/lib/database.types";
 
+type ImageWithUrl = {
+  id: string;
+  storage_path: string;
+  share_with_owner: boolean;
+  url: string;
+};
+
 export const dynamic = "force-dynamic";
 
 type JobDetail = Job & {
@@ -57,6 +64,34 @@ export default async function CleanerJobDetailPage({
     .select("*")
     .eq("job_id", id)
     .maybeSingle<CleaningRecord>();
+
+  // 写真一覧（署名付きURL付き・有効期限1時間）
+  const internalBase = process.env.SUPABASE_URL ?? "";
+  const publicBase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const toPublicUrl = (url: string) =>
+    internalBase && publicBase && internalBase !== publicBase
+      ? url.replace(internalBase, publicBase)
+      : url;
+
+  const { data: rawImages } = await admin
+    .from("cleaning_images")
+    .select("id, storage_path, share_with_owner")
+    .eq("job_id", id)
+    .order("created_at");
+
+  let images: ImageWithUrl[] = [];
+  if (rawImages && rawImages.length > 0) {
+    const { data: signed } = await admin.storage
+      .from("cleaning-images")
+      .createSignedUrls(
+        rawImages.map((img) => img.storage_path),
+        3600
+      );
+    images = rawImages.map((img, i) => ({
+      ...img,
+      url: toPublicUrl(signed?.[i]?.signedUrl ?? ""),
+    }));
+  }
 
   return (
     <div className="px-4 py-6">
@@ -133,6 +168,7 @@ export default async function CleanerJobDetailPage({
         jobId={job.id}
         status={job.status}
         initialMemo={record?.memo ?? ""}
+        images={images}
       />
     </div>
   );

@@ -177,6 +177,49 @@ export async function notifyCleaningCompleted(jobId: string): Promise<void> {
   }
 }
 
+// オーナーに報告: 共有メモ本文 + 「写真を見る」リンクを送信
+export async function sendOwnerReport(jobId: string): Promise<void> {
+  const admin = createAdminClient();
+
+  const { data: job } = await admin
+    .from("jobs")
+    .select(
+      "contractor_id, property_id, properties(name), contractors(line_channel_access_token)"
+    )
+    .eq("id", jobId)
+    .single<{
+      contractor_id: string;
+      property_id: string;
+      properties: { name: string } | null;
+      contractors: { line_channel_access_token: string | null } | null;
+    }>();
+
+  const token = job?.contractors?.line_channel_access_token;
+  if (!job || !token) return;
+
+  const { data: record } = await admin
+    .from("cleaning_records")
+    .select("memo")
+    .eq("job_id", jobId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ memo: string | null }>();
+
+  const propertyName = job.properties?.name ?? "";
+  const memo = record?.memo ?? "";
+  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+  const photoUrl = liffId
+    ? `https://liff.line.me/${liffId}/owner/jobs/${jobId}`
+    : "";
+
+  let text = `${propertyName}の清掃が完了しました。`;
+  if (memo) text += `\n\n${memo}`;
+  if (photoUrl) text += `\n\n写真を見る:\n${photoUrl}`;
+
+  const contactIds = await getNotifiableLineIds(admin, job.property_id);
+  await pushAll(token, contactIds, text);
+}
+
 // --- 内部ヘルパー ---
 
 async function getNotifiableLineIds(

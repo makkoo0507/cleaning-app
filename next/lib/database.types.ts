@@ -133,6 +133,7 @@ export interface Job {
   billing_amount: number | null;
   payment_amount: number | null;
   request_id: string | null;
+  reported_at: string | null;
   created_at: string;
 }
 
@@ -148,6 +149,15 @@ export interface CleaningRequest {
   note: string | null;
   status: CleaningRequestStatus;
   rejection_reason: string | null;
+  created_at: string;
+}
+
+export interface CleaningImage {
+  id: string;
+  job_id: string;
+  storage_path: string;
+  share_with_owner: boolean;
+  uploaded_by: string;
   created_at: string;
 }
 

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { notifyScheduleCreated, notifyCleaningCompleted } from "@/lib/line";
+import { notifyScheduleCreated, sendOwnerReport } from "@/lib/line";
 import type { JobStatus } from "@/lib/database.types";
 
 export interface JobFormState {
@@ -119,10 +119,6 @@ export async function updateJob(
 
   if (error) return { error: "更新に失敗しました。" };
 
-  if (f.status === "completed" && current?.status !== "completed") {
-    notifyCleaningCompleted(id).catch(() => {});
-  }
-
   revalidatePath("/schedules");
   revalidatePath(`/schedules/${id}`);
   return { success: true };
@@ -135,7 +131,6 @@ export interface RecordFormState {
 
 export async function upsertRecord(
   jobId: string,
-  _prev: RecordFormState,
   formData: FormData
 ): Promise<RecordFormState> {
   await requireAdmin();
@@ -191,10 +186,6 @@ export async function upsertRecord(
   const newStatus: JobStatus = completedAt ? "completed" : "in_progress";
   await supabase.from("jobs").update({ status: newStatus }).eq("id", jobId);
 
-  if (newStatus === "completed" && current?.status !== "completed") {
-    notifyCleaningCompleted(jobId).catch(() => {});
-  }
-
   revalidatePath(`/schedules/${jobId}`);
   return { success: true };
 }
@@ -208,4 +199,56 @@ export async function deleteJob(formData: FormData) {
   await supabase.from("jobs").delete().eq("id", id);
   revalidatePath("/schedules");
   redirect("/schedules");
+}
+
+export async function updateImageShare(imageId: string, share: boolean): Promise<void> {
+  await requireAdmin();
+  const supabase = await createClient();
+  await supabase
+    .from("cleaning_images")
+    .update({ share_with_owner: share })
+    .eq("id", imageId);
+}
+
+export async function deleteImage(imageId: string): Promise<void> {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { data: image } = await supabase
+    .from("cleaning_images")
+    .select("storage_path, job_id")
+    .eq("id", imageId)
+    .single<{ storage_path: string; job_id: string }>();
+
+  if (image?.storage_path) {
+    await createAdminClient()
+      .storage.from("cleaning-images")
+      .remove([image.storage_path]);
+  }
+  await supabase.from("cleaning_images").delete().eq("id", imageId);
+  if (image?.job_id) revalidatePath(`/schedules/${image.job_id}`);
+}
+
+export interface ReportFormState {
+  error?: string;
+  success?: boolean;
+}
+
+export async function reportToOwner(
+  jobId: string,
+  _prev: ReportFormState,
+  _formData: FormData
+): Promise<ReportFormState> {
+  await requireAdmin();
+  try {
+    await sendOwnerReport(jobId);
+    const supabase = await createClient();
+    await supabase
+      .from("jobs")
+      .update({ reported_at: new Date().toISOString() })
+      .eq("id", jobId);
+    revalidatePath(`/schedules/${jobId}`);
+    return { success: true };
+  } catch {
+    return { error: "送信に失敗しました。" };
+  }
 }

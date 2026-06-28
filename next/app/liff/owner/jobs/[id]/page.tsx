@@ -9,7 +9,8 @@ import {
   formatDateTime,
   formatDuration,
 } from "@/lib/format";
-import type { CleaningRecord, Job, Property } from "@/lib/database.types";
+import type { CleaningImage, CleaningRecord, Job, Property } from "@/lib/database.types";
+import OwnerPhotoGallery from "./OwnerPhotoGallery";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +68,41 @@ export default async function OwnerJobDetailPage({
     .select("*")
     .eq("job_id", id)
     .maybeSingle<CleaningRecord>();
+
+  const { data: images } = await admin
+    .from("cleaning_images")
+    .select("*")
+    .eq("job_id", id)
+    .eq("share_with_owner", true)
+    .order("created_at")
+    .returns<CleaningImage[]>();
+
+  const internalBase = process.env.SUPABASE_URL ?? "";
+  const publicBase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const toPublicUrl = (url: string) =>
+    internalBase && publicBase && internalBase !== publicBase
+      ? url.replace(internalBase, publicBase)
+      : url;
+
+  const photos: { id: string; url: string; filename: string }[] = [];
+  if (images && images.length > 0) {
+    const paths = images.map((img) => img.storage_path);
+    const { data: signed } = await admin.storage
+      .from("cleaning-images")
+      .createSignedUrls(paths, 3600);
+    if (signed) {
+      for (const img of images) {
+        const entry = signed.find((s) => s.path === img.storage_path);
+        if (entry?.signedUrl) {
+          photos.push({
+            id: img.id,
+            url: toPublicUrl(entry.signedUrl),
+            filename: img.storage_path.split("/").pop() ?? "photo.jpg",
+          });
+        }
+      }
+    }
+  }
 
   return (
     <div className="px-4 py-6">
@@ -143,6 +179,8 @@ export default async function OwnerJobDetailPage({
           清掃中です。完了後に記録が表示されます。
         </div>
       ) : null}
+
+      <OwnerPhotoGallery photos={photos} />
     </div>
   );
 }

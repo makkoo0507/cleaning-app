@@ -3,7 +3,6 @@
 // POST { action: "start", jobId } | { action: "complete", jobId, memo? }
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { notifyCleaningCompleted } from "@/lib/line";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -138,9 +137,6 @@ export async function POST(req: NextRequest) {
     }
 
     await admin.from("jobs").update({ status: "completed" }).eq("id", jobId);
-
-    // 清掃完了通知（LINE 未設定・エラーは無視）
-    notifyCleaningCompleted(jobId).catch(() => {});
 
     return NextResponse.json({ ok: true });
   }
