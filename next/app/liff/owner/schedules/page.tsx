@@ -13,16 +13,19 @@ const STATUS_CHIP: Record<string, string> = {
   scheduled:   "bg-blue-100 text-blue-700",
   in_progress: "bg-amber-100 text-amber-700",
   completed:   "bg-green-100 text-green-700",
+  cancelled:   "bg-zinc-100 text-zinc-400",
 };
 const STATUS_DOT: Record<string, string> = {
   scheduled:   "bg-blue-500",
   in_progress: "bg-amber-500",
   completed:   "bg-green-500",
+  cancelled:   "bg-zinc-400",
 };
 const STATUS_LABEL: Record<string, string> = {
   scheduled:   "予定",
   in_progress: "作業中",
   completed:   "完了",
+  cancelled:   "キャンセル",
 };
 
 type JobRow = Pick<Job, "id" | "property_id" | "cleaner_id" | "scheduled_date" | "scheduled_start_time" | "status"> & { properties: Pick<Property, "name" | "address"> };
@@ -115,6 +118,9 @@ export default async function OwnerSchedulesPage() {
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">清掃スケジュール</h1>
         <span className="text-sm text-zinc-500">{user.name}</span>
       </div>
+
+      {/* iCal 自動反映の注意書き */}
+      <p className="mb-3 text-xs text-zinc-400">予約情報は最大 1 時間ごとに自動反映されます。</p>
 
       {/* 依頼ボタン */}
       {properties.length > 0 && (

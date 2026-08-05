@@ -66,6 +66,8 @@ function RequestForm() {
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">清掃を依頼する</h1>
       </div>
 
+      <p className="mb-3 text-xs text-zinc-400">予約情報は最大 1 時間ごとに自動反映されます。手動依頼と重複する場合があります。</p>
+
       <div className="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
         <p className="font-medium text-zinc-700 dark:text-zinc-300">{propertyName}</p>
         {defaultTime && <p className="mt-1 text-zinc-500">通常開始時刻: {defaultTime}</p>}

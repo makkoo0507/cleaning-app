@@ -5,6 +5,7 @@ const STYLES: Record<JobStatus, string> = {
   scheduled: "bg-blue-100 text-blue-700",
   in_progress: "bg-yellow-100 text-yellow-700",
   completed: "bg-green-100 text-green-700",
+  cancelled: "bg-zinc-100 text-zinc-400",
 };
 
 export default function StatusBadge({ status }: { status: JobStatus }) {

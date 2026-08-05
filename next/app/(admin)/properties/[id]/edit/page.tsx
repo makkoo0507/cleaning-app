@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { Property } from "@/lib/database.types";
+import type { IcalFeed, Property } from "@/lib/database.types";
 import { updateProperty } from "../../actions";
 import PropertyForm from "../../PropertyForm";
 import { PageHeader } from "@/components/ui";
 import { CreatedBanner } from "@/components/CreatedBanner";
+import IcalFeedSection from "./IcalFeedSection";
 
 export default async function EditPropertyPage({
   params,
@@ -16,11 +17,10 @@ export default async function EditPropertyPage({
   const { id } = await params;
 
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("properties")
-    .select("*")
-    .eq("id", id)
-    .single<Property>();
+  const [{ data }, { data: feeds }] = await Promise.all([
+    supabase.from("properties").select("*").eq("id", id).single<Property>(),
+    supabase.from("ical_feeds").select("*").eq("property_id", id).order("created_at"),
+  ]);
 
   if (!data) notFound();
 
@@ -31,6 +31,8 @@ export default async function EditPropertyPage({
       <PageHeader title="物件を編集" />
       <CreatedBanner />
       <PropertyForm action={action} property={data} />
+      <hr className="border-zinc-200 dark:border-zinc-800" />
+      <IcalFeedSection propertyId={id} feeds={(feeds as IcalFeed[]) ?? []} />
     </div>
   );
 }

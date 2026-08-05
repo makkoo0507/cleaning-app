@@ -15,7 +15,7 @@ export const CONTRACTOR_ROLE_LABEL: Record<string, string> = {
   contractor_vendor: "開発者（ベンダー）",
 };
 
-export type JobStatus = "scheduled" | "in_progress" | "completed";
+export type JobStatus = "scheduled" | "in_progress" | "completed" | "cancelled";
 
 export type ContractorPlan = "free" | "paid";
 
@@ -134,6 +134,34 @@ export interface Job {
   payment_amount: number | null;
   request_id: string | null;
   reported_at: string | null;
+  source: "manual" | "ical";
+  ical_booking_id: string | null;
+  created_at: string;
+}
+
+export type IcalFeedType = "site_controller" | "ota";
+
+export interface IcalFeed {
+  id: string;
+  contractor_id: string;
+  property_id: string;
+  feed_type: IcalFeedType;
+  name: string;
+  url: string;
+  last_synced_at: string | null;
+  last_error: string | null;
+  created_at: string;
+}
+
+export interface IcalBooking {
+  id: string;
+  feed_id: string;
+  property_id: string;
+  uid: string;
+  dtstart: string;
+  dtend: string;
+  summary: string | null;
+  missing_count: number;
   created_at: string;
 }
 
@@ -182,6 +210,7 @@ export const JOB_STATUS_LABEL: Record<JobStatus, string> = {
   scheduled: "予定",
   in_progress: "作業中",
   completed: "完了",
+  cancelled: "キャンセル",
 };
 
 export const PROPERTY_MEMBER_ROLE_LABEL: Record<string, string> = {

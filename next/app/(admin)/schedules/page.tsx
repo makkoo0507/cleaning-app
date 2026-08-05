@@ -48,6 +48,7 @@ export default async function SchedulesPage() {
     cleanerName: j.cleaner_id ? (cleanerMap.get(j.cleaner_id) ?? null) : null,
     billingAmount: j.billing_amount,
     paymentAmount: j.payment_amount,
+    source: (j.source ?? "manual") as "manual" | "ical",
   }));
 
   const requests: CalendarRequest[] = ((requestsData as CleaningRequest[]) ?? []).map((r) => ({

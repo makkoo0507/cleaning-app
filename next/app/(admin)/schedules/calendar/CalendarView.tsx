@@ -14,6 +14,7 @@ export type CalendarJob = {
   cleanerName: string | null;
   billingAmount: number | null;
   paymentAmount: number | null;
+  source: "manual" | "ical";
 };
 
 export type CalendarRequest = {
@@ -34,16 +35,19 @@ const STATUS_CHIP: Record<string, string> = {
   scheduled: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
   in_progress: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
   completed: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
+  cancelled: "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500",
 };
 const STATUS_DOT: Record<string, string> = {
   scheduled: "bg-blue-500",
   in_progress: "bg-amber-500",
   completed: "bg-green-500",
+  cancelled: "bg-zinc-400",
 };
 const STATUS_LABEL: Record<string, string> = {
   scheduled: "予定",
   in_progress: "作業中",
   completed: "完了",
+  cancelled: "キャンセル",
 };
 
 const REQUEST_CHIP = "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-200";
@@ -107,9 +111,16 @@ function JobPopover({ job, view, admin, onClose }: {
             <span className="text-zinc-500">担当: </span>
             {job.cleanerName ?? <span className="text-red-500">未アサイン</span>}
           </p>
-          <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] ${chipClass(job)}`}>
-            {STATUS_LABEL[job.status]}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] ${chipClass(job)}`}>
+              {STATUS_LABEL[job.status]}
+            </span>
+            {job.source === "ical" && (
+              <span className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[11px] text-violet-600 dark:bg-violet-950 dark:text-violet-300">
+                iCal
+              </span>
+            )}
+          </div>
           <div className="mt-2 space-y-1 border-t border-zinc-100 pt-2 dark:border-zinc-800">
             <p className="text-sm">
               <span className="text-zinc-500">請求額: </span>
