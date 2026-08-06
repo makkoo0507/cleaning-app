@@ -110,6 +110,7 @@ export default function JobForm({
           <option value="scheduled">予定</option>
           <option value="in_progress">作業中</option>
           <option value="completed">完了</option>
+          <option value="cancelled">キャンセル</option>
         </Select>
       </Field>
 
@@ -135,6 +136,16 @@ export default function JobForm({
           />
         </Field>
       </div>
+
+      <Field label="清掃指示" hint="清掃者のLIFFに表示されます">
+        <textarea
+          name="instruction"
+          rows={3}
+          defaultValue={job?.instruction ?? ""}
+          placeholder="例：エアコンフィルター掃除をお願いします"
+          className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+        />
+      </Field>
 
       {state.error && (
         <p className="text-sm text-red-600" role="alert">

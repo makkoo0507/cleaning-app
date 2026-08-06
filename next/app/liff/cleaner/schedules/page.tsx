@@ -100,6 +100,11 @@ export default async function CleanerSchedulesPage() {
                         <p className="text-xs text-zinc-500">
                           {formatTime(job.scheduled_start_time) === "—" ? "時刻未定" : formatTime(job.scheduled_start_time)}
                         </p>
+                        {job.instruction && (
+                          <p className="mt-0.5 truncate text-xs text-amber-600 dark:text-amber-400">
+                            {job.instruction}
+                          </p>
+                        )}
                       </div>
                       <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[11px] ${STATUS_CHIP[job.status]}`}>
                         {STATUS_LABEL[job.status]}

@@ -136,6 +136,7 @@ export interface Job {
   reported_at: string | null;
   source: "manual" | "ical";
   ical_booking_id: string | null;
+  instruction: string | null;
   created_at: string;
 }
 

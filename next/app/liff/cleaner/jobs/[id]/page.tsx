@@ -116,6 +116,15 @@ export default async function CleanerJobDetailPage({
         )}
       </div>
 
+      {job.instruction && (
+        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/40">
+          <p className="text-xs font-medium text-amber-700 dark:text-amber-400">清掃指示</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-amber-900 dark:text-amber-100">
+            {job.instruction}
+          </p>
+        </div>
+      )}
+
       <div className="mt-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <p className="text-sm text-zinc-500">清掃予定日時</p>
         <p className="mt-1 text-base font-medium text-zinc-900 dark:text-zinc-50">

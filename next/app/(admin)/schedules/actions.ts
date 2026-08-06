@@ -12,7 +12,7 @@ export interface JobFormState {
   success?: boolean;
 }
 
-const VALID_STATUS: JobStatus[] = ["scheduled", "in_progress", "completed"];
+const VALID_STATUS: JobStatus[] = ["scheduled", "in_progress", "completed", "cancelled"];
 
 function parseForm(formData: FormData) {
   const propertyId = String(formData.get("property_id") ?? "");
@@ -25,6 +25,7 @@ function parseForm(formData: FormData) {
     : "scheduled";
   const billing = formData.get("billing_amount");
   const payment = formData.get("payment_amount");
+  const instruction = String(formData.get("instruction") ?? "") || null;
   return {
     propertyId,
     cleanerId,
@@ -33,6 +34,7 @@ function parseForm(formData: FormData) {
     status,
     billingAmount: billing ? Number(billing) : null,
     paymentAmount: payment ? Number(payment) : null,
+    instruction,
   };
 }
 
@@ -60,6 +62,7 @@ export async function createJob(
       status: f.status,
       billing_amount: f.billingAmount,
       payment_amount: f.paymentAmount,
+      instruction: f.instruction,
       request_id: requestId,
     })
     .select("id")
@@ -114,6 +117,7 @@ export async function updateJob(
       status: f.status,
       billing_amount: f.billingAmount,
       payment_amount: f.paymentAmount,
+      instruction: f.instruction,
     })
     .eq("id", id);
 
