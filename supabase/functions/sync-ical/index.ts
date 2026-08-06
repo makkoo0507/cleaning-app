@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  let feedsQuery = supabase.from("ical_feeds").select("*");
+  let feedsQuery = supabase.from("ical_feeds").select("*, properties(default_start_time)");
   if (filterPropertyId) feedsQuery = feedsQuery.eq("property_id", filterPropertyId);
   const { data: feeds, error: feedsError } = await feedsQuery;
 
@@ -140,10 +140,12 @@ Deno.serve(async (req) => {
 
       if (!booking) continue;
 
+      const defaultStartTime = (feed.properties as { default_start_time: string | null } | null)?.default_start_time ?? null;
       await supabase.from("jobs").insert({
         contractor_id: feed.contractor_id,
         property_id: feed.property_id,
         scheduled_date: event.dtend,
+        scheduled_start_time: defaultStartTime,
         status: "scheduled",
         source: "ical",
         ical_booking_id: booking.id,

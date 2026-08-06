@@ -6,7 +6,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./next:/app                    # ソースコード・node_modules ともホストからバインドマウント
+      - ./next:/app                    # ソースコードをホストからバインドマウント
+      - /app/node_modules              # node_modulesはコンテナ内の匿名ボリューム（ホストとの遅いI/Oを回避）
+      - /app/.next                     # Turbopackキャッシュも同様にコンテナ内の匿名ボリューム
     env_file:
       - .env.local
     environment:

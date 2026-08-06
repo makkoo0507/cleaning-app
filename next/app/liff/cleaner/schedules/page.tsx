@@ -81,11 +81,11 @@ export default async function CleanerSchedulesPage() {
           {dates.map((ymd) => {
             const dayJobs = grouped.get(ymd) ?? [];
             return (
-              <div key={ymd} className="flex gap-3">
+              <div key={ymd} className="flex min-w-0 gap-3">
                 <div className="w-16 flex-shrink-0 pt-3 text-right text-sm text-zinc-500">
                   {dateLabel(ymd)}
                 </div>
-                <div className="flex-1 space-y-1 border-l-2 border-zinc-200 pl-3 pt-3 dark:border-zinc-700">
+                <div className="min-w-0 flex-1 space-y-1 border-l-2 border-zinc-200 pl-3 pt-3 dark:border-zinc-700">
                   {dayJobs.map((job) => (
                     <Link
                       key={job.id}
