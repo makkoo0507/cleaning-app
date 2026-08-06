@@ -13,10 +13,10 @@ export interface JobFormState {
 }
 
 const VALID_STATUS: JobStatus[] = ["scheduled", "in_progress", "completed", "cancelled"];
+const MAX_ASSIGNEES = 5;
 
 function parseForm(formData: FormData) {
   const propertyId = String(formData.get("property_id") ?? "");
-  const cleanerId = String(formData.get("cleaner_id") ?? "") || null;
   const scheduledDate = String(formData.get("scheduled_date") ?? "");
   const startTime = String(formData.get("scheduled_start_time") ?? "") || null;
   const statusRaw = String(formData.get("status") ?? "scheduled");
@@ -24,18 +24,49 @@ function parseForm(formData: FormData) {
     ? (statusRaw as JobStatus)
     : "scheduled";
   const billing = formData.get("billing_amount");
-  const payment = formData.get("payment_amount");
   const instruction = String(formData.get("instruction") ?? "") || null;
   return {
     propertyId,
-    cleanerId,
     scheduledDate,
     startTime,
     status,
     billingAmount: billing ? Number(billing) : null,
-    paymentAmount: payment ? Number(payment) : null,
     instruction,
   };
+}
+
+function parseAssignees(formData: FormData) {
+  const assignees: { cleanerId: string; paymentAmount: number | null; slot: number }[] = [];
+  for (let slot = 1; slot <= MAX_ASSIGNEES; slot++) {
+    const cleanerId = String(formData.get(`assignee_cleaner_id_${slot}`) ?? "") || null;
+    if (!cleanerId) continue;
+    const payment = formData.get(`assignee_payment_amount_${slot}`);
+    assignees.push({
+      cleanerId,
+      paymentAmount: payment ? Number(payment) : null,
+      slot,
+    });
+  }
+  return assignees;
+}
+
+async function saveAssignees(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  jobId: string,
+  contractorId: string,
+  assignees: { cleanerId: string; paymentAmount: number | null; slot: number }[]
+) {
+  await supabase.from("job_assignees").delete().eq("job_id", jobId);
+  if (assignees.length === 0) return;
+  await supabase.from("job_assignees").insert(
+    assignees.map((a) => ({
+      job_id: jobId,
+      contractor_id: contractorId,
+      cleaner_id: a.cleanerId,
+      payment_amount: a.paymentAmount,
+      slot: a.slot,
+    }))
+  );
 }
 
 export async function createJob(
@@ -44,6 +75,7 @@ export async function createJob(
 ): Promise<JobFormState> {
   const user = await requireAdmin();
   const f = parseForm(formData);
+  const assignees = parseAssignees(formData);
   const requestId = String(formData.get("request_id") ?? "") || null;
 
   if (!f.propertyId || !f.scheduledDate) {
@@ -56,12 +88,10 @@ export async function createJob(
     .insert({
       contractor_id: user.contractorId,
       property_id: f.propertyId,
-      cleaner_id: f.cleanerId,
       scheduled_date: f.scheduledDate,
       scheduled_start_time: f.startTime,
       status: f.status,
       billing_amount: f.billingAmount,
-      payment_amount: f.paymentAmount,
       instruction: f.instruction,
       request_id: requestId,
     })
@@ -69,6 +99,10 @@ export async function createJob(
     .single();
 
   if (error) return { error: "作成に失敗しました。" };
+
+  if (data?.id) {
+    await saveAssignees(supabase, data.id, user.contractorId, assignees);
+  }
 
   // 依頼から作成した場合は承認済みに更新
   if (requestId && data?.id) {
@@ -92,8 +126,9 @@ export async function updateJob(
   _prev: JobFormState,
   formData: FormData
 ): Promise<JobFormState> {
-  await requireAdmin();
+  const user = await requireAdmin();
   const f = parseForm(formData);
+  const assignees = parseAssignees(formData);
 
   if (!f.propertyId || !f.scheduledDate) {
     return { error: "物件と清掃日は必須です。" };
@@ -111,17 +146,17 @@ export async function updateJob(
     .from("jobs")
     .update({
       property_id: f.propertyId,
-      cleaner_id: f.cleanerId,
       scheduled_date: f.scheduledDate,
       scheduled_start_time: f.startTime,
       status: f.status,
       billing_amount: f.billingAmount,
-      payment_amount: f.paymentAmount,
       instruction: f.instruction,
     })
     .eq("id", id);
 
   if (error) return { error: "更新に失敗しました。" };
+
+  await saveAssignees(supabase, id, user.contractorId, assignees);
 
   revalidatePath("/schedules");
   revalidatePath(`/schedules/${id}`);

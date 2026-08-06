@@ -43,8 +43,8 @@ export default async function CleanerSchedulesPage() {
   const admin = createAdminClient();
   const { data } = await admin
     .from("jobs")
-    .select("*, properties(name, address)")
-    .eq("cleaner_id", user.id)
+    .select("*, properties(name, address), job_assignees!inner(cleaner_id)")
+    .eq("job_assignees.cleaner_id", user.id)
     .gte("scheduled_date", dateFrom)
     .lte("scheduled_date", dateTo)
     .order("scheduled_date", { ascending: true })

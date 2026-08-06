@@ -26,11 +26,18 @@ export async function POST(req: NextRequest) {
   // 担当確認（本人がアサインされた案件のみ）
   const { data: job } = await supabase
     .from("jobs")
-    .select("id, cleaner_id, contractor_id")
+    .select("id, contractor_id")
     .eq("id", jobId)
     .single();
 
-  if (!job || job.cleaner_id !== user.id) {
+  const { data: assignee } = await supabase
+    .from("job_assignees")
+    .select("id")
+    .eq("job_id", jobId)
+    .eq("cleaner_id", user.id)
+    .maybeSingle();
+
+  if (!job || !assignee) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
@@ -101,13 +108,14 @@ export async function DELETE(req: NextRequest) {
   }
 
   // 担当確認（清掃者自身のアサイン案件のみ）
-  const { data: job } = await supabase
-    .from("jobs")
-    .select("id, cleaner_id")
-    .eq("id", image.job_id)
-    .single();
+  const { data: assignee } = await supabase
+    .from("job_assignees")
+    .select("id")
+    .eq("job_id", image.job_id)
+    .eq("cleaner_id", user.id)
+    .maybeSingle();
 
-  if (!job || job.cleaner_id !== user.id) {
+  if (!assignee) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 

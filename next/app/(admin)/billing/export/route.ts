@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getContractorFlags } from "@/lib/contractor";
-import type { Job, Property, User } from "@/lib/database.types";
+import type { Job, JobAssignee, Property, User } from "@/lib/database.types";
 import { JOB_STATUS_LABEL } from "@/lib/database.types";
 import { jstMonthRange } from "@/lib/format";
 
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   const month = request.nextUrl.searchParams.get("month") ?? undefined;
   const { start, end, value } = jstMonthRange(month);
 
-  const [{ data: jobsData }, { data: propsData }, { data: cleanersData }] =
+  const [{ data: jobsData }, { data: propsData }, { data: cleanersData }, { data: assigneesData }] =
     await Promise.all([
       supabase
         .from("jobs")
@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
         .order("scheduled_date", { ascending: true }),
       supabase.from("properties").select("id, name"),
       supabase.from("users").select("id, name").eq("role", "cleaner"),
+      supabase.from("job_assignees").select("*"),
     ]);
 
   const jobs = (jobsData as Job[]) ?? [];
@@ -63,6 +64,19 @@ export async function GET(request: NextRequest) {
     ])
   );
 
+  const assigneesByJob = new Map<string, JobAssignee[]>();
+  for (const a of (assigneesData as JobAssignee[]) ?? []) {
+    const arr = assigneesByJob.get(a.job_id) ?? [];
+    arr.push(a);
+    assigneesByJob.set(a.job_id, arr);
+  }
+  function jobAssignees(jobId: string) {
+    return (assigneesByJob.get(jobId) ?? []).sort((a, b) => a.slot - b.slot);
+  }
+  function jobPaymentTotal(jobId: string) {
+    return jobAssignees(jobId).reduce((s, a) => s + (a.payment_amount ?? 0), 0);
+  }
+
   const header = [
     "清掃日",
     "物件",
@@ -74,14 +88,14 @@ export async function GET(request: NextRequest) {
   const rows = jobs.map((j) => [
     j.scheduled_date,
     propMap.get(j.property_id) ?? "",
-    j.cleaner_id ? cleanerMap.get(j.cleaner_id) ?? "" : "",
+    jobAssignees(j.id).map((a) => cleanerMap.get(a.cleaner_id) ?? "").join("、"),
     JOB_STATUS_LABEL[j.status],
     j.billing_amount ?? "",
-    j.payment_amount ?? "",
+    jobAssignees(j.id).length > 0 ? jobPaymentTotal(j.id) : "",
   ]);
 
   const totalBilling = jobs.reduce((s, j) => s + (j.billing_amount ?? 0), 0);
-  const totalPayment = jobs.reduce((s, j) => s + (j.payment_amount ?? 0), 0);
+  const totalPayment = jobs.reduce((s, j) => s + jobPaymentTotal(j.id), 0);
   rows.push(["合計", "", "", "", totalBilling, totalPayment]);
 
   const lines = [header, ...rows].map((r) => r.map(csvCell).join(","));

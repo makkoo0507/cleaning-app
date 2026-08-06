@@ -126,17 +126,25 @@ export interface Job {
   id: string;
   contractor_id: string;
   property_id: string;
-  cleaner_id: string | null;
   scheduled_date: string;
   scheduled_start_time: string | null;
   status: JobStatus;
   billing_amount: number | null;
-  payment_amount: number | null;
   request_id: string | null;
   reported_at: string | null;
   source: "manual" | "ical";
   ical_booking_id: string | null;
   instruction: string | null;
+  created_at: string;
+}
+
+export interface JobAssignee {
+  id: string;
+  job_id: string;
+  contractor_id: string;
+  cleaner_id: string;
+  payment_amount: number | null;
+  slot: number;
   created_at: string;
 }
 

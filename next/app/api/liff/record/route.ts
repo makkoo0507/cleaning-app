@@ -25,9 +25,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "action and jobId required" }, { status: 400 });
   }
 
+  const isAssigned = async (jobId: string) => {
+    const { data } = await supabase
+      .from("job_assignees")
+      .select("id")
+      .eq("job_id", jobId)
+      .eq("cleaner_id", user.id)
+      .maybeSingle();
+    return !!data;
+  };
+
   if (action === "revert_start") {
-    const { data: j } = await supabase.from("jobs").select("id, status, cleaner_id").eq("id", jobId).single();
-    if (!j || j.cleaner_id !== user.id) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    const { data: j } = await supabase.from("jobs").select("id, status").eq("id", jobId).single();
+    if (!j || !(await isAssigned(jobId))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
     if (j.status !== "in_progress") return NextResponse.json({ error: "not_in_progress" }, { status: 409 });
     await supabase.from("cleaning_records").delete().eq("job_id", jobId);
     await createAdminClient().from("jobs").update({ status: "scheduled" }).eq("id", jobId);
@@ -35,8 +45,8 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "revert_complete") {
-    const { data: j } = await supabase.from("jobs").select("id, status, cleaner_id").eq("id", jobId).single();
-    if (!j || j.cleaner_id !== user.id) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    const { data: j } = await supabase.from("jobs").select("id, status").eq("id", jobId).single();
+    if (!j || !(await isAssigned(jobId))) return NextResponse.json({ error: "forbidden" }, { status: 403 });
     if (j.status !== "completed") return NextResponse.json({ error: "not_completed" }, { status: 409 });
     const { data: records } = await supabase.from("cleaning_records").select("id").eq("job_id", jobId).order("created_at", { ascending: false }).limit(1);
     if (records?.[0]) {
@@ -49,11 +59,11 @@ export async function POST(req: NextRequest) {
   // 担当確認（自分がアサインされた案件かつ RLS で同テナント）
   const { data: job } = await supabase
     .from("jobs")
-    .select("id, status, cleaner_id")
+    .select("id, status")
     .eq("id", jobId)
     .single();
 
-  if (!job || job.cleaner_id !== user.id) {
+  if (!job || !(await isAssigned(jobId))) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 

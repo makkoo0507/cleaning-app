@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type {
   CleaningRecord,
   Job,
+  JobAssignee,
   Property,
   User,
 } from "@/lib/database.types";
@@ -34,9 +35,10 @@ export default async function RecordsPage() {
   const jobs = (jobsData as Job[]) ?? [];
   const jobMap = new Map(jobs.map((j) => [j.id, j]));
 
-  const [{ data: propsData }, { data: cleanersData }] = await Promise.all([
+  const [{ data: propsData }, { data: cleanersData }, { data: assigneesData }] = await Promise.all([
     supabase.from("properties").select("id, name"),
     supabase.from("users").select("id, name").eq("role", "cleaner"),
+    jobIds.length ? supabase.from("job_assignees").select("*").in("job_id", jobIds) : Promise.resolve({ data: [] as JobAssignee[] }),
   ]);
   const propMap = new Map(
     ((propsData as Pick<Property, "id" | "name">[]) ?? []).map((p) => [
@@ -50,6 +52,12 @@ export default async function RecordsPage() {
       c.name,
     ])
   );
+  const assigneesByJob = new Map<string, JobAssignee[]>();
+  for (const a of (assigneesData as JobAssignee[]) ?? []) {
+    const arr = assigneesByJob.get(a.job_id) ?? [];
+    arr.push(a);
+    assigneesByJob.set(a.job_id, arr);
+  }
 
   return (
     <div className="space-y-6">
@@ -88,8 +96,11 @@ export default async function RecordsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                      {job?.cleaner_id
-                        ? cleanerMap.get(job.cleaner_id) ?? "—"
+                      {job
+                        ? (assigneesByJob.get(job.id) ?? [])
+                            .sort((a, b) => a.slot - b.slot)
+                            .map((a) => cleanerMap.get(a.cleaner_id) ?? "—")
+                            .join("、") || "—"
                         : "—"}
                     </td>
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">

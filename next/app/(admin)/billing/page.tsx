@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getContractorFlags } from "@/lib/contractor";
-import type { Job, Property, User } from "@/lib/database.types";
+import type { Job, JobAssignee, Property, User } from "@/lib/database.types";
 import { JOB_STATUS_LABEL } from "@/lib/database.types";
 import { formatDateShort, formatYen, jstMonthRange } from "@/lib/format";
 import { PageHeader, Card, EmptyState } from "@/components/ui";
@@ -48,7 +48,7 @@ export default async function BillingPage({
   const { start, end, label, value } = jstMonthRange(month);
 
   const supabase = await createClient();
-  const [{ data: jobsData }, { data: propsData }, { data: cleanersData }] =
+  const [{ data: jobsData }, { data: propsData }, { data: cleanersData }, { data: assigneesData }] =
     await Promise.all([
       supabase
         .from("jobs")
@@ -58,6 +58,7 @@ export default async function BillingPage({
         .order("scheduled_date", { ascending: true }),
       supabase.from("properties").select("id, name"),
       supabase.from("users").select("id, name").eq("role", "cleaner"),
+      supabase.from("job_assignees").select("*"),
     ]);
 
   const jobs = (jobsData as Job[]) ?? [];
@@ -74,8 +75,21 @@ export default async function BillingPage({
     ])
   );
 
+  const assigneesByJob = new Map<string, JobAssignee[]>();
+  for (const a of (assigneesData as JobAssignee[]) ?? []) {
+    const arr = assigneesByJob.get(a.job_id) ?? [];
+    arr.push(a);
+    assigneesByJob.set(a.job_id, arr);
+  }
+  function jobAssignees(jobId: string) {
+    return (assigneesByJob.get(jobId) ?? []).sort((a, b) => a.slot - b.slot);
+  }
+  function jobPaymentTotal(jobId: string) {
+    return jobAssignees(jobId).reduce((s, a) => s + (a.payment_amount ?? 0), 0);
+  }
+
   const totalBilling = jobs.reduce((s, j) => s + (j.billing_amount ?? 0), 0);
-  const totalPayment = jobs.reduce((s, j) => s + (j.payment_amount ?? 0), 0);
+  const totalPayment = jobs.reduce((s, j) => s + jobPaymentTotal(j.id), 0);
 
   // 前月・翌月リンク
   const shift = (delta: number) => {
@@ -156,8 +170,10 @@ export default async function BillingPage({
                     {propMap.get(job.property_id) ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                    {job.cleaner_id
-                      ? cleanerMap.get(job.cleaner_id) ?? "—"
+                    {jobAssignees(job.id).length > 0
+                      ? jobAssignees(job.id)
+                          .map((a) => cleanerMap.get(a.cleaner_id) ?? "—")
+                          .join("、")
                       : "—"}
                   </td>
                   <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
@@ -167,7 +183,9 @@ export default async function BillingPage({
                     {formatYen(job.billing_amount)}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {formatYen(job.payment_amount)}
+                    {jobAssignees(job.id).length > 0
+                      ? formatYen(jobPaymentTotal(job.id))
+                      : formatYen(null)}
                   </td>
                   {canEdit && (
                     <td className="px-4 py-3 text-right">

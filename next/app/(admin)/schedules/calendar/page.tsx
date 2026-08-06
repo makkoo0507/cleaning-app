@@ -1,6 +1,6 @@
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import type { Job, Property, User } from "@/lib/database.types";
+import type { Job, JobAssignee, Property, User } from "@/lib/database.types";
 import { PageHeader, PrimaryLink } from "@/components/ui";
 import CalendarView, { type CalendarJob } from "./CalendarView";
 
@@ -11,7 +11,7 @@ export default async function ScheduleCalendarPage() {
   const admin = isAdmin(user);
   const supabase = await createClient();
 
-  const [{ data: jobsData }, { data: propsData }, { data: cleanersData }] =
+  const [{ data: jobsData }, { data: propsData }, { data: cleanersData }, { data: assigneesData }] =
     await Promise.all([
       supabase
         .from("jobs")
@@ -20,6 +20,7 @@ export default async function ScheduleCalendarPage() {
         .order("scheduled_start_time"),
       supabase.from("properties").select("id, name"),
       supabase.from("users").select("id, name").eq("role", "cleaner"),
+      supabase.from("job_assignees").select("*"),
     ]);
 
   const propMap = new Map(
@@ -29,17 +30,29 @@ export default async function ScheduleCalendarPage() {
     ((cleanersData as Pick<User, "id" | "name">[]) ?? []).map((c) => [c.id, c.name])
   );
 
-  const jobs: CalendarJob[] = ((jobsData as Job[]) ?? []).map((j) => ({
-    id: j.id,
-    scheduled_date: j.scheduled_date,
-    scheduled_start_time: j.scheduled_start_time,
-    status: j.status,
-    propertyName: propMap.get(j.property_id) ?? "不明",
-    cleanerName: j.cleaner_id ? (cleanerMap.get(j.cleaner_id) ?? null) : null,
-    billingAmount: j.billing_amount,
-    paymentAmount: j.payment_amount,
-    source: (j.source ?? "manual") as "manual" | "ical",
-  }));
+  const assigneesByJob = new Map<string, JobAssignee[]>();
+  for (const a of (assigneesData as JobAssignee[]) ?? []) {
+    const arr = assigneesByJob.get(a.job_id) ?? [];
+    arr.push(a);
+    assigneesByJob.set(a.job_id, arr);
+  }
+
+  const jobs: CalendarJob[] = ((jobsData as Job[]) ?? []).map((j) => {
+    const jobAssignees = (assigneesByJob.get(j.id) ?? []).sort((a, b) => a.slot - b.slot);
+    const cleanerNames = jobAssignees.map((a) => cleanerMap.get(a.cleaner_id) ?? "不明");
+    const totalPayment = jobAssignees.reduce((sum, a) => sum + (a.payment_amount ?? 0), 0);
+    return {
+      id: j.id,
+      scheduled_date: j.scheduled_date,
+      scheduled_start_time: j.scheduled_start_time,
+      status: j.status,
+      propertyName: propMap.get(j.property_id) ?? "不明",
+      cleanerName: cleanerNames.length > 0 ? cleanerNames.join("、") : null,
+      billingAmount: j.billing_amount,
+      paymentAmount: jobAssignees.some((a) => a.payment_amount != null) ? totalPayment : null,
+      source: (j.source ?? "manual") as "manual" | "ical",
+    };
+  });
 
   return (
     <div className="space-y-6">

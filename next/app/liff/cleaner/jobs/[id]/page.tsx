@@ -9,7 +9,7 @@ import {
   formatDateTime,
   formatDuration,
 } from "@/lib/format";
-import type { CleaningRecord, Job, Property } from "@/lib/database.types";
+import type { CleaningRecord, Job, JobAssignee, Property, User } from "@/lib/database.types";
 
 type ImageWithUrl = {
   id: string;
@@ -37,12 +37,12 @@ export default async function CleanerJobDetailPage({
   const { id } = await params;
   const admin = createAdminClient();
 
-  // 本人がアサインされた案件のみ（cleaner_id で明示スコープ）
+  // 本人がアサインされた案件のみ（job_assignees で明示スコープ）
   const { data: job } = await admin
     .from("jobs")
-    .select("*, properties(name, address, notes)")
+    .select("*, properties(name, address, notes), job_assignees!inner(cleaner_id)")
     .eq("id", id)
-    .eq("cleaner_id", user.id)
+    .eq("job_assignees.cleaner_id", user.id)
     .maybeSingle<JobDetail>();
 
   if (!job) {
@@ -64,6 +64,13 @@ export default async function CleanerJobDetailPage({
     .select("*")
     .eq("job_id", id)
     .maybeSingle<CleaningRecord>();
+
+  const { data: assigneesData } = await admin
+    .from("job_assignees")
+    .select("*, users(name)")
+    .eq("job_id", id)
+    .order("slot");
+  const assignees = (assigneesData as (JobAssignee & { users: Pick<User, "name"> | null })[]) ?? [];
 
   // 写真一覧（署名付きURL付き・有効期限1時間）
   const internalBase = process.env.SUPABASE_URL ?? "";
@@ -121,6 +128,15 @@ export default async function CleanerJobDetailPage({
           <p className="text-xs font-medium text-amber-700 dark:text-amber-400">清掃指示</p>
           <p className="mt-1 whitespace-pre-wrap text-sm text-amber-900 dark:text-amber-100">
             {job.instruction}
+          </p>
+        </div>
+      )}
+
+      {assignees.length > 1 && (
+        <div className="mt-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <p className="text-sm text-zinc-500">担当清掃者</p>
+          <p className="mt-1 text-sm text-zinc-900 dark:text-zinc-50">
+            {assignees.map((a) => a.users?.name ?? "不明").join("、")}
           </p>
         </div>
       )}

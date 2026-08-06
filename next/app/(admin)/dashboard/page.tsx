@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import type { Job, Property, User } from "@/lib/database.types";
+import type { Job, JobAssignee, Property, User } from "@/lib/database.types";
 import { jstDateRanges } from "@/lib/format";
 import { WeekNav } from "./WeekNav";
 
@@ -77,6 +77,7 @@ export default async function DashboardPage({
     { data: propsData },
     { data: cleanersData },
     { data: pendingRequestsData },
+    { data: assigneesData },
   ] = await Promise.all([
     supabase.from("jobs").select("*").eq("scheduled_date", today).order("scheduled_start_time", { ascending: true }),
     supabase.from("jobs").select("*").gte("scheduled_date", weekStart).lte("scheduled_date", weekEnd),
@@ -85,10 +86,21 @@ export default async function DashboardPage({
     supabase.from("properties").select("id, name"),
     supabase.from("users").select("id, name").eq("role", "cleaner"),
     adminClient.from("cleaning_requests").select("id, requested_date, property_id").eq("contractor_id", user.contractorId).eq("status", "pending").order("requested_date"),
+    supabase.from("job_assignees").select("*"),
   ]);
 
   const propMap = new Map(((propsData as Pick<Property, "id" | "name">[]) ?? []).map((p) => [p.id, p.name]));
   const cleanerMap = new Map(((cleanersData as Pick<User, "id" | "name">[]) ?? []).map((c) => [c.id, c.name]));
+
+  const assigneesByJob = new Map<string, JobAssignee[]>();
+  for (const a of (assigneesData as JobAssignee[]) ?? []) {
+    const arr = assigneesByJob.get(a.job_id) ?? [];
+    arr.push(a);
+    assigneesByJob.set(a.job_id, arr);
+  }
+  function jobAssignees(jobId: string) {
+    return (assigneesByJob.get(jobId) ?? []).sort((a, b) => a.slot - b.slot);
+  }
 
   const todayJobs = (todayData as Job[]) ?? [];
   const weekJobs  = (weekData  as Job[]) ?? [];
@@ -99,7 +111,7 @@ export default async function DashboardPage({
   const count = (jobs: Job[], status?: string, unassigned?: boolean) =>
     jobs.filter((j) => {
       if (status && j.status !== status) return false;
-      if (unassigned && j.cleaner_id) return false;
+      if (unassigned && jobAssignees(j.id).length > 0) return false;
       return true;
     }).length;
 
@@ -122,13 +134,16 @@ export default async function DashboardPage({
   };
 
   // 本日の案件テーブル用
-  const todayTable = todayJobs.map((j) => ({
-    id: j.id,
-    time: j.scheduled_start_time ? j.scheduled_start_time.slice(0, 5) : null,
-    property: propMap.get(j.property_id) ?? "不明",
-    cleaner: j.cleaner_id ? (cleanerMap.get(j.cleaner_id) ?? null) : null,
-    status: j.status,
-  }));
+  const todayTable = todayJobs.map((j) => {
+    const names = jobAssignees(j.id).map((a) => cleanerMap.get(a.cleaner_id) ?? "不明");
+    return {
+      id: j.id,
+      time: j.scheduled_start_time ? j.scheduled_start_time.slice(0, 5) : null,
+      property: propMap.get(j.property_id) ?? "不明",
+      cleaner: names.length > 0 ? names.join("、") : null,
+      status: j.status,
+    };
+  });
 
   // 未対応の依頼
   type PendingRequest = { id: string; requested_date: string; property_id: string };
@@ -146,7 +161,7 @@ export default async function DashboardPage({
 
   // 要対応：7日以内の未アサイン
   const alerts = sevenDayJobs
-    .filter((j) => !j.cleaner_id && j.status === "scheduled")
+    .filter((j) => jobAssignees(j.id).length === 0 && j.status === "scheduled")
     .map((j) => ({
       id: j.id,
       date: shortDate(j.scheduled_date),
@@ -357,7 +372,7 @@ export default async function DashboardPage({
                       ))}
                       {dayJobs.map((job) => (
                         <Link key={job.id} href={`/schedules/${job.id}`} className="block">
-                          <div className={`rounded px-1 py-0.5 text-[10px] leading-tight ${!job.cleaner_id ? "bg-red-100 text-red-700" : STATUS_CHIP[job.status]}`}>
+                          <div className={`rounded px-1 py-0.5 text-[10px] leading-tight ${jobAssignees(job.id).length === 0 ? "bg-red-100 text-red-700" : STATUS_CHIP[job.status]}`}>
                             <p className="truncate font-medium">{propMap.get(job.property_id) ?? "不明"}</p>
                             {job.scheduled_start_time && <p className="opacity-70">{job.scheduled_start_time.slice(0, 5)}</p>}
                           </div>

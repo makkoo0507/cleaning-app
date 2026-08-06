@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import type { CleaningImage, CleaningRecord, Job, Property, User } from "@/lib/database.types";
+import type { CleaningImage, CleaningRecord, Job, JobAssignee, Property, User } from "@/lib/database.types";
 import { formatDateShort } from "@/lib/format";
 import { updateJob, deleteJob, upsertRecord } from "../actions";
 import JobForm from "../JobForm";
@@ -38,11 +38,12 @@ export default async function JobDetailPage({
 
   const supabase = await createClient();
 
-  const [{ data: job }, { data: propsData }, { data: cleanersData }] =
+  const [{ data: job }, { data: propsData }, { data: cleanersData }, { data: assigneesData }] =
     await Promise.all([
       supabase.from("jobs").select("*").eq("id", id).single<Job>(),
       supabase.from("properties").select("id, name").order("name"),
       supabase.from("users").select("id, name").eq("role", "cleaner").order("name"),
+      supabase.from("job_assignees").select("*").eq("job_id", id),
     ]);
   if (!job) notFound();
 
@@ -126,6 +127,7 @@ export default async function JobDetailPage({
         job={job}
         properties={(propsData as Pick<Property, "id" | "name">[]) ?? []}
         cleaners={(cleanersData as Pick<User, "id" | "name">[]) ?? []}
+        assignees={(assigneesData as JobAssignee[]) ?? []}
       />
 
       {(property?.address || property?.notes) && (

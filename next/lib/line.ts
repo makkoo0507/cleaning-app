@@ -9,9 +9,55 @@ interface JobNotifyRow {
   scheduled_date: string;
   contractor_id: string;
   property_id: string;
-  cleaner_id: string | null;
   properties: { name: string } | null;
   contractors: { line_channel_access_token: string | null } | null;
+}
+
+async function getAssignedCleanerLineIds(
+  admin: AdminClient,
+  jobId: string
+): Promise<string[]> {
+  const { data: assignees } = await admin
+    .from("job_assignees")
+    .select("cleaner_id")
+    .eq("job_id", jobId)
+    .returns<{ cleaner_id: string }[]>();
+
+  if (!assignees || assignees.length === 0) return [];
+
+  const { data: users } = await admin
+    .from("users")
+    .select("line_user_id")
+    .in("id", assignees.map((a) => a.cleaner_id))
+    .not("line_user_id", "is", null)
+    .returns<{ line_user_id: string | null }[]>();
+
+  return (users ?? [])
+    .map((u) => u.line_user_id)
+    .filter((id): id is string => Boolean(id));
+}
+
+async function getAssignedCleanerNames(
+  admin: AdminClient,
+  jobId: string
+): Promise<string[]> {
+  const { data: assignees } = await admin
+    .from("job_assignees")
+    .select("cleaner_id, slot")
+    .eq("job_id", jobId)
+    .order("slot")
+    .returns<{ cleaner_id: string; slot: number }[]>();
+
+  if (!assignees || assignees.length === 0) return [];
+
+  const { data: users } = await admin
+    .from("users")
+    .select("id, name")
+    .in("id", assignees.map((a) => a.cleaner_id))
+    .returns<{ id: string; name: string }[]>();
+
+  const nameMap = new Map((users ?? []).map((u) => [u.id, u.name]));
+  return assignees.map((a) => nameMap.get(a.cleaner_id) ?? "担当者");
 }
 
 // --- 基本送信 ---
@@ -52,7 +98,7 @@ export async function notifyScheduleCreated(jobId: string): Promise<void> {
   const { data: job } = await admin
     .from("jobs")
     .select(
-      "scheduled_date, contractor_id, property_id, cleaner_id, properties(name), contractors(line_channel_access_token)"
+      "scheduled_date, contractor_id, property_id, properties(name), contractors(line_channel_access_token)"
     )
     .eq("id", jobId)
     .single<JobNotifyRow>();
@@ -79,20 +125,14 @@ export async function notifyScheduleCreated(jobId: string): Promise<void> {
     ? `\nhttps://liff.line.me/${liffId}/owner/schedules`
     : "";
 
-  // 清掃者への通知
-  if (cleanerEnabled && job.cleaner_id) {
-    const { data: cleaner } = await admin
-      .from("users")
-      .select("line_user_id")
-      .eq("id", job.cleaner_id)
-      .single<{ line_user_id: string | null }>();
-    if (cleaner?.line_user_id) {
-      await push(
-        token,
-        cleaner.line_user_id,
-        `${date} ${propertyName}の清掃が入りました${cleanerUrl}`
-      ).catch(() => {});
-    }
+  // 清掃者への通知（アサイン全員）
+  if (cleanerEnabled) {
+    const cleanerIds = await getAssignedCleanerLineIds(admin, jobId);
+    await pushAll(
+      token,
+      cleanerIds,
+      `${date} ${propertyName}の清掃が入りました${cleanerUrl}`
+    );
   }
 
   // 通知有効な物件関係者への通知
@@ -113,7 +153,7 @@ export async function notifyCleaningCompleted(jobId: string): Promise<void> {
   const { data: job } = await admin
     .from("jobs")
     .select(
-      "scheduled_date, contractor_id, property_id, cleaner_id, properties(name), contractors(line_channel_access_token)"
+      "scheduled_date, contractor_id, property_id, properties(name), contractors(line_channel_access_token)"
     )
     .eq("id", jobId)
     .single<JobNotifyRow>();
@@ -148,15 +188,8 @@ export async function notifyCleaningCompleted(jobId: string): Promise<void> {
 
   // 業者スタッフへの通知
   if (staffEnabled) {
-    let cleanerName = "担当者";
-    if (job.cleaner_id) {
-      const { data: cleaner } = await admin
-        .from("users")
-        .select("name")
-        .eq("id", job.cleaner_id)
-        .single<{ name: string }>();
-      cleanerName = cleaner?.name ?? cleanerName;
-    }
+    const cleanerNames = await getAssignedCleanerNames(admin, jobId);
+    const cleanerName = cleanerNames.length > 0 ? cleanerNames.join("、") : "担当者";
 
     const { data: staff } = await admin
       .from("users")

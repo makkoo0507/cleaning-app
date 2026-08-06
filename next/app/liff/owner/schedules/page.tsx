@@ -28,7 +28,7 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled:   "キャンセル",
 };
 
-type JobRow = Pick<Job, "id" | "property_id" | "cleaner_id" | "scheduled_date" | "scheduled_start_time" | "status"> & { properties: Pick<Property, "name" | "address"> };
+type JobRow = Pick<Job, "id" | "property_id" | "scheduled_date" | "scheduled_start_time" | "status"> & { properties: Pick<Property, "name" | "address"> };
 
 export default async function OwnerSchedulesPage() {
   const user = await getLiffUser();
@@ -62,7 +62,7 @@ export default async function OwnerSchedulesPage() {
   if (propertyIds.length > 0) {
     const { data } = await admin
       .from("jobs")
-      .select("id, property_id, cleaner_id, scheduled_date, scheduled_start_time, status, properties(name, address)")
+      .select("id, property_id, scheduled_date, scheduled_start_time, status, properties(name, address)")
       .in("property_id", propertyIds)
       .gte("scheduled_date", dateFrom)
       .lte("scheduled_date", dateTo)
