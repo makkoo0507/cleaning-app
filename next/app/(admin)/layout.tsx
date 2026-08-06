@@ -15,7 +15,7 @@ export default async function AdminLayout({
   ]);
 
   return (
-    <div className="flex min-h-screen flex-1 bg-zinc-50 dark:bg-black">
+    <div className="flex h-screen flex-1 bg-zinc-50 dark:bg-black">
       <SideNav
         contractorName={contractorName}
         admin={admin}
