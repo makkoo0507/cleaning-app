@@ -55,7 +55,7 @@ export default function SideNav({ contractorName, admin, billingEnabled, userNam
   const activeLinkClass = "block rounded-md px-3 py-2 text-sm font-medium text-zinc-900 bg-zinc-100 dark:text-zinc-50 dark:bg-zinc-800";
 
   return (
-    <aside className="flex h-screen w-56 flex-shrink-0 flex-col overflow-y-auto border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+    <aside className="flex h-full w-56 flex-shrink-0 flex-col overflow-y-auto border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       <div className="px-5 py-5">
         <p className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
           {contractorName}
