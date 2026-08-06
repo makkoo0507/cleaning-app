@@ -90,7 +90,7 @@ export default async function CleanerSchedulesPage() {
                     <Link
                       key={job.id}
                       href={`/liff/cleaner/jobs/${job.id}`}
-                      className="flex items-center gap-3 rounded-md border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900"
+                      className="flex items-center gap-3 overflow-hidden rounded-md border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900"
                     >
                       <span className={`h-2 w-2 flex-shrink-0 rounded-full ${STATUS_DOT[job.status]}`} />
                       <div className="min-w-0 flex-1">
