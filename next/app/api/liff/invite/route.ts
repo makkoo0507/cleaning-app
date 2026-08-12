@@ -75,8 +75,9 @@ async function sendLinkCompleteNotification(
     if (!linkedUser?.line_user_id) return;
 
     const path = user.role === "cleaner" ? "/cleaner/schedules" : "/owner/schedules";
+    const label = user.role === "cleaner" ? "清掃者ページURL" : "オーナーページURL";
     const url = contractor?.liff_id
-      ? `\nhttps://liff.line.me/${contractor.liff_id}${path}`
+      ? `\n・${label}\nhttps://liff.line.me/${contractor.liff_id}${path}`
       : "";
 
     await fetch("https://api.line.me/v2/bot/message/push", {
