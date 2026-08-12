@@ -46,7 +46,7 @@ export default function LiffBootstrap({
         const json = await res.json().catch(() => ({}));
         setError(
           json.error === "user_not_found"
-            ? "このアカウントは登録されていません。担当者から招待URLを受け取ってください。"
+            ? "担当者から届いた招待URLを開いてLINE連携を行い、連携完了後にもう一度お試しください。"
             : "認証に失敗しました。"
         );
         return;
@@ -56,7 +56,7 @@ export default function LiffBootstrap({
       router.refresh();
     }
 
-    run().catch(() => setError("初期化中にエラーが発生しました。"));
+    run().catch(() => setError("担当者から届いた招待URLを開いてLINE連携を行い、連携完了後にもう一度お試しください。"));
   }, [liffId, router, expectedRole]);
 
   return (
