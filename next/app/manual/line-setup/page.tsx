@@ -209,6 +209,14 @@ export default function LineSetupManualPage() {
               登録が完了すると<strong>LIFF ID</strong>（例: <code>1234567890-AbCdEfGh</code>）が発行されるので、
               <strong>コピーして控えておく</strong>（次の手順で本システムに貼り付けます）
             </li>
+            <li>
+              作成したチャネルの<strong>「チャネル基本設定」タブ</strong>を開き、公開設定を
+              <strong>「開発中」から「公開」に切り替える</strong>
+              <p className="mt-1 text-zinc-500">
+                ※「開発中」のままだと、あらかじめ「テスター」として登録した人しかログインできません。
+                実際の清掃者・オーナーがログインできるように、必ず公開状態にしてください。
+              </p>
+            </li>
           </ul>
         </Step>
 
