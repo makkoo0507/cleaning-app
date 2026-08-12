@@ -1,13 +1,43 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireContractor } from "@/lib/auth";
+import { requireContractor, requireAdmin } from "@/lib/auth";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { User } from "@/lib/database.types";
 
 export interface TestNotifyResult {
   error?: string;
   success?: boolean;
+}
+
+export interface UnlinkLineResult {
+  error?: string;
+  success?: boolean;
+}
+
+// LINE 紐付けを解除し、招待URLを再発行する（清掃者/オーナーの再紐付け用）
+export async function unlinkLine(
+  userId: string,
+  redirectPath: string
+): Promise<UnlinkLineResult> {
+  const me = await requireAdmin();
+  const client = createAdminClient();
+
+  const { data, error } = await client
+    .from("users")
+    .update({ line_user_id: null, invite_token: crypto.randomUUID() })
+    .eq("id", userId)
+    .eq("contractor_id", me.contractorId)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !data) {
+    return { error: "紐付け解除に失敗しました。" };
+  }
+
+  revalidatePath(redirectPath);
+  return { success: true };
 }
 
 // 指定ユーザーへテスト通知を送信（清掃者/オーナーの紐付け確認用）

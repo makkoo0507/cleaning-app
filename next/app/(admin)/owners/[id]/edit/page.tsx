@@ -57,6 +57,9 @@ export default async function EditOwnerPage({
       <CreatedBanner />
       <div>
         <LineLinkInfo
+          userId={id}
+          userName={user.name}
+          redirectPath={`/owners/${id}/edit`}
           lineUserId={user.line_user_id}
           inviteToken={user.invite_token}
           liffId={contractor?.liff_id}

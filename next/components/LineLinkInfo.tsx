@@ -2,13 +2,20 @@
 // line_user_id は個人識別子のため一覧では出さず、編集画面でのみ確認できるようにする。
 import CopyButton from "@/components/CopyButton";
 import InviteLink from "@/components/InviteLink";
+import UnlinkLineButton from "@/components/UnlinkLineButton";
 
 export default function LineLinkInfo({
+  userId,
+  userName,
+  redirectPath,
   lineUserId,
   inviteToken,
   liffId,
   slug,
 }: {
+  userId: string;
+  userName: string;
+  redirectPath: string;
   lineUserId: string | null;
   inviteToken?: string | null;
   liffId?: string | null;
@@ -20,12 +27,13 @@ export default function LineLinkInfo({
         LINE 紐付け
       </p>
       {lineUserId ? (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-green-600">紐付け済み</span>
           <code className="rounded bg-white px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">
             {lineUserId}
           </code>
           <CopyButton text={lineUserId} />
+          <UnlinkLineButton userId={userId} name={userName} redirectPath={redirectPath} />
         </div>
       ) : (
         <div className="flex items-center gap-3">
