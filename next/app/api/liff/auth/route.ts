@@ -2,7 +2,7 @@
 // 清掃者・物件関係者が LIFF でログインする際に使用。
 // verifyOtp までサーバー側で行い、ブラウザは Supabase に直接アクセスしない。
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient, clearStaleAuthCookies } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   const { lineUserId, role } = await req.json();
@@ -46,6 +46,9 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+
+  // 古い分割 cookie の残骸を消してから新しいセッションを発行する
+  await clearStaleAuthCookies();
 
   // サーバー側で検証してセッション Cookie を発行（SSR クライアント）
   const supabase = await createClient();

@@ -31,6 +31,19 @@ export async function createClient() {
   );
 }
 
+// Supabase の分割 cookie（sb-xxx-auth-token.0, .1, ...）は新しいセッション発行時に
+// 古いチャンクが残ることがあり、LIFF での繰り返しログインテストで Cookie が肥大化し
+// Vercel エッジで 400 Bad Request になる事例が発生した。新規セッション発行の直前に
+// 既存の sb- cookie をすべて削除し、蓄積を防ぐ。
+export async function clearStaleAuthCookies() {
+  const cookieStore = await cookies();
+  for (const { name } of cookieStore.getAll()) {
+    if (name.startsWith("sb-")) {
+      cookieStore.delete(name);
+    }
+  }
+}
+
 // service_role を使う管理操作用クライアント（RLS をバイパス。サーバー専用）
 // 用途: 清掃者・関係者・社員の auth ユーザー作成など
 export function createAdminClient() {
