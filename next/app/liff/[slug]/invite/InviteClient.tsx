@@ -64,8 +64,7 @@ function InviteContent({ liffId }: { liffId: string }) {
       setState("done");
     }
 
-    link().catch((err) => {
-      console.error("[invite] link failed:", err);
+    link().catch(() => {
       setErrorMsg("エラーが発生しました。再度お試しください。");
       setState("error");
     });
