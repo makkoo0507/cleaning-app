@@ -45,6 +45,19 @@ export default function InviteManualPage() {
         </p>
       </header>
 
+      <section className="mb-8 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+        <p className="font-medium">事前準備</p>
+        <p className="mt-1">
+          招待URLは、自社の <strong>LIFF ID</strong>（LINEログインチャネル）を使って発行されます。
+          先に
+          <a href="/manual/line-setup" className="underline">
+            LINE連携 設定マニュアル
+          </a>
+          の手順に沿って、管理画面の<strong>「設定 &gt; LINE連携」</strong>で LIFF ID を登録してください。
+          LIFF ID が未設定のまま招待URLを発行すると、LINE アプリで正しく開けません。
+        </p>
+      </section>
+
       <div className="space-y-6">
         <Step no={1} title="管理画面にログインする">
           <p>
@@ -78,17 +91,53 @@ export default function InviteManualPage() {
           </p>
         </Step>
 
-        <Step no={4} title="相手に招待URLを送る">
+        <Step no={4} title="相手に公式アカウントを友だち追加してもらう">
           <p>
-            コピーした招待URLを、<strong>LINE や SMS、メール</strong>などで本人に送ります。
-            公式アカウントの友だち追加もまだの場合は、友だち追加用のQRコード／URLも一緒に案内すると親切です。
+            まだ友だち追加していない場合は、先に自社の<strong>LINE公式アカウント</strong>を
+            友だち追加してもらいます。友だち追加用のQRコード／URLは
+            <a
+              href="https://manager.line.biz/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              LINE Official Account Manager
+            </a>
+            の<strong>「友だちを増やす」</strong>から取得できます。
           </p>
         </Step>
 
-        <Step no={5} title="相手が紐付けを完了する">
+        <Step no={5} title="相手から公式アカウントに一言送ってもらう">
+          <p>
+            友だち追加しただけでは、業者側から個別にメッセージを送ることができません
+            （LINE公式アカウントマネージャーのチャット機能は、相手から先にメッセージが届いていないと
+            スレッドが表示されない仕様のためです）。
+          </p>
+          <p>
+            相手に、<strong>スタンプ1つでよいので何か公式アカウントへ送ってもらって</strong>ください。
+            これでチャットスレッドが作成され、次の手順で招待URLを送れるようになります。
+          </p>
+        </Step>
+
+        <Step no={6} title="LINE公式アカウントマネージャーから招待URLを送る">
+          <p>
+            <a
+              href="https://manager.line.biz/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              LINE Official Account Manager
+            </a>
+            の<strong>「チャット」</strong>画面を開き、相手からのメッセージが届いたスレッドに、
+            手順3でコピーした<strong>招待URL</strong>を貼り付けて送信します。
+          </p>
+        </Step>
+
+        <Step no={7} title="相手が紐付けを完了する">
           <ul className="list-disc space-y-1 pl-5">
             <li>
-              本人が招待URLを<strong>LINE アプリで開く</strong>
+              本人が招待URLを<strong>開く</strong>
             </li>
             <li>LINE でログイン（初回のみ許可）</li>
             <li>「連携が完了しました」と表示されれば紐付け完了</li>
@@ -96,6 +145,15 @@ export default function InviteManualPage() {
           <p className="text-zinc-500">
             ※ 紐付けが完了すると、その招待URLは使えなくなります（1回限り）。
             管理画面の一覧では「紐付け済み」と表示されます。
+          </p>
+        </Step>
+
+        <Step no={8} title="テスト送信で確認する">
+          <p>
+            清掃者管理／オーナー管理の編集画面にある<strong>「テスト通知を送る」</strong>から、
+            実際に通知が届くか確認します。このテスト通知には清掃者用／オーナー用のURLが
+            自動で含まれるため、届いたメッセージのURLをそのままホーム画面に追加・ブックマークしてもらえば
+            以後スムーズに開けます。届けば設定は完了です。
           </p>
         </Step>
       </div>

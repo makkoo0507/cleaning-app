@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
-import { getLiffUser, LIFF_ID } from "@/lib/liff-auth";
+import { getLiffUser, getLiffIdBySlug } from "@/lib/liff-auth";
 import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
 import StatusBadge from "@/app/liff/_components/StatusBadge";
 import {
@@ -21,14 +21,15 @@ type JobDetail = Job & {
 export default async function OwnerJobDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string; id: string }>;
 }) {
+  const { slug, id } = await params;
   const user = await getLiffUser();
   if (!user || user.role !== "contact") {
-    return <LiffBootstrap liffId={LIFF_ID} expectedRole="contact" />;
+    const liffId = await getLiffIdBySlug(slug);
+    return <LiffBootstrap liffId={liffId ?? ""} expectedRole="contact" />;
   }
 
-  const { id } = await params;
   const admin = createAdminClient();
 
   const { data: job } = await admin
@@ -54,7 +55,7 @@ export default async function OwnerJobDetailPage({
       <div className="px-4 py-6">
         <p className="text-sm text-red-600">案件が見つかりません。</p>
         <Link
-          href="/liff/owner/schedules"
+          href={`/liff/${slug}/owner/schedules`}
           className="mt-4 inline-block text-sm text-zinc-500 underline"
         >
           ← 一覧に戻る
@@ -107,7 +108,7 @@ export default async function OwnerJobDetailPage({
   return (
     <div className="px-4 py-6">
       <Link
-        href="/liff/owner/schedules"
+        href={`/liff/${slug}/owner/schedules`}
         className="mb-4 inline-block text-sm text-zinc-500"
       >
         ← 一覧に戻る

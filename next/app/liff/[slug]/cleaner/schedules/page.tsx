@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server";
-import { getLiffUser, LIFF_ID } from "@/lib/liff-auth";
+import { getLiffUser, getLiffIdBySlug } from "@/lib/liff-auth";
 import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
 import { jstDateRanges, formatTime } from "@/lib/format";
 import type { Job, Property } from "@/lib/database.types";
@@ -25,10 +25,16 @@ const STATUS_LABEL: Record<string, string> = {
 
 type JobRow = Job & { properties: Pick<Property, "name" | "address"> };
 
-export default async function CleanerSchedulesPage() {
+export default async function CleanerSchedulesPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   const user = await getLiffUser();
   if (!user || user.role !== "cleaner") {
-    return <LiffBootstrap liffId={LIFF_ID} expectedRole="cleaner" />;
+    const liffId = await getLiffIdBySlug(slug);
+    return <LiffBootstrap liffId={liffId ?? ""} expectedRole="cleaner" />;
   }
 
   const { today } = jstDateRanges();
@@ -89,7 +95,7 @@ export default async function CleanerSchedulesPage() {
                   {dayJobs.map((job) => (
                     <Link
                       key={job.id}
-                      href={`/liff/cleaner/jobs/${job.id}`}
+                      href={`/liff/${slug}/cleaner/jobs/${job.id}`}
                       className="flex items-center gap-3 overflow-hidden rounded-md border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900"
                     >
                       <span className={`h-2 w-2 flex-shrink-0 rounded-full ${STATUS_DOT[job.status]}`} />

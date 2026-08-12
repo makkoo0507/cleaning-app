@@ -11,7 +11,8 @@ import InviteLink from "@/components/InviteLink";
 export const dynamic = "force-dynamic";
 
 export default async function OwnersPage() {
-  const admin = isAdmin(await requireContractor());
+  const me = await requireContractor();
+  const admin = isAdmin(me);
   const supabase = await createClient();
 
   const { data: users } = await supabase
@@ -20,6 +21,12 @@ export default async function OwnersPage() {
     .eq("role", "contact")
     .order("created_at", { ascending: false });
   const owners = (users as User[]) ?? [];
+
+  const { data: contractor } = await supabase
+    .from("contractors")
+    .select("liff_id, slug")
+    .eq("id", me.contractorId)
+    .single<{ liff_id: string | null; slug: string | null }>();
 
   const [{ data: membersData }, { data: propsData }] = await Promise.all([
     supabase.from("property_members").select("*"),
@@ -85,7 +92,8 @@ export default async function OwnersPage() {
                     <td className="px-4 py-3">
                       <InviteLink
                         token={o.invite_token}
-                        liffId={process.env.NEXT_PUBLIC_LIFF_ID}
+                        liffId={contractor?.liff_id}
+                        slug={contractor?.slug ?? ""}
                       />
                     </td>
                     {admin && (

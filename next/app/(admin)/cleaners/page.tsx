@@ -10,7 +10,8 @@ import InviteLink from "@/components/InviteLink";
 export const dynamic = "force-dynamic";
 
 export default async function CleanersPage() {
-  const admin = isAdmin(await requireContractor());
+  const me = await requireContractor();
+  const admin = isAdmin(me);
   const supabase = await createClient();
 
   const { data: users } = await supabase
@@ -20,6 +21,12 @@ export default async function CleanersPage() {
     .order("created_at", { ascending: false });
 
   const cleaners = (users as User[]) ?? [];
+
+  const { data: contractor } = await supabase
+    .from("contractors")
+    .select("liff_id, slug")
+    .eq("id", me.contractorId)
+    .single<{ liff_id: string | null; slug: string | null }>();
 
   const { data: profilesData } = await supabase
     .from("cleaner_profiles")
@@ -64,7 +71,8 @@ export default async function CleanersPage() {
                   <td className="px-4 py-3">
                     <InviteLink
                       token={c.invite_token}
-                      liffId={process.env.NEXT_PUBLIC_LIFF_ID}
+                      liffId={contractor?.liff_id}
+                      slug={contractor?.slug ?? ""}
                     />
                   </td>
                   {admin && (

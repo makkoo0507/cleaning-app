@@ -6,7 +6,7 @@ import liff from "@line/liff";
 
 type State = "loading" | "done" | "error";
 
-function InviteContent() {
+function InviteContent({ liffId }: { liffId: string }) {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
   const [state, setState] = useState<State>("loading");
@@ -18,6 +18,12 @@ function InviteContent() {
     called.current = true;
 
     async function link() {
+      if (!liffId) {
+        setErrorMsg("この業者のLIFF設定が未登録です。管理者にお問い合わせください。");
+        setState("error");
+        return;
+      }
+
       // 招待トークンの有効性を確認（無効なら早期エラー）
       const roleRes = await fetch(
         `/api/liff/invite?token=${encodeURIComponent(token)}`
@@ -28,8 +34,8 @@ function InviteContent() {
         return;
       }
 
-      // LIFF は単一アプリ（役割はユーザーレコードで判定）
-      await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID! });
+      // LIFF は業者ごとに 1 アプリ（役割はユーザーレコードで判定）
+      await liff.init({ liffId });
       if (!liff.isLoggedIn()) {
         // liff.line.me ネイティブ起動なら、ログイン後この招待URLへ戻り
         // liff.init がログインコールバックを処理して継続できる。
@@ -62,7 +68,7 @@ function InviteContent() {
       setErrorMsg("エラーが発生しました。再度お試しください。");
       setState("error");
     });
-  }, [token]);
+  }, [token, liffId]);
 
   if (!token) {
     return (
@@ -92,13 +98,13 @@ function InviteContent() {
   );
 }
 
-export default function InvitePage() {
+export default function InviteClient({ liffId }: { liffId: string }) {
   return (
     <div className="flex min-h-screen items-center justify-center px-6">
       <Suspense
         fallback={<p className="text-sm text-zinc-500">読み込み中...</p>}
       >
-        <InviteContent />
+        <InviteContent liffId={liffId} />
       </Suspense>
     </div>
   );

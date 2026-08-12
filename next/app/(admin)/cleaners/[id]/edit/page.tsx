@@ -6,7 +6,6 @@ import { updateCleaner } from "../../actions";
 import CleanerForm from "../../CleanerForm";
 import { PageHeader } from "@/components/ui";
 import LineLinkInfo from "@/components/LineLinkInfo";
-import { LIFF_ID } from "@/lib/liff-auth";
 import LineTestButton from "@/components/LineTestButton";
 import { CreatedBanner } from "@/components/CreatedBanner";
 
@@ -15,7 +14,7 @@ export default async function EditCleanerPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  const me = await requireAdmin();
   const { id } = await params;
 
   const supabase = await createClient();
@@ -34,6 +33,12 @@ export default async function EditCleanerPage({
     .eq("user_id", id)
     .maybeSingle<CleanerProfile>();
 
+  const { data: contractor } = await supabase
+    .from("contractors")
+    .select("liff_id, slug")
+    .eq("id", me.contractorId)
+    .single<{ liff_id: string | null; slug: string | null }>();
+
   const action = updateCleaner.bind(null, id);
 
   return (
@@ -41,7 +46,12 @@ export default async function EditCleanerPage({
       <PageHeader title="清掃者を編集" />
       <CreatedBanner />
       <div>
-        <LineLinkInfo lineUserId={user.line_user_id} inviteToken={user.invite_token} liffId={LIFF_ID} />
+        <LineLinkInfo
+          lineUserId={user.line_user_id}
+          inviteToken={user.invite_token}
+          liffId={contractor?.liff_id}
+          slug={contractor?.slug ?? ""}
+        />
         {user.line_user_id && <LineTestButton userId={id} />}
       </div>
       <CleanerForm

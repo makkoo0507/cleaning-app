@@ -28,6 +28,7 @@ export interface Contractor {
   line_channel_access_token: string | null;
   line_channel_secret: string | null;
   slug: string | null;
+  liff_id: string | null;
   created_at: string;
 }
 

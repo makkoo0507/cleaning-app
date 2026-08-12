@@ -19,9 +19,9 @@ export async function sendTestNotification(
 
   const { data: contractor } = await client
     .from("contractors")
-    .select("line_channel_access_token")
+    .select("line_channel_access_token, liff_id")
     .eq("id", me.contractorId)
-    .single<{ line_channel_access_token: string | null }>();
+    .single<{ line_channel_access_token: string | null; liff_id: string | null }>();
 
   const token = contractor?.line_channel_access_token;
   if (!token) {
@@ -30,14 +30,18 @@ export async function sendTestNotification(
 
   const { data: target } = await client
     .from("users")
-    .select("line_user_id, name")
+    .select("line_user_id, name, role")
     .eq("id", userId)
     .eq("contractor_id", me.contractorId)
-    .single<{ line_user_id: string | null; name: string }>();
+    .single<{ line_user_id: string | null; name: string; role: string }>();
 
   if (!target?.line_user_id) {
     return { error: "この相手は LINE 未紐付けです。" };
   }
+
+  const liffId = contractor?.liff_id;
+  const path = target.role === "cleaner" ? "/cleaner/schedules" : "/owner/schedules";
+  const url = liffId ? `\nhttps://liff.line.me/${liffId}${path}` : "";
 
   const res = await fetch("https://api.line.me/v2/bot/message/push", {
     method: "POST",
@@ -50,7 +54,7 @@ export async function sendTestNotification(
       messages: [
         {
           type: "text",
-          text: "【テスト通知】民泊清掃管理アプリからのテストです。これが届けば通知設定は正常です。",
+          text: `【テスト通知】民泊清掃管理アプリからのテストです。これが届けば通知設定は正常です。${url}`,
         },
       ],
     }),

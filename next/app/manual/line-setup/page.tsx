@@ -169,18 +169,74 @@ export default function LineSetupManualPage() {
           </ul>
         </Step>
 
-        <Step no={6} title="本システムに登録する">
+        <Step no={6} title="LINEログインチャネルを作成し、LIFF IDを発行する">
+          <p>
+            通知や招待URLを正しく届けるには、手順1の公式アカウントと
+            <strong>同じプロバイダー内</strong>に、もう1つ「LINEログインチャネル」を作成する必要があります。
+          </p>
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              <a
+                href="https://developers.line.biz/console/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                LINE Developers
+              </a>
+              を開き、手順3で使った<strong>プロバイダーを選択</strong>する
+            </li>
+            <li>
+              <strong>「新規チャネル作成」→「LINEログイン」</strong>を選び、チャネルを作成する
+            </li>
+            <li>
+              作成したチャネルの<strong>「LIFF」タブ</strong>を開き、「追加」からLIFFアプリを登録する
+              <ul className="mt-1 list-disc space-y-1 pl-5">
+                <li>LIFFアプリ名: チャネル名と同じで問題ありません（管理用の名前で、清掃者・オーナーには表示されません）</li>
+                <li>サイズ: Full（フル画面）を推奨</li>
+                <li>
+                  エンドポイントURL: 管理画面の<strong>「設定 &gt; LINE連携」</strong>に表示されている
+                  URL（<code>https://.../liff/あなたのslug</code>）を貼り付け
+                </li>
+                <li>
+                  Scope: <code>profile</code> にチェック
+                </li>
+                <li>友だち追加オプション: Normal を選ぶ</li>
+                <li>Scan QR・モジュールモード: どちらもオフのままでOK</li>
+              </ul>
+            </li>
+            <li>
+              登録が完了すると<strong>LIFF ID</strong>（例: <code>1234567890-AbCdEfGh</code>）が発行されるので、
+              <strong>コピーして控えておく</strong>（次の手順で本システムに貼り付けます）
+            </li>
+          </ul>
+        </Step>
+
+        <Step no={7} title="本システムに登録する">
           <p>
             管理画面の<strong>「設定 &gt; LINE連携」</strong>を開き、上でコピーした
-            <strong>チャネルアクセストークン</strong>と
-            <strong>チャネルシークレット</strong>を貼り付けて「保存」します。
+            <strong>チャネルアクセストークン</strong>・<strong>チャネルシークレット</strong>・
+            <strong>LIFF ID</strong>を貼り付けて「保存」します。
           </p>
           <p className="text-zinc-500">
             ※ 保存後はセキュリティのため値はマスク表示され、再表示されません。変更時は再入力してください。
           </p>
         </Step>
 
-        <Step no={7} title="清掃者・オーナーに公式アカウントを友だち追加してもらう">
+        <Step no={8} title="清掃者用URL・オーナー用URLを共有する">
+          <p>
+            LIFF ID を保存すると、同じ「設定 &gt; LINE連携」の画面に
+            <strong>清掃者用URL</strong>と<strong>オーナー用URL</strong>がそれぞれ表示され、
+            コピーボタンで取得できます。
+          </p>
+          <p>
+            これらのURLは、<strong>手動で共有するか、リッチメニューに貼っておくかしてください</strong>。
+            オーナー兼清掃者のように両方の役割を持つ人がいる場合は、
+            自動振り分けURLではなく役割ごとのURLを使い分けてもらうと混乱しません。
+          </p>
+        </Step>
+
+        <Step no={9} title="清掃者・オーナーに公式アカウントを友だち追加してもらう">
           <p>
             通知は、<strong>手順1で作った自社の LINE 公式アカウントを「友だち追加」した人にだけ</strong>
             届きます。清掃者・オーナーにその公式アカウントを友だち追加してもらってください。

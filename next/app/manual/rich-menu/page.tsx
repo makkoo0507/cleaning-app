@@ -41,8 +41,13 @@ function UrlRow({ label, url }: { label: string; url: string }) {
   );
 }
 
-export default function RichMenuManualPage() {
-  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
+export default async function RichMenuManualPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ liffId?: string }>;
+}) {
+  const { liffId: liffIdParam } = await searchParams;
+  const liffId = liffIdParam || "";
   const autoUrl = liffId ? `https://liff.line.me/${liffId}` : "";
   const ownerUrl = liffId
     ? `https://liff.line.me/${liffId}/owner/schedules`
@@ -83,7 +88,12 @@ export default function RichMenuManualPage() {
           </ul>
         ) : (
           <p className="text-sm text-zinc-500">
-            LIFF ID（NEXT_PUBLIC_LIFF_ID）が未設定のため URL を表示できません。
+            設定画面で登録した LIFF ID をこのページの URL に <code>?liffId=あなたのLIFF ID</code> の形で付けてアクセスすると、
+            上記の URL が自動生成されます。LIFF ID の取得方法は
+            <a href="/manual/line-setup" className="text-blue-600 underline">
+              LINE連携 設定マニュアル
+            </a>
+            を参照してください。
           </p>
         )}
         <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-400">

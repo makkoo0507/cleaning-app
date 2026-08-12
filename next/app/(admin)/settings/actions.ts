@@ -56,10 +56,12 @@ export async function updateLineSettings(
 
   const token = String(formData.get("line_channel_access_token") ?? "").trim();
   const secret = String(formData.get("line_channel_secret") ?? "").trim();
+  const liffId = String(formData.get("liff_id") ?? "").trim();
 
   const updates: Record<string, string> = {};
   if (token) updates.line_channel_access_token = token;
   if (secret) updates.line_channel_secret = secret;
+  if (liffId) updates.liff_id = liffId;
 
   if (Object.keys(updates).length === 0) {
     return { error: "変更する項目を入力してください。" };
@@ -83,28 +85,33 @@ export interface VerifyTokenState {
   success?: boolean;
   accountName?: string;
   secretSet?: boolean;
+  liffIdSet?: boolean;
 }
 
 // 送信先に依存せず、チャネルアクセストークンが有効か（公式アカウントに接続できるか）を確認。
 // LINE の GET /v2/bot/info を使用（メッセージ送信なし）。
+// LIFF ID は別チャネル(LINEログイン)の設定のためこの API では検証できないが、
+// 未設定だと通知リンク・招待URLが機能しないため状態だけ併せて返す。
 export async function verifyToken(): Promise<VerifyTokenState> {
   const admin = await requireAdmin();
   const client = createAdminClient();
 
   const { data: contractor } = await client
     .from("contractors")
-    .select("line_channel_access_token, line_channel_secret")
+    .select("line_channel_access_token, line_channel_secret, liff_id")
     .eq("id", admin.contractorId)
     .single<{
       line_channel_access_token: string | null;
       line_channel_secret: string | null;
+      liff_id: string | null;
     }>();
 
   const token = contractor?.line_channel_access_token;
   const secretSet = !!contractor?.line_channel_secret;
+  const liffIdSet = !!contractor?.liff_id;
 
   if (!token) {
-    return { error: "チャネルアクセストークンが登録されていません。" };
+    return { error: "チャネルアクセストークンが登録されていません。", liffIdSet };
   }
 
   const res = await fetch("https://api.line.me/v2/bot/info", {
@@ -116,7 +123,7 @@ export async function verifyToken(): Promise<VerifyTokenState> {
     if (res.status === 401) {
       msg = "チャネルアクセストークンが無効です。再発行して登録し直してください。";
     }
-    return { error: `${msg}（コード: ${res.status}）`, secretSet };
+    return { error: `${msg}（コード: ${res.status}）`, secretSet, liffIdSet };
   }
 
   const info = (await res.json().catch(() => ({}))) as {
@@ -127,5 +134,5 @@ export async function verifyToken(): Promise<VerifyTokenState> {
     ? `${info.displayName}${info.basicId ? `（${info.basicId}）` : ""}`
     : undefined;
 
-  return { success: true, accountName, secretSet };
+  return { success: true, accountName, secretSet, liffIdSet };
 }

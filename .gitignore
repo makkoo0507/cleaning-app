@@ -5,3 +5,5 @@
 # Supabase ローカル開発の一時ファイル
 supabase/.branches/
 supabase/.temp/
+.DS_Store
+**/.DS_Store

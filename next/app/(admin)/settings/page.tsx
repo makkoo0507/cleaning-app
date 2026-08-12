@@ -13,12 +13,12 @@ export default async function SettingsPage() {
 
   const { data: contractor } = await supabase
     .from("contractors")
-    .select("line_channel_access_token, line_channel_secret")
+    .select("line_channel_access_token, line_channel_secret, liff_id, slug")
     .eq("id", admin.contractorId)
     .single<
       Pick<
         Contractor,
-        "line_channel_access_token" | "line_channel_secret"
+        "line_channel_access_token" | "line_channel_secret" | "liff_id" | "slug"
       >
     >();
 
@@ -42,6 +42,8 @@ export default async function SettingsPage() {
       <SettingsForm
         tokenSet={!!contractor?.line_channel_access_token}
         secretSet={!!contractor?.line_channel_secret}
+        liffId={contractor?.liff_id ?? ""}
+        slug={contractor?.slug ?? ""}
       />
 
       <p className="max-w-lg text-xs text-zinc-500">

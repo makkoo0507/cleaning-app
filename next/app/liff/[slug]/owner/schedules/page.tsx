@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
-import { getLiffUser, LIFF_ID } from "@/lib/liff-auth";
+import { getLiffUser, getLiffIdBySlug } from "@/lib/liff-auth";
 import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
 import { jstDateRanges, formatTime } from "@/lib/format";
 import type { CleaningRequest, Job, Property } from "@/lib/database.types";
@@ -30,10 +30,16 @@ const STATUS_LABEL: Record<string, string> = {
 
 type JobRow = Pick<Job, "id" | "property_id" | "scheduled_date" | "scheduled_start_time" | "status"> & { properties: Pick<Property, "name" | "address"> };
 
-export default async function OwnerSchedulesPage() {
+export default async function OwnerSchedulesPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   const user = await getLiffUser();
   if (!user || user.role !== "contact") {
-    return <LiffBootstrap liffId={LIFF_ID} expectedRole="contact" />;
+    const liffId = await getLiffIdBySlug(slug);
+    return <LiffBootstrap liffId={liffId ?? ""} expectedRole="contact" />;
   }
 
   const { today } = jstDateRanges();
@@ -135,7 +141,7 @@ export default async function OwnerSchedulesPage() {
             return (
               <Link
                 key={p.id}
-                href={`/liff/owner/request?${params.toString()}`}
+                href={`/liff/${slug}/owner/request?${params.toString()}`}
                 className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm dark:border-amber-900 dark:bg-amber-950/40"
               >
                 <span className="font-medium text-zinc-900 dark:text-zinc-50">{p.name}</span>
@@ -184,7 +190,7 @@ export default async function OwnerSchedulesPage() {
                   {dayJobs.map((job) => (
                     <Link
                       key={job.id}
-                      href={`/liff/owner/jobs/${job.id}`}
+                      href={`/liff/${slug}/owner/jobs/${job.id}`}
                       className="flex items-center gap-3 rounded-md border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900"
                     >
                       <span className={`h-2 w-2 flex-shrink-0 rounded-full ${STATUS_DOT[job.status]}`} />

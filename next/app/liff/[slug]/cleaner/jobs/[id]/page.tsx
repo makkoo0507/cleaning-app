@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
-import { getLiffUser, LIFF_ID } from "@/lib/liff-auth";
+import { getLiffUser, getLiffIdBySlug } from "@/lib/liff-auth";
 import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
 import CleanerJobActions from "./CleanerJobActions";
 import {
@@ -27,14 +27,15 @@ type JobDetail = Job & {
 export default async function CleanerJobDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string; id: string }>;
 }) {
+  const { slug, id } = await params;
   const user = await getLiffUser();
   if (!user || user.role !== "cleaner") {
-    return <LiffBootstrap liffId={LIFF_ID} expectedRole="cleaner" />;
+    const liffId = await getLiffIdBySlug(slug);
+    return <LiffBootstrap liffId={liffId ?? ""} expectedRole="cleaner" />;
   }
 
-  const { id } = await params;
   const admin = createAdminClient();
 
   // 本人がアサインされた案件のみ（job_assignees で明示スコープ）
@@ -50,7 +51,7 @@ export default async function CleanerJobDetailPage({
       <div className="px-4 py-6">
         <p className="text-sm text-red-600">案件が見つかりません。</p>
         <Link
-          href="/liff/cleaner/schedules"
+          href={`/liff/${slug}/cleaner/schedules`}
           className="mt-4 inline-block text-sm text-zinc-500 underline"
         >
           ← 一覧に戻る
@@ -103,7 +104,7 @@ export default async function CleanerJobDetailPage({
   return (
     <div className="px-4 py-6">
       <Link
-        href="/liff/cleaner/schedules"
+        href={`/liff/${slug}/cleaner/schedules`}
         className="mb-4 inline-block text-sm text-zinc-500"
       >
         ← 一覧に戻る

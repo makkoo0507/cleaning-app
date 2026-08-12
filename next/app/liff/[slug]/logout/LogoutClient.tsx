@@ -4,9 +4,7 @@
 import { useEffect, useRef, useState } from "react";
 import liff from "@line/liff";
 
-const LIFF_IDS = [process.env.NEXT_PUBLIC_LIFF_ID].filter(Boolean) as string[];
-
-export default function LiffLogoutPage() {
+export default function LogoutClient({ liffId }: { liffId: string }) {
   const [done, setDone] = useState(false);
   const ran = useRef(false);
 
@@ -19,9 +17,9 @@ export default function LiffLogoutPage() {
       await fetch("/api/liff/logout").catch(() => {});
 
       // 2) LINE ログインをクリア
-      for (const id of LIFF_IDS) {
+      if (liffId) {
         try {
-          await liff.init({ liffId: id });
+          await liff.init({ liffId });
           if (liff.isLoggedIn()) liff.logout();
         } catch {
           // 初期化失敗は無視
@@ -31,7 +29,7 @@ export default function LiffLogoutPage() {
     }
 
     run().catch(() => setDone(true));
-  }, []);
+  }, [liffId]);
 
   return (
     <div className="flex min-h-screen items-center justify-center px-6">

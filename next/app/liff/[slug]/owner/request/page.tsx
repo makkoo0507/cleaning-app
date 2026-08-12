@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Suspense } from "react";
 
 function RequestForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { slug } = useParams<{ slug: string }>();
   const propertyId = searchParams.get("property_id") ?? "";
   const propertyName = searchParams.get("property_name") ?? "物件";
   const defaultTime = searchParams.get("default_time") ?? "";
@@ -50,7 +51,7 @@ function RequestForm() {
         <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">依頼を送信しました</p>
         <p className="mt-2 text-sm text-zinc-500">管理者が確認後、スケジュールに登録されます。</p>
         <button
-          onClick={() => router.push("/liff/owner/schedules")}
+          onClick={() => router.push(`/liff/${slug}/owner/schedules`)}
           className="mt-6 rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300"
         >
           戻る

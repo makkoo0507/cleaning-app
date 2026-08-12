@@ -8,9 +8,11 @@ import { useState } from "react";
 export default function InviteLink({
   token,
   liffId,
+  slug,
 }: {
   token: string | null;
-  liffId?: string;
+  liffId?: string | null;
+  slug: string;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -20,8 +22,8 @@ export default function InviteLink({
 
   const url = liffId
     ? `https://liff.line.me/${liffId}/invite?token=${token}`
-    : // liffId 未設定（環境変数未設定）時のフォールバック
-      `/liff/invite?token=${token}`;
+    : // liffId 未設定（設定画面で登録前）時のフォールバック
+      `/liff/${slug}/invite?token=${token}`;
 
   async function copy() {
     try {

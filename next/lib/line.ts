@@ -10,7 +10,18 @@ interface JobNotifyRow {
   contractor_id: string;
   property_id: string;
   properties: { name: string } | null;
-  contractors: { line_channel_access_token: string | null } | null;
+  contractors: { line_channel_access_token: string | null; liff_id: string | null } | null;
+}
+
+// LIFF は業者ごとに 1 アプリ。Endpoint URL に業者の slug (/liff/{slug}) を
+// 登録してもらっているため、ここでは liffId の後にサブパスを付けるだけでよい
+// （slug は LINE 側の Endpoint URL 設定で自動的に付与される）。
+function buildLiffUrl(
+  contractor: { liff_id: string | null } | null,
+  path: string
+): string {
+  if (!contractor?.liff_id) return "";
+  return `https://liff.line.me/${contractor.liff_id}${path}`;
 }
 
 async function getAssignedCleanerLineIds(
@@ -98,7 +109,7 @@ export async function notifyScheduleCreated(jobId: string): Promise<void> {
   const { data: job } = await admin
     .from("jobs")
     .select(
-      "scheduled_date, contractor_id, property_id, properties(name), contractors(line_channel_access_token)"
+      "scheduled_date, contractor_id, property_id, properties(name), contractors(line_channel_access_token, liff_id)"
     )
     .eq("id", jobId)
     .single<JobNotifyRow>();
@@ -116,14 +127,10 @@ export async function notifyScheduleCreated(jobId: string): Promise<void> {
 
   const date = formatDateShort(job.scheduled_date);
   const propertyName = job.properties?.name ?? "";
-  // LIFF は単一アプリ（エンドポイント /liff）。役割別画面へはパスを付与して開く。
-  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-  const cleanerUrl = liffId
-    ? `\nhttps://liff.line.me/${liffId}/cleaner/schedules`
-    : "";
-  const ownerUrl = liffId
-    ? `\nhttps://liff.line.me/${liffId}/owner/schedules`
-    : "";
+  const cleanerLink = buildLiffUrl(job.contractors, "/cleaner/schedules");
+  const ownerLink = buildLiffUrl(job.contractors, "/owner/schedules");
+  const cleanerUrl = cleanerLink ? `\n${cleanerLink}` : "";
+  const ownerUrl = ownerLink ? `\n${ownerLink}` : "";
 
   // 清掃者への通知（アサイン全員）
   if (cleanerEnabled) {
@@ -153,7 +160,7 @@ export async function notifyCleaningCompleted(jobId: string): Promise<void> {
   const { data: job } = await admin
     .from("jobs")
     .select(
-      "scheduled_date, contractor_id, property_id, properties(name), contractors(line_channel_access_token)"
+      "scheduled_date, contractor_id, property_id, properties(name), contractors(line_channel_access_token, liff_id)"
     )
     .eq("id", jobId)
     .single<JobNotifyRow>();
@@ -217,14 +224,14 @@ export async function sendOwnerReport(jobId: string): Promise<void> {
   const { data: job } = await admin
     .from("jobs")
     .select(
-      "contractor_id, property_id, properties(name), contractors(line_channel_access_token)"
+      "contractor_id, property_id, properties(name), contractors(line_channel_access_token, liff_id)"
     )
     .eq("id", jobId)
     .single<{
       contractor_id: string;
       property_id: string;
       properties: { name: string } | null;
-      contractors: { line_channel_access_token: string | null } | null;
+      contractors: { line_channel_access_token: string | null; liff_id: string | null } | null;
     }>();
 
   const token = job?.contractors?.line_channel_access_token;
@@ -240,10 +247,7 @@ export async function sendOwnerReport(jobId: string): Promise<void> {
 
   const propertyName = job.properties?.name ?? "";
   const memo = record?.memo ?? "";
-  const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
-  const photoUrl = liffId
-    ? `https://liff.line.me/${liffId}/owner/jobs/${jobId}`
-    : "";
+  const photoUrl = buildLiffUrl(job.contractors, `/owner/jobs/${jobId}`);
 
   let text = `${propertyName}の清掃が完了しました。`;
   if (memo) text += `\n\n${memo}`;

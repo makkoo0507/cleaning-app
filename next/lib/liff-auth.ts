@@ -13,11 +13,22 @@ export interface LiffUser {
   role: UserRole;
 }
 
-// LIFF は全役割で 1 アプリ（1 エンドポイント /liff）を共有する。
-// 役割（清掃者/オーナー）はログイン後のユーザーレコードで判定するため、
-// liff.init に渡す ID は単一でよい（2 アプリだと共有エンドポイントで
-// launch 時の liffId が特定できずログインが完了しない）。
-export const LIFF_ID = process.env.NEXT_PUBLIC_LIFF_ID ?? "";
+// 業者ごとに LINE 公式アカウント(Messaging API)と同じプロバイダー内に
+// LIFF チャネルを作ってもらうことで、通知 push API の userId 不一致
+// (400 エラー)を防ぐ。LIFF ID は業者ごとに固有。
+
+// 業者の slug から、その業者専用の LIFF ID を解決する。
+// 未設定の場合は null（LiffBootstrap 側で「設定がありません」を表示する）。
+export async function getLiffIdBySlug(slug: string): Promise<string | null> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("contractors")
+    .select("liff_id")
+    .eq("slug", slug)
+    .maybeSingle<{ liff_id: string | null }>();
+
+  return data?.liff_id || null;
+}
 
 // Cookie のセッションから現在の LIFF ユーザーを取得（未認証なら null）
 export async function getLiffUser(): Promise<LiffUser | null> {

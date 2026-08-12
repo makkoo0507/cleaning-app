@@ -7,10 +7,12 @@ export default function LineLinkInfo({
   lineUserId,
   inviteToken,
   liffId,
+  slug,
 }: {
   lineUserId: string | null;
   inviteToken?: string | null;
-  liffId?: string;
+  liffId?: string | null;
+  slug: string;
 }) {
   return (
     <div className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -28,7 +30,7 @@ export default function LineLinkInfo({
       ) : (
         <div className="flex items-center gap-3">
           <span className="text-zinc-500">未紐付け</span>
-          {inviteToken && <InviteLink token={inviteToken} liffId={liffId} />}
+          {inviteToken && <InviteLink token={inviteToken} liffId={liffId} slug={slug} />}
         </div>
       )}
       <p className="mt-1 text-xs text-zinc-400">
