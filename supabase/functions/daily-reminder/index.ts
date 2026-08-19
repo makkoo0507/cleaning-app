@@ -131,9 +131,11 @@ Deno.serve(async (req) => {
       ? ` ${job.scheduled_start_time.slice(0, 5)}`
       : "";
     const whenWord = kind === "prev_day" ? `明日 ${m}/${d}` : `本日 ${m}/${d}`;
-    const text = `${whenWord}${time} ${propertyName}の清掃があります。`;
+    const cleanerText = `${whenWord}${time} ${propertyName}の清掃をお願いします。`;
+    const ownerText   = `${whenWord}${time} ${propertyName}の清掃を実施いたします。`;
 
-    const recipients: string[] = [];
+    const cleanerRecipients: string[] = [];
+    const ownerRecipients: string[] = [];
 
     // 清掃者（複数アサイン対応）
     if (sendCleaner) {
@@ -146,7 +148,7 @@ Deno.serve(async (req) => {
           .in("id", cleanerIds)
           .not("line_user_id", "is", null);
         for (const c of cleaners ?? []) {
-          if (c.line_user_id) recipients.push(c.line_user_id);
+          if (c.line_user_id) cleanerRecipients.push(c.line_user_id);
         }
       }
     }
@@ -166,24 +168,34 @@ Deno.serve(async (req) => {
           .in("id", ids)
           .not("line_user_id", "is", null);
         for (const u of users ?? []) {
-          if (u.line_user_id) recipients.push(u.line_user_id);
+          if (u.line_user_id) ownerRecipients.push(u.line_user_id);
         }
       }
     }
 
-    await Promise.allSettled(
-      recipients.map((to) =>
+    await Promise.allSettled([
+      ...cleanerRecipients.map((to) =>
         fetch("https://api.line.me/v2/bot/message/push", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ to, messages: [{ type: "text", text }] }),
+          body: JSON.stringify({ to, messages: [{ type: "text", text: cleanerText }] }),
         })
-      )
-    );
-    sent += recipients.length;
+      ),
+      ...ownerRecipients.map((to) =>
+        fetch("https://api.line.me/v2/bot/message/push", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ to, messages: [{ type: "text", text: ownerText }] }),
+        })
+      ),
+    ]);
+    sent += cleanerRecipients.length + ownerRecipients.length;
   }
 
   console.log(`daily-reminder(${trigger} ${targetStr}): sent ${sent}`);
