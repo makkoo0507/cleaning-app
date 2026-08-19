@@ -15,12 +15,14 @@ interface ContractorCache {
 }
 
 Deno.serve(async (req) => {
-  // kind の決定（クエリ → ボディ → 既定 prev_day）
+  // kind・slug の決定（クエリ → ボディ、kind の既定は prev_day）
   let kind = new URL(req.url).searchParams.get("kind") as Kind | null;
-  if (kind !== "prev_day" && kind !== "same_day") {
+  let slug = new URL(req.url).searchParams.get("slug");
+  if (kind !== "prev_day" && kind !== "same_day" || !slug) {
     try {
       const body = await req.json();
       if (body?.kind === "prev_day" || body?.kind === "same_day") kind = body.kind;
+      if (!slug && typeof body?.slug === "string") slug = body.slug;
     } catch {
       // body なし
     }
@@ -34,17 +36,32 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
+  // slug 指定時はテスト用に対象業者を1社に絞り込む
+  let contractorIdFilter: string | null = null;
+  if (slug) {
+    const { data: c } = await supabase
+      .from("contractors")
+      .select("id")
+      .eq("slug", slug)
+      .single<{ id: string }>();
+    if (!c) return new Response(`error: unknown slug "${slug}"`, { status: 400 });
+    contractorIdFilter = c.id;
+  }
+
   // 対象日（JST）: 前日リマインド=翌日、当日リマインド=本日
   const jst = new Date(Date.now() + 9 * 60 * 60 * 1000);
   const target = new Date(jst);
   if (kind === "prev_day") target.setUTCDate(jst.getUTCDate() + 1);
   const targetStr = target.toISOString().slice(0, 10);
 
-  const { data: jobs, error } = await supabase
+  let query = supabase
     .from("jobs")
     .select("id, scheduled_date, scheduled_start_time, property_id, contractor_id, job_assignees(cleaner_id)")
     .eq("scheduled_date", targetStr)
     .eq("status", "scheduled");
+  if (contractorIdFilter) query = query.eq("contractor_id", contractorIdFilter);
+
+  const { data: jobs, error } = await query;
 
   if (error) {
     console.error("Failed to fetch jobs:", error.message);
