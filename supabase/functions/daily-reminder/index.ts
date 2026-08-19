@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
 
   const { data: jobs, error } = await supabase
     .from("jobs")
-    .select("id, scheduled_date, scheduled_start_time, cleaner_id, property_id, contractor_id")
+    .select("id, scheduled_date, scheduled_start_time, property_id, contractor_id, job_assignees(cleaner_id)")
     .eq("scheduled_date", targetStr)
     .eq("status", "scheduled");
 
@@ -118,14 +118,20 @@ Deno.serve(async (req) => {
 
     const recipients: string[] = [];
 
-    // 清掃者
-    if (sendCleaner && job.cleaner_id) {
-      const { data: cleaner } = await supabase
-        .from("users")
-        .select("line_user_id")
-        .eq("id", job.cleaner_id)
-        .single();
-      if (cleaner?.line_user_id) recipients.push(cleaner.line_user_id);
+    // 清掃者（複数アサイン対応）
+    if (sendCleaner) {
+      const cleanerIds = (job.job_assignees as { cleaner_id: string }[] | null ?? [])
+        .map((a) => a.cleaner_id);
+      if (cleanerIds.length > 0) {
+        const { data: cleaners } = await supabase
+          .from("users")
+          .select("line_user_id")
+          .in("id", cleanerIds)
+          .not("line_user_id", "is", null);
+        for (const c of cleaners ?? []) {
+          if (c.line_user_id) recipients.push(c.line_user_id);
+        }
+      }
     }
 
     // オーナー（通知ONの物件関係者）
