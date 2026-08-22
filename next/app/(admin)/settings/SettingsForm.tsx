@@ -7,7 +7,7 @@ import {
   type SettingsFormState,
   type VerifyTokenState,
 } from "./actions";
-import { Field, TextInput } from "@/components/ui";
+import { Field, TextInput, Alert } from "@/components/ui";
 import CopyButton from "@/components/CopyButton";
 
 const TEST_DESCRIPTION =
@@ -127,12 +127,8 @@ export default function SettingsForm({
         </div>
       )}
 
-      {state.error && (
-        <p className="text-sm text-red-600" role="alert">
-          {state.error}
-        </p>
-      )}
-      {state.success && <p className="text-sm text-green-600">保存しました。</p>}
+      {state.error && <Alert variant="error" inline>{state.error}</Alert>}
+      {state.success && <Alert variant="success" inline>保存しました。</Alert>}
 
       <div className="flex items-center gap-3">
         <button
@@ -167,7 +163,7 @@ export default function SettingsForm({
       </div>
 
       {verify.error && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+        <Alert variant="error">
           <p>{verify.error}</p>
           {verify.secretSet === false && (
             <p className="mt-1 text-xs">※ チャネルシークレットも未登録です。</p>
@@ -175,16 +171,10 @@ export default function SettingsForm({
           {verify.liffIdSet === false && (
             <p className="mt-1 text-xs">※ LIFF ID も未登録です。招待URL・通知リンクが機能しません。</p>
           )}
-        </div>
+        </Alert>
       )}
       {verify.success && (
-        <div
-          className={
-            verify.secretSet && verify.liffIdSet
-              ? "rounded-md border border-green-200 bg-green-50 px-3 py-2 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300"
-              : "rounded-md border border-red-200 bg-red-50 px-3 py-2 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
-          }
-        >
+        <Alert variant={verify.secretSet && verify.liffIdSet ? "success" : "error"}>
           <p className="text-sm">
             チャネルシークレット: {verify.secretSet ? "設定済み" : "未設定"}
           </p>
@@ -196,7 +186,7 @@ export default function SettingsForm({
             {verify.accountName ? `（公式アカウント: ${verify.accountName}）` : ""}
             。
           </p>
-        </div>
+        </Alert>
       )}
     </form>
   );

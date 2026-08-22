@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { RecordFormState } from "./actions";
 import type { CleaningRecord } from "@/lib/database.types";
-import { Field, TextInput } from "@/components/ui";
+import { Field, TextInput, Alert } from "@/components/ui";
 
 type Action = (formData: FormData) => Promise<RecordFormState>;
 
@@ -74,8 +74,8 @@ export default function RecordForm({
           className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
         />
       </Field>
-      {message?.type === "error" && <p className="text-sm text-red-600">{message.text}</p>}
-      {message?.type === "success" && <p className="text-sm text-green-600">{message.text}</p>}
+      {message?.type === "error" && <Alert variant="error" inline>{message.text}</Alert>}
+      {message?.type === "success" && <Alert variant="success" inline>{message.text}</Alert>}
       <button
         type="submit"
         disabled={isLoading}

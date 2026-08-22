@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { CleaningRequest, Property, User } from "@/lib/database.types";
 import { createJob } from "../actions";
 import JobForm from "../JobForm";
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Alert } from "@/components/ui";
 
 export default async function NewSchedulePage({
   searchParams,
@@ -34,6 +34,7 @@ export default async function NewSchedulePage({
     property_id: string;
     scheduled_date: string;
     scheduled_start_time: string | null;
+    note: string | null;
   } | null = null;
 
   if (request_id) {
@@ -48,6 +49,7 @@ export default async function NewSchedulePage({
         property_id: req.property_id,
         scheduled_date: req.requested_date,
         scheduled_start_time: req.requested_start_time,
+        note: req.note,
       };
     }
   }
@@ -56,9 +58,9 @@ export default async function NewSchedulePage({
     <div className="space-y-6">
       <PageHeader title="案件を作成" />
       {requestPreset && (
-        <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-          依頼内容をもとにプリフィルしています。内容を確認・修正してから保存してください。
-        </p>
+        <Alert variant="warning">
+          ※まだ承認が確定されていません。内容を確認して保存まで行ってください。
+        </Alert>
       )}
       <JobForm
         action={createJob}

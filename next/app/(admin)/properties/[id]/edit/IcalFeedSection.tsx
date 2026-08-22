@@ -3,6 +3,7 @@
 import { useActionState, useState, useTransition } from "react";
 import type { IcalFeed, IcalFeedType } from "@/lib/database.types";
 import { addIcalFeed, deleteIcalFeed, type IcalFormState } from "../../ical-actions";
+import { Alert } from "@/components/ui";
 
 const SITE_CONTROLLER_PRESETS = ["Beds24", "Smoobu", "Hostaway", "AirHost", "その他"];
 const OTA_PRESETS = ["Airbnb", "VRBO", "楽天トラベル", "Vacation STAY", "Booking.com", "その他"];
@@ -93,9 +94,7 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
             />
           </div>
 
-          {state.error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>
-          )}
+          {state.error && <Alert variant="error" inline>{state.error}</Alert>}
 
           <button
             type="submit"

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useActionState } from "react";
 import type { JobFormState } from "./actions";
 import type { Job, JobAssignee, Property, User } from "@/lib/database.types";
-import { Field, TextInput, Select } from "@/components/ui";
+import { Field, TextInput, Select, Alert } from "@/components/ui";
 
 type Action = (
   prev: JobFormState,
@@ -12,7 +12,13 @@ type Action = (
 ) => Promise<JobFormState>;
 
 type PropertyDefault = { billing: number | null; payment: number | null; startTime: string | null };
-type RequestPreset = { request_id: string; property_id: string; scheduled_date: string; scheduled_start_time: string | null };
+type RequestPreset = {
+  request_id: string;
+  property_id: string;
+  scheduled_date: string;
+  scheduled_start_time: string | null;
+  note: string | null;
+};
 
 const MAX_ASSIGNEES = 5;
 
@@ -213,20 +219,14 @@ export default function JobForm({
         <textarea
           name="instruction"
           rows={3}
-          defaultValue={job?.instruction ?? ""}
+          defaultValue={job?.instruction ?? requestPreset?.note ?? ""}
           placeholder="例：エアコンフィルター掃除をお願いします"
           className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
         />
       </Field>
 
-      {state.error && (
-        <p className="text-sm text-red-600" role="alert">
-          {state.error}
-        </p>
-      )}
-      {state.success && (
-        <p className="text-sm text-green-600">保存しました。</p>
-      )}
+      {state.error && <Alert variant="error" inline>{state.error}</Alert>}
+      {state.success && <Alert variant="success" inline>保存しました。</Alert>}
 
       <div className="flex items-center gap-3">
         <button

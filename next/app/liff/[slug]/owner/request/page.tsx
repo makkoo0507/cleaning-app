@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Suspense } from "react";
+import { Alert } from "@/components/ui";
 
 function RequestForm() {
   const router = useRouter();
@@ -103,7 +104,7 @@ function RequestForm() {
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <Alert variant="error" inline>{error}</Alert>}
 
         <button
           type="submit"

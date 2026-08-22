@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import liff from "@line/liff";
+import { Alert } from "@/components/ui";
 
 export default function LiffBootstrap({
   liffId,
@@ -62,7 +63,7 @@ export default function LiffBootstrap({
   return (
     <div className="flex min-h-screen items-center justify-center px-6">
       {error ? (
-        <p className="text-center text-sm text-red-600">{error}</p>
+        <Alert variant="error" inline className="text-center">{error}</Alert>
       ) : (
         <p className="text-sm text-zinc-500">読み込み中...</p>
       )}

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { reportToOwner, type ReportFormState } from "../actions";
+import { Alert } from "@/components/ui";
 
 interface Props {
   jobId: string;
@@ -56,12 +57,8 @@ export default function ReportSection({ jobId, propertyName, memo, reportedAt }:
             報告済み: {formatReportedAt(reportedAt)}
           </span>
         )}
-        {state.success && (
-          <span className="text-sm text-green-600">LINEを送信しました。</span>
-        )}
-        {state.error && (
-          <span className="text-sm text-red-600">{state.error}</span>
-        )}
+        {state.success && <Alert variant="success" inline>LINEを送信しました。</Alert>}
+        {state.error && <Alert variant="error" inline>{state.error}</Alert>}
       </div>
     </div>
   );

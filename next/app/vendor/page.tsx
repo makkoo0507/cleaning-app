@@ -1,7 +1,7 @@
 import { requirePlatformAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
 import { listFeatures } from "@/lib/features";
-import { Field, TextInput, Select } from "@/components/ui";
+import { Field, TextInput, Select, Alert } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -128,24 +128,20 @@ export default async function VendorPage({
       </header>
 
       {created && (
-        <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
+        <Alert variant="success">
           業者を作成しました。ログインURL: <code>/{created}/login</code>
-        </div>
+        </Alert>
       )}
       {pw_reset === "ok" && (
-        <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
+        <Alert variant="success">
           パスワードを再設定しました。新しいパスワードを本人へお伝えください。
-        </div>
+        </Alert>
       )}
       {feature === "ok" && (
-        <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
-          オプションの加入状況を更新しました。
-        </div>
+        <Alert variant="success">オプションの加入状況を更新しました。</Alert>
       )}
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-          {ERRORS[error] ?? "エラーが発生しました。"}
-        </div>
+        <Alert variant="error">{ERRORS[error] ?? "エラーが発生しました。"}</Alert>
       )}
 
       <section className="rounded-md border border-zinc-200 p-5 dark:border-zinc-800">

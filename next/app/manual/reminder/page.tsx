@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Alert } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "定期リマインド設定マニュアル｜民泊清掃管理",
@@ -82,14 +83,16 @@ export default function ReminderManualPage() {
         </p>
       </section>
 
-      <section className="mt-8 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-        <p className="font-medium">届かないときのチェック</p>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>設定で送信先・タイミングがオンになっているか</li>
-          <li>チャネルアクセストークンが登録され、受信者が公式アカウントを友だち追加しているか</li>
-          <li>清掃者・オーナーがLINE連携（紐付け）済みか</li>
-        </ul>
-      </section>
+      <div className="mt-8">
+        <Alert variant="warning">
+          <p className="font-medium">届かないときのチェック</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li>設定で送信先・タイミングがオンになっているか</li>
+            <li>チャネルアクセストークンが登録され、受信者が公式アカウントを友だち追加しているか</li>
+            <li>清掃者・オーナーがLINE連携（紐付け）済みか</li>
+          </ul>
+        </Alert>
+      </div>
 
       <footer className="mt-10 border-t border-zinc-200 pt-4 text-xs text-zinc-400 dark:border-zinc-800">
         民泊清掃管理 — 定期リマインド設定マニュアル

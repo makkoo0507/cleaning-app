@@ -78,7 +78,7 @@ export default async function RequestDetailPage({
           label="希望時刻"
           value={req.requested_start_time ? req.requested_start_time.slice(0, 5) : "未指定"}
         />
-        {req.note && <Row label="メモ" value={req.note} />}
+        <Row label="メモ(for清掃指示)" value={req.note || "—"} />
         {req.status === "rejected" && req.rejection_reason && (
           <Row label="却下理由" value={<span className="text-red-600">{req.rejection_reason}</span>} />
         )}

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { unlinkLine } from "@/app/(admin)/actions";
+import { Alert } from "@/components/ui";
 
 export default function UnlinkLineButton({
   userId,
@@ -55,9 +56,9 @@ export default function UnlinkLineButton({
               解除すると通知が届かなくなり、新しい招待URLの発行が必要になります。
             </p>
             {error && (
-              <p className="mt-3 text-sm text-red-600" role="alert">
+              <Alert variant="error" inline className="mt-3">
                 {error}
-              </p>
+              </Alert>
             )}
             <div className="mt-6 flex justify-end gap-3">
               <button

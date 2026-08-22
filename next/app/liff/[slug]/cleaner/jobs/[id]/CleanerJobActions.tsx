@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { JobStatus } from "@/lib/database.types";
 import { compressImage } from "@/lib/compress-image";
+import { Alert } from "@/components/ui";
 
 interface ImageWithUrl {
   id: string;
@@ -154,7 +155,7 @@ export default function CleanerJobActions({
 
   return (
     <div className="mt-4 space-y-3">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <Alert variant="error" inline>{error}</Alert>}
 
       {status === "scheduled" && (
         <button
@@ -203,7 +204,9 @@ export default function CleanerJobActions({
             {submitting ? "保存中..." : "共有を保存"}
           </button>
           {saved && (
-            <p className="text-center text-xs text-green-600">保存しました</p>
+            <Alert variant="success" inline className="text-center">
+              保存しました
+            </Alert>
           )}
           <button
             onClick={() => send("revert_complete")}
@@ -245,7 +248,7 @@ export default function CleanerJobActions({
           <p className="mt-2 text-xs text-zinc-500">{uploadProgress}</p>
         )}
         {uploadError && (
-          <p className="mt-2 text-xs text-red-600">{uploadError}</p>
+          <Alert variant="error" inline className="mt-2">{uploadError}</Alert>
         )}
 
         {images.length > 0 ? (

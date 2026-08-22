@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Alert } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "招待URLの発行マニュアル｜民泊清掃管理",
@@ -45,18 +46,20 @@ export default function InviteManualPage() {
         </p>
       </header>
 
-      <section className="mb-8 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-        <p className="font-medium">事前準備</p>
-        <p className="mt-1">
-          招待URLは、自社の <strong>LIFF ID</strong>（LINEログインチャネル）を使って発行されます。
-          先に
-          <a href="/manual/line-setup" className="underline">
-            LINE連携 設定マニュアル
-          </a>
-          の手順に沿って、管理画面の<strong>「設定 &gt; LINE連携」</strong>で LIFF ID を登録してください。
-          LIFF ID が未設定のまま招待URLを発行すると、LINE アプリで正しく開けません。
-        </p>
-      </section>
+      <div className="mb-8">
+        <Alert variant="warning">
+          <p className="font-medium">事前準備</p>
+          <p className="mt-1">
+            招待URLは、自社の <strong>LIFF ID</strong>（LINEログインチャネル）を使って発行されます。
+            先に
+            <a href="/manual/line-setup" className="underline">
+              LINE連携 設定マニュアル
+            </a>
+            の手順に沿って、管理画面の<strong>「設定 &gt; LINE連携」</strong>で LIFF ID を登録してください。
+            LIFF ID が未設定のまま招待URLを発行すると、LINE アプリで正しく開けません。
+          </p>
+        </Alert>
+      </div>
 
       <div className="space-y-6">
         <Step no={1} title="管理画面にログインする">
@@ -158,18 +161,20 @@ export default function InviteManualPage() {
         </Step>
       </div>
 
-      <section className="mt-8 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-        <p className="font-medium">補足</p>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>
-            通知を受け取るには、招待URLでの紐付けに加えて、公式アカウントの
-            友だち追加が必要です。
-          </li>
-          <li>
-            招待URLは <code>https://liff.line.me/...</code> 形式で、LINE アプリ内で開く前提です。
-          </li>
-        </ul>
-      </section>
+      <div className="mt-8">
+        <Alert variant="warning">
+          <p className="font-medium">補足</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            <li>
+              通知を受け取るには、招待URLでの紐付けに加えて、公式アカウントの
+              友だち追加が必要です。
+            </li>
+            <li>
+              招待URLは <code>https://liff.line.me/...</code> 形式で、LINE アプリ内で開く前提です。
+            </li>
+          </ul>
+        </Alert>
+      </div>
 
       <footer className="mt-10 border-t border-zinc-200 pt-4 text-xs text-zinc-400 dark:border-zinc-800">
         民泊清掃管理 — 招待URLの発行マニュアル

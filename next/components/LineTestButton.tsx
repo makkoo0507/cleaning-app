@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { sendTestNotification } from "@/app/(admin)/actions";
+import { Alert } from "@/components/ui";
 
 // 紐付け済みユーザーへテスト通知を送るボタン（清掃者/オーナー編集画面で使用）
 export default function LineTestButton({ userId }: { userId: string }) {
@@ -22,11 +23,11 @@ export default function LineTestButton({ userId }: { userId: string }) {
       >
         {pending ? "送信中…" : "テスト通知を送る"}
       </button>
-      {state.error && <p className="text-xs text-red-600">{state.error}</p>}
+      {state.error && <Alert variant="error" inline>{state.error}</Alert>}
       {state.success && (
-        <p className="text-xs text-green-600">
+        <Alert variant="success" inline>
           テスト通知を送信しました。相手の LINE をご確認ください。
-        </p>
+        </Alert>
       )}
     </div>
   );

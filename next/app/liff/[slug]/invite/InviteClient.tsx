@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import liff from "@line/liff";
+import { Alert } from "@/components/ui";
 
 type State = "loading" | "done" | "error";
 
@@ -72,9 +73,9 @@ function InviteContent({ liffId }: { liffId: string }) {
 
   if (!token) {
     return (
-      <p className="text-center text-sm text-red-600">
+      <Alert variant="error" inline className="text-center">
         招待URLが正しくありません。
-      </p>
+      </Alert>
     );
   }
 
@@ -83,7 +84,7 @@ function InviteContent({ liffId }: { liffId: string }) {
   }
 
   if (state === "error") {
-    return <p className="text-center text-sm text-red-600">{errorMsg}</p>;
+    return <Alert variant="error" inline className="text-center">{errorMsg}</Alert>;
   }
 
   return (

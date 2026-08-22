@@ -103,6 +103,54 @@ export function Badge({ children }: { children: React.ReactNode }) {
   );
 }
 
+type AlertVariant = "warning" | "error" | "success";
+
+const ALERT_BOX_STYLES: Record<AlertVariant, string> = {
+  warning:
+    "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200",
+  error:
+    "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300",
+  success:
+    "border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300",
+};
+
+const ALERT_INLINE_STYLES: Record<AlertVariant, string> = {
+  warning: "text-amber-700 dark:text-amber-400",
+  error: "text-red-600",
+  success: "text-green-600",
+};
+
+export function Alert({
+  variant,
+  inline = false,
+  className = "",
+  children,
+}: {
+  variant: AlertVariant;
+  inline?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const role = variant === "error" ? "alert" : undefined;
+
+  if (inline) {
+    return (
+      <p className={`text-sm ${ALERT_INLINE_STYLES[variant]} ${className}`} role={role}>
+        {children}
+      </p>
+    );
+  }
+
+  return (
+    <div
+      role={role}
+      className={`rounded-md border px-4 py-3 text-sm ${ALERT_BOX_STYLES[variant]} ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function Card({
   label,
   value,

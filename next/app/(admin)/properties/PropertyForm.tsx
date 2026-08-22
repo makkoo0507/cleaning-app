@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import type { PropertyFormState } from "./actions";
 import type { Property } from "@/lib/database.types";
-import { Field, TextInput, Textarea } from "@/components/ui";
+import { Field, TextInput, Textarea, Alert } from "@/components/ui";
 
 type Action = (
   prev: PropertyFormState,
@@ -68,14 +68,8 @@ export default function PropertyForm({
         </Field>
       </div>
 
-      {state.error && (
-        <p className="text-sm text-red-600" role="alert">
-          {state.error}
-        </p>
-      )}
-      {state.success && (
-        <p className="text-sm text-green-600">保存しました。</p>
-      )}
+      {state.error && <Alert variant="error" inline>{state.error}</Alert>}
+      {state.success && <Alert variant="success" inline>保存しました。</Alert>}
 
       <div className="flex items-center gap-3">
         <button

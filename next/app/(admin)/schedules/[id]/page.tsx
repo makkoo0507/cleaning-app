@@ -11,7 +11,7 @@ import PhotoSection, { type ImageWithUrl } from "./PhotoSection";
 import ReportSection from "./ReportSection";
 import { DeleteButton } from "@/components/DeleteButton";
 import { CreatedBanner } from "@/components/CreatedBanner";
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Alert } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -162,9 +162,11 @@ export default async function JobDetailPage({
         </h2>
 
         {daysUntilDeletion !== null && (
-          <div className="mb-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-300">
-            この案件の写真は <strong>{daysUntilDeletion}日後</strong> に削除されます。
-            必要な場合はダウンロードしてください。
+          <div className="mb-3">
+            <Alert variant="warning">
+              この案件の写真は <strong>{daysUntilDeletion}日後</strong> に削除されます。
+              必要な場合はダウンロードしてください。
+            </Alert>
           </div>
         )}
 

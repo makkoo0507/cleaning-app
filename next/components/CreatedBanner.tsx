@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { Alert } from "@/components/ui";
 
 function Banner() {
   const searchParams = useSearchParams();
@@ -17,11 +18,7 @@ function Banner() {
 
   if (!created) return null;
 
-  return (
-    <p className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
-      登録しました。
-    </p>
-  );
+  return <Alert variant="success">登録しました。</Alert>;
 }
 
 export function CreatedBanner() {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import type { CleanerFormState } from "./actions";
-import { Field, TextInput, Textarea } from "@/components/ui";
+import { Field, TextInput, Textarea, Alert } from "@/components/ui";
 
 type Action = (
   prev: CleanerFormState,
@@ -33,14 +33,8 @@ export default function CleanerForm({
         <Textarea name="note" rows={3} defaultValue={defaultValues?.note ?? ""} />
       </Field>
 
-      {state.error && (
-        <p className="text-sm text-red-600" role="alert">
-          {state.error}
-        </p>
-      )}
-      {state.success && (
-        <p className="text-sm text-green-600">保存しました。</p>
-      )}
+      {state.error && <Alert variant="error" inline>{state.error}</Alert>}
+      {state.success && <Alert variant="success" inline>保存しました。</Alert>}
 
       <div className="flex items-center gap-3">
         <button

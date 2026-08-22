@@ -1,4 +1,4 @@
-import { Field, TextInput } from "@/components/ui";
+import { Field, TextInput, Alert } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -48,11 +48,7 @@ export default async function VendorLoginPage({
             />
           </Field>
 
-          {errorMessage && (
-            <p className="text-sm text-red-600" role="alert">
-              {errorMessage}
-            </p>
-          )}
+          {errorMessage && <Alert variant="error" inline>{errorMessage}</Alert>}
 
           <button
             type="submit"
