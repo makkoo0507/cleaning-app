@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Suspense } from "react";
-import { Alert } from "@/components/ui";
+import { Alert, PendingLabel } from "@/components/ui";
 
 function RequestForm() {
   const router = useRouter();
@@ -111,7 +111,7 @@ function RequestForm() {
           disabled={submitting || !date}
           className="w-full rounded-md bg-zinc-900 py-3 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900"
         >
-          {submitting ? "送信中…" : "依頼を送信する"}
+          <PendingLabel pending={submitting}>{submitting ? "送信中…" : "依頼を送信する"}</PendingLabel>
         </button>
       </form>
     </div>

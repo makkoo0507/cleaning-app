@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { rejectRequest } from "@/app/(admin)/schedules/requests/actions";
+import { PendingLabel } from "@/components/ui";
 
 export function RejectRequestButton({
   id,
@@ -72,7 +73,7 @@ export function RejectRequestButton({
                 disabled={pending}
                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
-                {pending ? "送信中…" : "却下する"}
+                <PendingLabel pending={pending}>{pending ? "送信中…" : "却下する"}</PendingLabel>
               </button>
             </div>
           </div>

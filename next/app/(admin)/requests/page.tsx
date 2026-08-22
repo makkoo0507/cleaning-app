@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/server";
 import type { CleaningRequest, Property, User } from "@/lib/database.types";

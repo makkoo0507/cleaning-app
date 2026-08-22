@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { JobStatus } from "@/lib/database.types";
 import { compressImage } from "@/lib/compress-image";
-import { Alert } from "@/components/ui";
+import { Alert, PendingLabel } from "@/components/ui";
 
 interface ImageWithUrl {
   id: string;
@@ -163,7 +163,7 @@ export default function CleanerJobActions({
           disabled={submitting}
           className="w-full rounded-lg bg-blue-600 py-3 text-sm font-semibold text-white disabled:opacity-50"
         >
-          {submitting ? "処理中..." : "清掃開始"}
+          <PendingLabel pending={submitting}>{submitting ? "処理中..." : "清掃開始"}</PendingLabel>
         </button>
       )}
 
@@ -175,7 +175,7 @@ export default function CleanerJobActions({
             disabled={submitting}
             className="w-full rounded-lg bg-green-600 py-3 text-sm font-semibold text-white disabled:opacity-50"
           >
-            {submitting ? "処理中..." : "清掃完了"}
+            <PendingLabel pending={submitting}>{submitting ? "処理中..." : "清掃完了"}</PendingLabel>
           </button>
           <button
             onClick={() => send("revert_start")}
@@ -201,7 +201,7 @@ export default function CleanerJobActions({
             disabled={submitting}
             className="w-full rounded-lg border border-zinc-300 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
           >
-            {submitting ? "保存中..." : "共有を保存"}
+            <PendingLabel pending={submitting}>{submitting ? "保存中..." : "共有を保存"}</PendingLabel>
           </button>
           {saved && (
             <Alert variant="success" inline className="text-center">
@@ -240,7 +240,7 @@ export default function CleanerJobActions({
               disabled={uploading || images.length >= 30}
               onChange={handleUpload}
             />
-            {uploading ? "アップロード中..." : "写真を追加"}
+            <PendingLabel pending={uploading}>{uploading ? "アップロード中..." : "写真を追加"}</PendingLabel>
           </label>
         </div>
 

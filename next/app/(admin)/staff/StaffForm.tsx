@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useActionState } from "react";
 import type { StaffFormState } from "./actions";
-import { Field, TextInput, Select, Alert } from "@/components/ui";
+import { Field, TextInput, Select, Alert, PendingLabel } from "@/components/ui";
 
 type Action = (
   prev: StaffFormState,
@@ -81,7 +81,7 @@ export default function StaffForm({
           disabled={pending}
           className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900"
         >
-          {pending ? "保存中…" : "保存"}
+          <PendingLabel pending={pending}>{pending ? "保存中…" : "保存"}</PendingLabel>
         </button>
         <Link
           href="/staff"

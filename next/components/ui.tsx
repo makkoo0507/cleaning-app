@@ -1,5 +1,6 @@
 // 共通 UI コンポーネント（管理 Web 全体で再利用）
-import Link from "next/link";
+// PrimaryLink は useLinkStatus (クライアント専用) に依存する components/Link.tsx を使うため
+// components/PrimaryLink.tsx に分離（このファイルは Server Component から import されるため）
 
 const inputClass =
   "w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50";
@@ -70,20 +71,41 @@ export function PageHeader({
   );
 }
 
-export function PrimaryLink({
-  href,
+export function SpinnerIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg className={`animate-spin ${className}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4Z"
+      />
+    </svg>
+  );
+}
+
+// ボタンのローディング表示用。pending 時にラベルの前へスピナーを添える。
+export function PendingLabel({
+  pending,
   children,
 }: {
-  href: string;
+  pending: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-    >
+    <span className="inline-flex items-center gap-2">
+      {pending && <SpinnerIcon className="h-3.5 w-3.5" />}
       {children}
-    </Link>
+    </span>
+  );
+}
+
+export function Spinner({ label = "読み込み中" }: { label?: string }) {
+  return (
+    <div className="flex items-center justify-center gap-3 px-4 py-16 text-sm text-zinc-500 dark:text-zinc-400">
+      <SpinnerIcon className="h-5 w-5 text-zinc-400" />
+      {label}
+    </div>
   );
 }
 

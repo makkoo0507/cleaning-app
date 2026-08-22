@@ -3,7 +3,7 @@
 import { useActionState, useState, useTransition } from "react";
 import type { IcalFeed, IcalFeedType } from "@/lib/database.types";
 import { addIcalFeed, deleteIcalFeed, type IcalFormState } from "../../ical-actions";
-import { Alert } from "@/components/ui";
+import { Alert, PendingLabel } from "@/components/ui";
 
 const SITE_CONTROLLER_PRESETS = ["Beds24", "Smoobu", "Hostaway", "AirHost", "その他"];
 const OTA_PRESETS = ["Airbnb", "VRBO", "楽天トラベル", "Vacation STAY", "Booking.com", "その他"];
@@ -101,7 +101,7 @@ function AddFeedForm({ propertyId }: { propertyId: string }) {
             disabled={pending}
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
           >
-            {pending ? "追加中…" : "追加"}
+            <PendingLabel pending={pending}>{pending ? "追加中…" : "追加"}</PendingLabel>
           </button>
         </>
       )}
@@ -159,7 +159,7 @@ function FeedRow({ feed, propertyId }: { feed: IcalFeed; propertyId: string }) {
           disabled={syncing}
           className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-900"
         >
-          {syncing ? "同期中…" : "今すぐ同期"}
+          <PendingLabel pending={syncing}>{syncing ? "同期中…" : "今すぐ同期"}</PendingLabel>
         </button>
         <form action={deleteIcalFeed}>
           <input type="hidden" name="id" value={feed.id} />

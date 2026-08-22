@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { PendingLabel } from "@/components/ui";
 
 export function DeleteButton({
   action,
@@ -60,7 +61,7 @@ export function DeleteButton({
                 disabled={pending}
                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
-                {pending ? "削除中…" : "削除"}
+                <PendingLabel pending={pending}>{pending ? "削除中…" : "削除"}</PendingLabel>
               </button>
             </div>
           </div>

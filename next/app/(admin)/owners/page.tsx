@@ -1,10 +1,11 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { requireContractor, isAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Property, PropertyMember, User } from "@/lib/database.types";
 import { PROPERTY_MEMBER_ROLE_LABEL } from "@/lib/database.types";
 import { deleteOwner } from "./actions";
-import { PageHeader, PrimaryLink, EmptyState } from "@/components/ui";
+import { PageHeader, EmptyState } from "@/components/ui";
+import { PrimaryLink } from "@/components/PrimaryLink";
 import { DeleteButton } from "@/components/DeleteButton";
 import InviteLink from "@/components/InviteLink";
 

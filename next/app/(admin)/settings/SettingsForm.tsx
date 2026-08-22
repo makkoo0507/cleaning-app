@@ -7,7 +7,7 @@ import {
   type SettingsFormState,
   type VerifyTokenState,
 } from "./actions";
-import { Field, TextInput, Alert } from "@/components/ui";
+import { Field, TextInput, Alert, PendingLabel } from "@/components/ui";
 import CopyButton from "@/components/CopyButton";
 
 const TEST_DESCRIPTION =
@@ -136,7 +136,7 @@ export default function SettingsForm({
           disabled={pending}
           className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900"
         >
-          {pending ? "保存中…" : "保存"}
+          <PendingLabel pending={pending}>{pending ? "保存中…" : "保存"}</PendingLabel>
         </button>
 
         <button
@@ -145,7 +145,7 @@ export default function SettingsForm({
           disabled={verifying}
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
         >
-          {verifying ? "確認中…" : "接続テスト"}
+          <PendingLabel pending={verifying}>{verifying ? "確認中…" : "接続テスト"}</PendingLabel>
         </button>
 
         {/* インフォメーションアイコン: ホバーで説明 */}

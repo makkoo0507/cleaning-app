@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { requireContractor } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type {

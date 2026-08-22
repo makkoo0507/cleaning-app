@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { createAdminClient } from "@/lib/supabase/server";
 import { getLiffUser, getLiffIdBySlug } from "@/lib/liff-auth";
 import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PendingLabel } from "@/components/ui";
 
 export interface PhotoItem {
   id: string;
@@ -58,7 +59,7 @@ export default function OwnerPhotoGallery({ photos }: { photos: PhotoItem[] }) {
           disabled={zipping}
           className="text-xs text-blue-600 underline disabled:opacity-50 dark:text-blue-400"
         >
-          {zipping ? "作成中…" : "まとめてダウンロード"}
+          <PendingLabel pending={zipping}>{zipping ? "作成中…" : "まとめてダウンロード"}</PendingLabel>
         </button>
       </div>
 

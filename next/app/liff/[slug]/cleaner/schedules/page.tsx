@@ -3,7 +3,7 @@ import { getLiffUser, getLiffIdBySlug } from "@/lib/liff-auth";
 import LiffBootstrap from "@/app/liff/_components/LiffBootstrap";
 import { jstDateRanges, formatTime } from "@/lib/format";
 import type { Job, Property } from "@/lib/database.types";
-import Link from "next/link";
+import Link from "@/components/Link";
 
 export const dynamic = "force-dynamic";
 

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { reportToOwner, type ReportFormState } from "../actions";
-import { Alert } from "@/components/ui";
+import { Alert, PendingLabel } from "@/components/ui";
 
 interface Props {
   jobId: string;
@@ -48,7 +48,7 @@ export default function ReportSection({ jobId, propertyName, memo, reportedAt }:
             disabled={pending}
             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {pending ? "送信中…" : "オーナーに報告"}
+            <PendingLabel pending={pending}>{pending ? "送信中…" : "オーナーに報告"}</PendingLabel>
           </button>
         </form>
 
